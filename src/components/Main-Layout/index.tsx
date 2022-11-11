@@ -4,6 +4,7 @@ import {AppProps} from "next/app";
 import {LaptopOutlined, NotificationOutlined, UserOutlined} from '@ant-design/icons';
 import type {MenuProps} from 'antd';
 import {Breadcrumb, Layout, Menu, Button, Modal} from 'antd';
+import { WalletModalProvider, WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 
 const {Header, Content, Sider} = Layout;
 
@@ -43,7 +44,8 @@ const MainLayout: React.FC<any> = ({Component, ...props}) => {
                         <img src="/logo.png" alt=""/>
                     </div>
                     <div className="connect-wrap">
-                        <Button type='primary' onClick={showModalConnect}>Connect Wallet</Button>
+                        {/* <Button type='primary' onClick={showModalConnect}>Connect Wallet</Button> */}
+                        <WalletMultiButton />
                     </div>
                 </Header>
                 <Layout>
