@@ -44,7 +44,7 @@ const AutoConnectWalletProvider: FC<{ children: ReactNode }> = ({
     <AutoConnectContext.Provider value={{ autoConnect, setAutoConnect }}>
       <WalletContext>{children}</WalletContext>
     </AutoConnectContext.Provider>
-  );
+  );  
 };
 
 export default AutoConnectWalletProvider;

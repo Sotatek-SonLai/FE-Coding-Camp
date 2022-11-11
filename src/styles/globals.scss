@@ -40,3 +40,11 @@ section.ant-layout {
     }
   }
 }
+
+//custom wallet
+.wallet-adapter-dropdown {
+  display: inline !important;
+  .wallet-adapter-button:not([disabled]):hover {
+    background-color: #512da8c2 !important;
+  }
+}

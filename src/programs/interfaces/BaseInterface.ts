@@ -1,6 +1,4 @@
-import { Program, Provider, web3, BN, AnchorProvider } from "@project-serum/anchor";
-import { clusterApiUrl, Connection, PublicKey, Keypair } from '@solana/web3.js';
-
+import { Program, AnchorProvider } from "@project-serum/anchor";
 export default class BaseInterface {
 	_provider: AnchorProvider;
 	_programAddress: string;

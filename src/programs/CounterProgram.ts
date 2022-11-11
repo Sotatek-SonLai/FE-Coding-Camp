@@ -12,7 +12,7 @@ export default class CounterProgram extends BaseInterface {
   async setupCounter() {
     this._counter = web3.Keypair.generate();
     try {
-      await this._program.methods
+      const res = await this._program.methods
         .setupCounter()
         .accounts({
           authority: this._provider.wallet.publicKey,
@@ -22,29 +22,31 @@ export default class CounterProgram extends BaseInterface {
         })
         .signers([this._counter])
         .rpc();
+      return [this._counter, null]
     } catch (err) {
-      console.log({ err });
+      return [null, err]
     }
   }
 
-  async increment(val: number) {
+  async increment(val: number, counter: any) {
     try {
-      if (!!this._counter) {
+      if (counter) {
         // console.log(counter?.publicKey.toBase58(), await program.account.counter.fetch(counter?.publicKey))
 
-        await this._program.methods
+        const res = await this._program.methods
           .increment(new BN(val))
           .accounts({
             authority: this._provider.wallet.publicKey,
-            counter: this._counter.publicKey,
+            counter: counter.publicKey,
             systemProgram: web3.SystemProgram.programId,
             rent: web3.SYSVAR_RENT_PUBKEY,
           })
           .signers([])
           .rpc();
+          return [res, null]
       }
     } catch (err) {
-      console.log({ err });
+      return [null, err]
     }
   }
 }
