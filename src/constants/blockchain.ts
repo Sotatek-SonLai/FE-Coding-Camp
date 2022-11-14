@@ -9,4 +9,7 @@ export const network = WalletAdapterNetwork.Devnet;
 
 export const endpoint = clusterApiUrl(network);
 
-export const wallets = [new PhantomWalletAdapter(), new SolletWalletAdapter()];
+export const wallets = [
+  new PhantomWalletAdapter(),
+  // , new SolletWalletAdapter()
+];
