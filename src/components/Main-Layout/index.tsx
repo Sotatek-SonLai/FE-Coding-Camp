@@ -5,6 +5,12 @@ import {LaptopOutlined, NotificationOutlined, UserOutlined} from '@ant-design/ic
 import type {MenuProps} from 'antd';
 import {Breadcrumb, Layout, Menu, Button, Modal} from 'antd';
 
+import dynamic from 'next/dynamic'
+
+const DynamicCustomWallet = dynamic(() => import('./CustomWallet'), {
+  ssr: false,
+})
+
 const {Header, Content, Sider} = Layout;
 
 
@@ -14,7 +20,7 @@ const items2: MenuProps['items'] = [UserOutlined, LaptopOutlined, NotificationOu
 
         return {
             key: `sub${key}`,
-            icon: React.createElement(icon),
+            icon: React.createElement(icon), 
             label: `subnav ${key}`,
 
             children: new Array(4).fill(null).map((_, j) => {
@@ -43,7 +49,7 @@ const MainLayout: React.FC<any> = ({Component, ...props}) => {
                         <img src="/logo.png" alt=""/>
                     </div>
                     <div className="connect-wrap">
-                        <Button type='primary' onClick={showModalConnect}>Connect Wallet</Button>
+                        <DynamicCustomWallet />
                     </div>
                 </Header>
                 <Layout>
