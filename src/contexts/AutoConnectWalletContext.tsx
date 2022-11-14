@@ -1,4 +1,3 @@
-import { useLocalStorage } from "@solana/wallet-adapter-react";
 import { createContext, FC, ReactNode, useContext } from "react";
 import {
   ConnectionProvider,
@@ -13,6 +12,10 @@ export interface AutoConnectContextState {
 }
 
 const WalletContext: FC<{ children: ReactNode }> = ({ children }) => {
+  if (typeof window !== "undefined") {
+    // browser code
+    window.Buffer = window.Buffer || require("buffer").Buffer; 
+  }
   return (
     <ConnectionProvider endpoint={endpoint}>
       <WalletProvider wallets={wallets} autoConnect>
@@ -28,23 +31,6 @@ export const AutoConnectContext = createContext<AutoConnectContextState>(
 
 export function useAutoConnect(): AutoConnectContextState {
   return useContext(AutoConnectContext);
-}
+} 
 
-const AutoConnectWalletProvider: FC<{ children: ReactNode }> = ({
-  children,
-}: any) => {
-  if (typeof window !== "undefined") {
-    // browser code
-    window.Buffer = window.Buffer || require("buffer").Buffer;
-    console.log({window})
-  }
-  const [autoConnect, setAutoConnect] = useLocalStorage("autoConnect", true);
-
-  return (
-    <AutoConnectContext.Provider value={{ autoConnect, setAutoConnect }}>
-      <WalletContext>{children}</WalletContext>
-    </AutoConnectContext.Provider>
-  );  
-};
-
-export default AutoConnectWalletProvider;
+export default WalletContext;

@@ -19,13 +19,13 @@ export default function App({ Component, pageProps, ...props }: AppProps) {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <AutoConnectWalletProvider>
-        <MainLayout pageProps={pageProps} Component={Component} {...props}>
           <Provider store={store}>
             <PersistGate loading={null} persistor={persistStorage}>
-              <Component {...pageProps} />
+              <MainLayout pageProps={pageProps} Component={Component} {...props}>
+                    <Component {...pageProps} />
+              </MainLayout>
             </PersistGate>
           </Provider>
-        </MainLayout>
       </AutoConnectWalletProvider>
     </>
   );
