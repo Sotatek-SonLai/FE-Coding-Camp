@@ -7,17 +7,16 @@ import CounterProgram from "../programs/CounterProgram";
 import { useAnchorWallet } from "@solana/wallet-adapter-react";
 
 const MainLayout: React.FC<any> = () => {
-  const [counter, setCounter] = useState<web3.Keypair>()
+  const [counter, setCounter] = useState<web3.Keypair>();
   const wallet = useAnchorWallet();
   const setupCounter = async () => {
     const provider = getProvider(wallet);
     if (!!provider) {
       const counterProgram = new CounterProgram(provider);
       const [res, err]: any = await counterProgram.setupCounter();
-      if(err) {
-
-      } else if(res) {
-        setCounter(res)
+      if (err) {
+      } else if (res) {
+        setCounter(res);
       }
     }
   };
@@ -30,8 +29,8 @@ const MainLayout: React.FC<any> = () => {
     }
   };
 
-  console.log()
-  
+  console.log();
+
   return (
     <>
       <Button type="primary" onClick={setupCounter}>
