@@ -100,6 +100,7 @@ const NewLandPage: React.FC<any> = (props) => {
 
     const [form] = Form.useForm()
     const { publicKey, wallet, disconnect } = useWallet();
+
     const test = async () => {
         if(!wallet) return
         const wallet2 = publicKey?.toBase58()
