@@ -5,6 +5,15 @@ import type { RcFile, UploadFile, UploadProps } from 'antd/es/upload/interface';
 import type { UploadChangeParam } from 'antd/es/upload';
 import { LoadingOutlined, PlusOutlined, UploadOutlined } from '@ant-design/icons';
 import {onChangePrice, validateEmpty, validateIsNumber} from "../../utils/validate.util";
+import {web3} from '@project-serum/anchor'
+import {
+    createAssociatedTokenAccountInstruction,
+    createInitializeMintInstruction,
+    getAssociatedTokenAddress,
+    TOKEN_PROGRAM_ID,
+    MINT_SIZE,
+} from "@solana/spl-token"
+import {useWallet} from "@solana/wallet-adapter-react";
 
 const getBase64 = (img: RcFile, callback: (url: string) => void) => {
     const reader = new FileReader();
@@ -41,6 +50,7 @@ const NewLandPage: React.FC<any> = (props) => {
 
     const onFinish = (values: any) => {
         console.log('Success:', values);
+
     };
 
     const onFinishFailed = (errorInfo: any) => {
@@ -89,6 +99,22 @@ const NewLandPage: React.FC<any> = (props) => {
     );
 
     const [form] = Form.useForm()
+    const { publicKey, wallet, disconnect } = useWallet();
+    const test = async () => {
+        if(!wallet) return
+        const wallet2 = publicKey?.toBase58()
+        console.log({wallet2})
+        // console.log('connection', connection)
+        if(web3){
+            const connection = new web3.Connection(web3.clusterApiUrl("devnet"), "confirmed");
+            console.log({connection})
+        }
+
+        // const mintKey = anchor.web3.Keypair.generate();
+        // const nftTokenAccount = await getAssociatedTokenAddress(mintKey.publicKey, assetOwner.publicKey);
+
+
+    }
 
 
     return (
