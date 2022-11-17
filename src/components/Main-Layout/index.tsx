@@ -1,41 +1,54 @@
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import {AppProps} from "next/app";
 
-import {LaptopOutlined, NotificationOutlined, UserOutlined} from '@ant-design/icons';
+import {HomeOutlined, PicLeftOutlined, ProjectOutlined} from '@ant-design/icons';
 import type {MenuProps} from 'antd';
 import {Breadcrumb, Layout, Menu, Button, Modal} from 'antd';
 
+type MenuItem = Required<MenuProps>['items'][number];
 import dynamic from 'next/dynamic'
+import Link from "next/link";
+import {useRouter} from "next/router";
 
 const DynamicCustomWallet = dynamic(() => import('./CustomWallet'), {
-  ssr: false,
+    ssr: false,
 })
 
 const {Header, Content, Sider} = Layout;
 
+function getItem(
+    label: React.ReactNode,
+    to: string | null,
+    key: React.Key,
+    icon?: React.ReactNode,
+    children?: MenuItem[],
+    type?: 'group',
+): MenuItem {
+    return {
+        key,
+        icon,
+        children,
+        label: to ? <Link href={to}>{label}</Link> : label,
+        type,
+    } as MenuItem;
+}
 
-const items2: MenuProps['items'] = [UserOutlined, LaptopOutlined, NotificationOutlined].map(
-    (icon, index) => {
-        const key = String(index + 1);
+const items: MenuProps['items'] = [
+    getItem('Dashboard', '/dashboard', '1', <HomeOutlined/>),
+    getItem('Portal Evaluation', '/portal', '2', <PicLeftOutlined/>),
+    getItem('Property List', '/properties', '3', <ProjectOutlined/>),
+];
 
-        return {
-            key: `sub${key}`,
-            icon: React.createElement(icon), 
-            label: `subnav ${key}`,
-
-            children: new Array(4).fill(null).map((_, j) => {
-                const subKey = index * 4 + j + 1;
-                return {
-                    key: subKey,
-                    label: `option${subKey}`,
-                };
-            }),
-        };
-    },
-);
 
 const MainLayout: React.FC<any> = ({Component, ...props}) => {
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+    const [defaultSelectedKeys, setDefaultSelectedKeys] = useState<any[]>([])
+    const { pathname } = useRouter();
+    console.log(items)
+
+    useEffect(() => {
+        // setDefaultSelectedKeys([(active?.key.toString() || '')])
+    }, [pathname])
 
     const showModalConnect = () => {
         setIsModalOpen(true);
@@ -49,17 +62,17 @@ const MainLayout: React.FC<any> = ({Component, ...props}) => {
                         <img src="/logo.png" alt=""/>
                     </div>
                     <div className="connect-wrap">
-                        <DynamicCustomWallet />
+                        <DynamicCustomWallet/>
                     </div>
                 </Header>
                 <Layout>
                     <Sider width={200} className="site-layout-background">
                         <Menu
                             mode="inline"
-                            defaultSelectedKeys={['1']}
-                            defaultOpenKeys={['sub1']}
+                            defaultSelectedKeys={['2']}
+                            defaultOpenKeys={['sub2-1']}
                             style={{height: '100%', borderRight: 0}}
-                            items={items2}
+                            items={items}
                         />
                     </Sider>
                     <Layout style={{padding: '0 24px 24px'}}>

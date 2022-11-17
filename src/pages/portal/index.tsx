@@ -1,11 +1,14 @@
-import { Table, Tabs } from "antd";
+import {Table, Tabs, Button, Space, Typography} from "antd";
+import { PlusOutlined } from '@ant-design/icons';
 import React from "react";
 import {
   passedAssetColumns,
   PassedAssetDataType,
   requestAssetColumns,
   RequestAssetDataType,
-} from "../components/PortalEvaluationPage/AssestTable";
+} from "../../components/PortalEvaluationPage/AssestTable";
+import Link from "next/link";
+const {Title} = Typography;
 
 const requestAssetData: RequestAssetDataType[] = [
   {
@@ -55,7 +58,7 @@ const passedAssetData: PassedAssetDataType[] = [
   },
 ];
 
-const portal_evaluation = () => {
+const PortalPage = () => {
   const items = [
     {
       label: "Request Asset",
@@ -83,9 +86,15 @@ const portal_evaluation = () => {
 
   return (
     <div>
+      <Title level={2}>Portal Evaluation</Title>
+      <div>
+        <Space style={{width: '100%'}} direction='vertical' align="end">
+          <Link href='/portal/new' passHref><Button type='primary' icon={<PlusOutlined/>}>Create New Land</Button></Link>
+        </Space>
+      </div>
       <Tabs items={items} />
     </div>
   );
 };
 
-export default portal_evaluation;
+export default PortalPage;
