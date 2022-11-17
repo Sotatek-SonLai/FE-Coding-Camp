@@ -34,9 +34,9 @@ function getItem(
 }
 
 const items: MenuProps['items'] = [
-    getItem('Dashboard', '/dashboard', '1', <HomeOutlined/>),
-    getItem('Portal Evaluation', '/portal', '2', <PicLeftOutlined/>),
-    getItem('Property List', '/properties', '3', <ProjectOutlined/>),
+    getItem('Dashboard', '/dashboard', '/dashboard', <HomeOutlined/>),
+    getItem('Portal Evaluation', '/portal', '/portal', <PicLeftOutlined/>),
+    getItem('Property List', '/properties', '/properties', <ProjectOutlined/>),
 ];
 
 
@@ -44,10 +44,9 @@ const MainLayout: React.FC<any> = ({Component, ...props}) => {
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const [defaultSelectedKeys, setDefaultSelectedKeys] = useState<any[]>([])
     const { pathname } = useRouter();
-    console.log(items)
 
     useEffect(() => {
-        // setDefaultSelectedKeys([(active?.key.toString() || '')])
+        setDefaultSelectedKeys(['/dashboard'])
     }, [pathname])
 
     const showModalConnect = () => {
@@ -69,8 +68,7 @@ const MainLayout: React.FC<any> = ({Component, ...props}) => {
                     <Sider width={200} className="site-layout-background">
                         <Menu
                             mode="inline"
-                            defaultSelectedKeys={['2']}
-                            defaultOpenKeys={['sub2-1']}
+                            defaultSelectedKeys={defaultSelectedKeys}
                             style={{height: '100%', borderRight: 0}}
                             items={items}
                         />
