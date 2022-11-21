@@ -4,16 +4,9 @@ const { Title } = Typography;
 import type { RcFile, UploadFile, UploadProps } from 'antd/es/upload/interface';
 import type { UploadChangeParam } from 'antd/es/upload';
 import { LoadingOutlined, PlusOutlined, UploadOutlined } from '@ant-design/icons';
-import {onChangePrice, validateEmpty, validateIsNumber} from "../../utils/validate.util";
-import {web3} from '@project-serum/anchor'
-import {
-    createAssociatedTokenAccountInstruction,
-    createInitializeMintInstruction,
-    getAssociatedTokenAddress,
-    TOKEN_PROGRAM_ID,
-    MINT_SIZE,
-} from "@solana/spl-token"
-import {useWallet} from "@solana/wallet-adapter-react";
+import {toBase64} from "../../utils/utility";
+import EvaluationService from "../../service/evaluation.service";
+import {useRouter} from "next/router";
 
 const getBase64 = (img: RcFile, callback: (url: string) => void) => {
     const reader = new FileReader();
@@ -37,7 +30,8 @@ const NewLandPage: React.FC<any> = (props) => {
     const [loading, setLoading] = useState(false);
     const [imageUrl, setImageUrl] = useState<string>();
     const [projectImgList, setProjectImgList] = useState<UploadFile[]>([]);
-    const {getFieldDecorator} = props
+    const [form] = Form.useForm()
+    const router = useRouter()
 
     const propPaper: UploadProps = {
         onChange({ file, fileList }) {
@@ -48,8 +42,37 @@ const NewLandPage: React.FC<any> = (props) => {
         defaultFileList: [],
     };
 
-    const onFinish = (values: any) => {
-        console.log('Success:', values);
+    const onFinish = async (values: any) => {
+        try {
+            setLoading(true)
+            const formatData = {
+                ...values,
+                avatar: await toBase64(values.avatar.file.originFileObj),
+                projectImages: await Promise.all(values.projectImages.fileList.map(async (file: any) => await toBase64(file.originFileObj))),
+                certificates: await Promise.all(values.certificates.fileList.map(async (file: any, index: number) => ({
+                    name: `Certificate ${index + 1}`,
+                    data: await toBase64(file.originFileObj)
+                })))
+            }
+
+            const formData = {
+                address: values.address,
+                description: values.description,
+                avatar: {
+                    name: 'logo.png',
+                    data: formatData.avatar,
+                },
+                certificates: formatData.certificates
+            }
+            console.log({formData})
+
+            const [res]: any = EvaluationService.createLand(formData)
+            message.success('Create evaluation successfully')
+        } catch (err: any) {
+            console.log({err})
+            setLoading(false)
+            message.error('Something error')
+        }
 
     };
 
@@ -98,40 +121,22 @@ const NewLandPage: React.FC<any> = (props) => {
         </div>
     );
 
-    const [form] = Form.useForm()
-    const { publicKey, wallet, disconnect } = useWallet();
-
-    const test = async () => {
-        if(!wallet) return
-        const wallet2 = publicKey?.toBase58()
-        console.log({wallet2})
-        // console.log('connection', connection)
-        if(web3){
-            const connection = new web3.Connection(web3.clusterApiUrl("devnet"), "confirmed");
-            console.log({connection})
-        }
-
-        // const mintKey = anchor.web3.Keypair.generate();
-        // const nftTokenAccount = await getAssociatedTokenAddress(mintKey.publicKey, assetOwner.publicKey);
-
-
-    }
-
-
     return (
         <>
-            <Title level={2}>Request Form To NFT Your LAND</Title>
-            <div className='box'>
-                <Form
-                    form={form}
-                    labelCol={{ span: 24 }}
-                    wrapperCol={{ span: 24 }}
-                    onFinish={onFinish}
-                    onFinishFailed={onFinishFailed}
-                    autoComplete="off"
-                >
-                    <Row gutter={[40,20]}>
-                        <Col span={12}>
+            <Row>
+                <Col span={12} offset={6}>
+                    <div className='box'>
+                        <Title level={2} style={{textAlign: 'center'}}>Request Form To NFT Your LAND</Title>
+                        <br/><br/>
+                        <Form
+                            form={form}
+                            labelCol={{ span: 24 }}
+                            wrapperCol={{ span: 24 }}
+                            onFinish={onFinish}
+                            onFinishFailed={onFinishFailed}
+                            autoComplete="off"
+                        >
+                            <Divider orientation="center" orientationMargin="0">Basic Information</Divider>
                             <Form.Item
                                 label="Avatar"
                                 name="avatar"
@@ -148,6 +153,7 @@ const NewLandPage: React.FC<any> = (props) => {
                                     {imageUrl ? <img src={imageUrl} alt="avatar" style={{ width: '100%' }} /> : uploadButton}
                                 </Upload>
                             </Form.Item>
+
                             <Form.Item
                                 label="Address"
                                 name="address"
@@ -155,54 +161,6 @@ const NewLandPage: React.FC<any> = (props) => {
                             >
                                 <Input placeholder='Input Address'/>
                             </Form.Item>
-
-                            <Form.Item
-                                label="Token Name"
-                                name="tokenName"
-                                rules={[{ required: true, message: 'This field cannot be empty.' }]}
-                            >
-                                <Input placeholder='Input Token Name'/>
-                            </Form.Item>
-
-                            <Form.Item
-                                required={true}
-                                label="Total Supply"
-                                name="totalSupply"
-                                rules={[
-                                    {
-                                        validator: async (_, value) => {
-                                            await validateEmpty(value);
-                                        }
-                                    }
-                                ]}
-                            >
-                                <Input
-                                    onChange={ async (e: any) => {
-                                        onChangePrice(e.target.value, form, "totalSupply")
-                                    }}
-                                    placeholder='Input Total Supply'/>
-                            </Form.Item>
-
-                            <Form.Item
-                                required={true}
-                                label="Token Price"
-                                name="tokenPrice"
-                                rules={[
-                                    {
-                                        validator: async (_, value) => {
-                                            await validateEmpty(value);
-                                        }
-                                    }
-                                ]}
-                            >
-                                <Input
-                                    onChange={ async (e: any) => {
-                                        onChangePrice(e.target.value, form, "tokenPrice")
-                                    }}
-                                    placeholder='Input Token Price'/>
-                            </Form.Item>
-                        </Col>
-                        <Col span={12}>
 
                             <Form.Item
                                 label="Project Description"
@@ -213,6 +171,7 @@ const NewLandPage: React.FC<any> = (props) => {
                             </Form.Item>
 
                             <Divider orientation="center" orientationMargin="0">Project Images</Divider>
+
                             <Form.Item
                                 label="Images"
                                 name="projectImages"
@@ -227,26 +186,31 @@ const NewLandPage: React.FC<any> = (props) => {
                                     {projectImgList.length < 5 && '+ Upload'}
                                 </Upload>
                             </Form.Item>
+
                             <Divider orientation="center" orientationMargin="0">Legal Papers</Divider>
+
                             <Form.Item
                                 label="Docs"
-                                name="LegalPapers"
+                                name="certificates"
                                 rules={[{ required: true, message: 'This field cannot be empty.' }]}
                             >
                                 <Upload {...propPaper}>
                                     <Button icon={<UploadOutlined />}>Upload</Button>
                                 </Upload>
                             </Form.Item>
-                        </Col>
-                    </Row>
 
-                    <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-                        <Button type="primary" htmlType="submit">
-                            Submit Land
-                        </Button>
-                    </Form.Item>
-                </Form>
-            </div>
+                            <Divider orientation="center" orientationMargin="0"></Divider>
+
+                            <div className="flex justify-center">
+                                <Button type="primary" htmlType="submit">
+                                    Submit Land
+                                </Button>
+                            </div>
+
+                        </Form>
+                    </div>
+                </Col>
+            </Row>
         </>
     )
 }

@@ -11,5 +11,5 @@ export const endpoint = clusterApiUrl(network);
 
 export const wallets = [
   new PhantomWalletAdapter(),
-  // , new SolletWalletAdapter()
+  // , [id] SolletWalletAdapter()
 ];
