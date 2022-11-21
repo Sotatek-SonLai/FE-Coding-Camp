@@ -45,28 +45,27 @@ const NewLandPage: React.FC<any> = (props) => {
     const onFinish = async (values: any) => {
         try {
             setLoading(true)
-            const formatData = {
-                ...values,
-                avatar: await toBase64(values.avatar.file.originFileObj),
-                projectImages: await Promise.all(values.projectImages.fileList.map(async (file: any) => await toBase64(file.originFileObj))),
-                certificates: await Promise.all(values.certificates.fileList.map(async (file: any, index: number) => ({
-                    name: `Certificate ${index + 1}`,
-                    data: await toBase64(file.originFileObj)
-                })))
-            }
 
             const formData = {
                 address: values.address,
                 description: values.description,
                 avatar: {
                     name: 'logo.png',
-                    data: formatData.avatar,
+                    data: values.avatar,
                 },
-                certificates: formatData.certificates
+                certificates: await Promise.all(values.certificates.fileList.map(async (file: any, index: number) => ({
+                    name: `Certificate ${index + 1}`,
+                    data: await toBase64(file.originFileObj)
+                }))),
+                projectImages: await Promise.all(values.projectImages.fileList.map(async (file: any, index: number) => ({
+                    name: `Image ${index + 1}`,
+                    data: await toBase64(file.originFileObj)
+                })))
             }
             console.log({formData})
 
             const [res]: any = EvaluationService.createLand(formData)
+            router.push('/portal').then()
             message.success('Create evaluation successfully')
         } catch (err: any) {
             console.log({err})

@@ -53,7 +53,6 @@ const getAssetBasket = async (
 const TestMintPage: React.FC = () => {
     const {publicKey, connected} = useWallet()
     const wallet = useAnchorWallet();
-    console.log('publicKeypublicKeypublicKeypublicKey, ', publicKey)
 
 
     const x = async () => {
