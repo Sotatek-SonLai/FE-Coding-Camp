@@ -28,6 +28,7 @@ const beforeUpload = (file: RcFile) => {
 
 const NewLandPage: React.FC<any> = (props) => {
     const [loading, setLoading] = useState(false);
+    const [loadingFile, setLoadingFile] = useState(false);
     const [imageUrl, setImageUrl] = useState<string>();
     const [projectImgList, setProjectImgList] = useState<UploadFile[]>([]);
     const [form] = Form.useForm()
@@ -115,7 +116,7 @@ const NewLandPage: React.FC<any> = (props) => {
 
     const uploadButton = (
         <div>
-            {loading ? <LoadingOutlined /> : <PlusOutlined />}
+            {loadingFile ? <LoadingOutlined /> : <PlusOutlined />}
             <div style={{ marginTop: 8 }}>Upload</div>
         </div>
     );
@@ -201,7 +202,7 @@ const NewLandPage: React.FC<any> = (props) => {
                             <Divider orientation="center" orientationMargin="0"></Divider>
 
                             <div className="flex justify-center">
-                                <Button type="primary" htmlType="submit">
+                                <Button loading={loading} type="primary" htmlType="submit">
                                     Submit Land
                                 </Button>
                             </div>
