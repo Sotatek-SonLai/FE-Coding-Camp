@@ -34,7 +34,7 @@ const Login = () => {
         password: formData.password,
       });
 
-      const { accessToken, refreshToken } = response.data;
+      const { accessToken, refreshToken } = response.data.data;
 
       // store access token in memory and refresh token in cookies
       Cookies.set("refreshToken", refreshToken);
