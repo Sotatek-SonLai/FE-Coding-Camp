@@ -55,6 +55,7 @@ export default class mainProgram extends BaseInterface {
             const governor = new anchor.web3.PublicKey(GOVERNOR_ADDRESS)
             const sol_treasury = new anchor.web3.PublicKey(SOL_TREASURY_ADDRESS)
             const lamports = await this._provider.connection.getMinimumBalanceForRentExemption(MINT_SIZE);
+            const nftTokenAccount = anchor.web3.Keypair.generate();
 
             const mint_tx = new anchor.web3.Transaction().add(
                 anchor.web3.SystemProgram.createAccount({
@@ -92,7 +93,7 @@ export default class mainProgram extends BaseInterface {
                     mint: mintKey.publicKey,
                     mintAuthority: publicKey,
                     updateAuthority: publicKey,
-                    tokenAccount: publicKey,
+                    tokenAccount: nftTokenAccount.publicKey,
                     owner: publicKey,
                     tokenMetadataProgram: TOKEN_METADATA_PROGRAM_ID,
                     assetBasket: assetBasketAddress
@@ -100,16 +101,24 @@ export default class mainProgram extends BaseInterface {
             ).instruction();
 
             mint_tx.add(ix)
-            console.log('mint_tx', mint_tx)
+
+            const recentBlockhash = await this._provider.connection.getLatestBlockhash("confirmed");
+
+            mint_tx.recentBlockhash = recentBlockhash.blockhash;
+            mint_tx.feePayer = publicKey;
+
+
+            mint_tx.partialSign(mintKey);
+            mint_tx.partialSign(nftTokenAccount);
 
             const serialized_tx = mint_tx.serialize({
                 requireAllSignatures: false
             });
-            console.log('serialized_tx', serialized_tx)
 
             console.log("Tx: ", serialized_tx.toString("base64"));
 
         } catch (err) {
+            console.log({err})
             return [null, err]
         }
     }
