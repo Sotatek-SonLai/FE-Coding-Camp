@@ -5,7 +5,7 @@ import type { RcFile, UploadFile, UploadProps } from 'antd/es/upload/interface';
 import type { UploadChangeParam } from 'antd/es/upload';
 import { LoadingOutlined, PlusOutlined, UploadOutlined } from '@ant-design/icons';
 import {toBase64} from "../../utils/utility";
-import EvaluationService from "../../service/evaluation.service";
+import EvaluationService, {IBodyEvaluation} from "../../service/evaluation.service";
 import {useRouter} from "next/router";
 
 const getBase64 = (img: RcFile, callback: (url: string) => void) => {
@@ -47,12 +47,12 @@ const NewLandPage: React.FC<any> = (props) => {
         try {
             setLoading(true)
 
-            const formData = {
+            const formData: IBodyEvaluation = {
                 address: values.address,
                 description: values.description,
                 avatar: {
                     name: 'logo.png',
-                    data: values.avatar,
+                    data: await toBase64(values.avatar.file.originFileObj),
                 },
                 certificates: await Promise.all(values.certificates.fileList.map(async (file: any, index: number) => ({
                     name: `Certificate ${index + 1}`,

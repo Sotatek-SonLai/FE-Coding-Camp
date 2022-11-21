@@ -2,11 +2,12 @@ import Request from "../utils/request.util";
 import {SERVER_ENDPOINT} from "../constants";
 import {FileType} from "../types/asset.type";
 
-interface IBodyEvaluation {
+export interface IBodyEvaluation {
     "avatar": FileType,
     "address": string,
     "description": string,
     "certificates": FileType[]
+    "projectImages": FileType[]
 }
 
 const EvaluationService = {
