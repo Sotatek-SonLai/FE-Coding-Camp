@@ -9,6 +9,6 @@ export const getProvider = (wallet: AnchorWallet | undefined): AnchorProvider | 
   }
   const connection = new Connection(clusterApiUrl(network), "confirmed");
   return new AnchorProvider(connection, wallet, {
-    preflightCommitment: "processed",
+    // preflightCommitment: "",
   });
 };
