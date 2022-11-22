@@ -26,6 +26,24 @@ const EvaluationService = {
         } catch (error) {
             return [null, error];
         }
+    },
+    getDetail: async (id: any) => {
+        try {
+            const response = await Request.get(`evaluations/${id}`);
+            return [response.data, null];
+        } catch (error) {
+            return [null, error];
+        }
+    },
+    mintNft: async (base64_serialized_tx: any) => {
+        try {
+            const response = await Request.post(`mint`, {
+                base64_serialized_tx
+            });
+            return [response.data, null];
+        } catch (error) {
+            return [null, error];
+        }
     }
 
 };

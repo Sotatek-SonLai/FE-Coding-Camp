@@ -49,7 +49,11 @@ export default class mainProgram extends BaseInterface {
         return assetBasketPubkey;
     };
 
-    async getSerializedTx(publicKey: PublicKey, assetUrl: string = "https://basc.s3.amazonaws.com/meta/3506.json") {
+    async getSerializedTx(
+        publicKey: PublicKey,
+        assetUrl: string = "https://basc.s3.amazonaws.com/meta/3506.json",
+        bigGuardian: string = '8CmfvdfpbJ1atkm8ruqBG5JurgxKqAseYduDWdEiMNpX'
+    ) {
         try {
             const mintKey = web3.Keypair.generate();
             const governor = new anchor.web3.PublicKey(GOVERNOR_ADDRESS)
@@ -82,7 +86,7 @@ export default class mainProgram extends BaseInterface {
             // first data will be signed by big guardian
             const ix = await this._program.methods.issueAsset(assetUrl, "Bored Apes").accounts(
                 {
-                    bigGuardian: this._provider.publicKey,
+                    bigGuardian,
                     governor: governor,
                     rent: anchor.web3.SYSVAR_RENT_PUBKEY,
                     systemProgram: anchor.web3.SystemProgram.programId,
@@ -103,6 +107,7 @@ export default class mainProgram extends BaseInterface {
             mint_tx.add(ix)
 
             const recentBlockhash = await this._provider.connection.getLatestBlockhash("confirmed");
+            console.log('recentBlockhash', recentBlockhash)
 
             mint_tx.recentBlockhash = recentBlockhash.blockhash;
             mint_tx.feePayer = publicKey;
@@ -114,8 +119,11 @@ export default class mainProgram extends BaseInterface {
             const serialized_tx = mint_tx.serialize({
                 requireAllSignatures: false
             });
+            console.log('serialized_tx', serialized_tx)
 
-            console.log("Tx: ", serialized_tx.toString("base64"));
+            const txToBase64 = serialized_tx.toString("base64")
+            console.log("Tx: ", txToBase64);
+            return [txToBase64, null]
 
         } catch (err) {
             console.log({err})

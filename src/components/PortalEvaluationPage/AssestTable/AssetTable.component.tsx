@@ -1,6 +1,7 @@
 import React from "react";
 import { ColumnsType } from "antd/lib/table";
 import { Action, DetailButton, PropertyInfo, Status } from "./Column.component";
+import Link from "next/link";
 
 export interface RequestAssetDataType {
   id: string;
@@ -48,9 +49,9 @@ export const requestAssetColumns: ColumnsType<any> = [
   },
   {
     title: "Detail",
-    dataIndex: "detail",
-    key: "detail",
-    render: (_, { id }) => <DetailButton assetId={id} />,
+    dataIndex: "_id",
+    key: "_id",
+    render: (_, { _id }) => <Link href={`/portal/${_id}/mint-nft`}>detail</Link>,
   },
 ];
 
