@@ -19,6 +19,14 @@ const EvaluationService = {
             return [null, error];
         }
     },
+    getLand: async () => {
+        try {
+            const response = await Request.get(`evaluations`);
+            return [response.data, null];
+        } catch (error) {
+            return [null, error];
+        }
+    }
 
 };
 

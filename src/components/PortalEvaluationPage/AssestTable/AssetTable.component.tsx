@@ -13,38 +13,32 @@ export interface RequestAssetDataType {
   detail: string;
 }
 
-export const requestAssetColumns: ColumnsType<RequestAssetDataType> = [
+export const requestAssetColumns: ColumnsType<any> = [
   {
-    title: "Property Info",
-    dataIndex: "propertyInfo",
-    key: "propertyInfo",
-    render: (url) => {
-      return <PropertyInfo imageUrl={url} />;
+    title: "Logo",
+    dataIndex: "avatar",
+    key: "avatar",
+    render: (url, dt) => {
+      return <PropertyInfo imageUrl={`${dt?.avatar?.host}${dt?.avatar?.url}`} />;
     },
   },
   {
-    title: "Name",
-    dataIndex: "name",
-    key: "name",
+    title: "Address",
+    dataIndex: "address",
+    key: "address",
     ellipsis: true,
   },
   {
-    title: "Total Supply",
-    dataIndex: "totalSupply",
-    key: "totalSupply",
-    render: (number) => number.toLocaleString("en"),
-  },
-  {
-    title: "Token Price",
-    dataIndex: "tokenPrice",
-    key: "tokenPrice",
-    render: (price) => `$${price}`,
+    title: "Description",
+    dataIndex: "description",
+    key: "description",
+    ellipsis: true,
   },
   {
     title: "Status",
     dataIndex: "status",
     key: "status",
-    render: (text) => <Status status={text} />,
+    render: (text) => <Status status={'pending'} />,
   },
   {
     title: "Action",
