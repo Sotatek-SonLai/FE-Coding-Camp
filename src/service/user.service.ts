@@ -4,15 +4,10 @@ import {SERVER_ENDPOINT} from "../constants";
 
 
 const UserService = {
-	getMe: async () => {
+	login: async () => {
 		try {
-			if(!Cookies.get("accessToken")){
-				throw new Error('');
-			} else {
-				const response = await Request.get(
-					`${SERVER_ENDPOINT}/user`);
-				return [response.data, null];
-			}
+			const response = await Request.post(``);
+			return [response.data, null];
 		} catch (error) {
 			return [null, error];
 		}
