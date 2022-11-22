@@ -6,7 +6,7 @@ class Request {
 	instance;
 	constructor() {
 		const instance = axios.create({
-			baseURL: process.env.REACT_APP_API_BASE_URL,
+			baseURL: process.env.NEXT_PUBLIC_SERVER_ENDPOINT,
 			headers: {
 				"Content-Type": "application/json",
 				Accept: "application/json",
@@ -68,7 +68,7 @@ class Request {
 	delete = (url: string, data?: object) => {
 		return this.instance.delete(url, {data});
     };
-    
+
     postFormData = (url: string, data: { [key: string]: any }) => {
         const formData = new FormData();
 
@@ -77,9 +77,9 @@ class Request {
                 formData.append(nameInput, array[i]);
             }
         }
-    
+
         const keysData = Object.keys(data);
-    
+
         if (keysData.length > 0) {
             for (let i = 0; i < keysData.length; i += 1) {
                 const keyItem = keysData[i];

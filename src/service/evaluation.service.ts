@@ -13,7 +13,7 @@ export interface IBodyEvaluation {
 const EvaluationService = {
     createLand: async (body: IBodyEvaluation) => {
         try {
-            const response = await Request.post(`${SERVER_ENDPOINT}/evaluations`, body);
+            const response = await Request.post(`evaluations`, body);
             return [response.data, null];
         } catch (error) {
             return [null, error];

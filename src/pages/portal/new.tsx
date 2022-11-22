@@ -1,9 +1,10 @@
 import React, {useState} from "react";
-import { Typography, Button, Divider, Form, Input, Upload, message, Row, Col } from 'antd';
-const { Title } = Typography;
-import type { RcFile, UploadFile, UploadProps } from 'antd/es/upload/interface';
-import type { UploadChangeParam } from 'antd/es/upload';
-import { LoadingOutlined, PlusOutlined, UploadOutlined } from '@ant-design/icons';
+import {Typography, Button, Divider, Form, Input, Upload, message, Row, Col} from 'antd';
+
+const {Title} = Typography;
+import type {RcFile, UploadFile, UploadProps} from 'antd/es/upload/interface';
+import type {UploadChangeParam} from 'antd/es/upload';
+import {LoadingOutlined, PlusOutlined, UploadOutlined} from '@ant-design/icons';
 import {toBase64} from "../../utils/utility";
 import EvaluationService, {IBodyEvaluation} from "../../service/evaluation.service";
 import {useRouter} from "next/router";
@@ -35,7 +36,7 @@ const NewLandPage: React.FC<any> = (props) => {
     const router = useRouter()
 
     const propPaper: UploadProps = {
-        onChange({ file, fileList }) {
+        onChange({file, fileList}) {
             if (file.status !== 'uploading') {
                 console.log(file, fileList);
             }
@@ -65,8 +66,9 @@ const NewLandPage: React.FC<any> = (props) => {
             }
             console.log({formData})
 
-            const [res]: any = EvaluationService.createLand(formData)
+            const [res]: any = await EvaluationService.createLand(formData)
             router.push('/portal').then()
+            setLoading(false)
             message.success('Create evaluation successfully')
         } catch (err: any) {
             console.log({err})
@@ -94,7 +96,7 @@ const NewLandPage: React.FC<any> = (props) => {
         }
     };
 
-    const onChangeProjectImages: UploadProps['onChange'] = ({ fileList: newFileList }) => {
+    const onChangeProjectImages: UploadProps['onChange'] = ({fileList: newFileList}) => {
         setProjectImgList(newFileList);
     };
 
@@ -116,8 +118,8 @@ const NewLandPage: React.FC<any> = (props) => {
 
     const uploadButton = (
         <div>
-            {loadingFile ? <LoadingOutlined /> : <PlusOutlined />}
-            <div style={{ marginTop: 8 }}>Upload</div>
+            {loadingFile ? <LoadingOutlined/> : <PlusOutlined/>}
+            <div style={{marginTop: 8}}>Upload</div>
         </div>
     );
 
@@ -126,12 +128,12 @@ const NewLandPage: React.FC<any> = (props) => {
             <Row>
                 <Col span={12} offset={6}>
                     <div className='box'>
-                        <Title level={2} style={{textAlign: 'center'}}>Request Form To NFT Your LAND</Title>
+                        <Title level={2} style={{textAlign: 'center'}}>New LAND</Title>
                         <br/><br/>
                         <Form
                             form={form}
-                            labelCol={{ span: 24 }}
-                            wrapperCol={{ span: 24 }}
+                            labelCol={{span: 24}}
+                            wrapperCol={{span: 24}}
                             onFinish={onFinish}
                             onFinishFailed={onFinishFailed}
                             autoComplete="off"
@@ -140,7 +142,7 @@ const NewLandPage: React.FC<any> = (props) => {
                             <Form.Item
                                 label="Avatar"
                                 name="avatar"
-                                rules={[{ required: true, message: 'Please upload avatar!' }]}
+                                rules={[{required: true, message: 'Please upload avatar!'}]}
                             >
                                 <Upload
                                     name="avatar"
@@ -150,14 +152,14 @@ const NewLandPage: React.FC<any> = (props) => {
                                     beforeUpload={beforeUpload}
                                     onChange={handleChange}
                                 >
-                                    {imageUrl ? <img src={imageUrl} alt="avatar" style={{ width: '100%' }} /> : uploadButton}
+                                    {imageUrl ? <img src={imageUrl} alt="avatar" style={{width: '100%'}}/> : uploadButton}
                                 </Upload>
                             </Form.Item>
 
                             <Form.Item
                                 label="Address"
                                 name="address"
-                                rules={[{ required: true, message: 'This field cannot be empty.' }]}
+                                rules={[{required: true, message: 'This field cannot be empty.'}]}
                             >
                                 <Input placeholder='Input Address'/>
                             </Form.Item>
@@ -165,9 +167,9 @@ const NewLandPage: React.FC<any> = (props) => {
                             <Form.Item
                                 label="Project Description"
                                 name="description"
-                                rules={[{ required: true, message: 'This field cannot be empty.' }]}
+                                rules={[{required: true, message: 'This field cannot be empty.'}]}
                             >
-                                <Input.TextArea placeholder='Input Description' rows={6} />
+                                <Input.TextArea placeholder='Input Description' rows={6}/>
                             </Form.Item>
 
                             <Divider orientation="center" orientationMargin="0">Project Images</Divider>
@@ -175,7 +177,7 @@ const NewLandPage: React.FC<any> = (props) => {
                             <Form.Item
                                 label="Images"
                                 name="projectImages"
-                                rules={[{ required: true, message: 'This field cannot be empty.' }]}
+                                rules={[{required: true, message: 'This field cannot be empty.'}]}
                             >
                                 <Upload
                                     listType="picture-card"
@@ -192,10 +194,10 @@ const NewLandPage: React.FC<any> = (props) => {
                             <Form.Item
                                 label="Docs"
                                 name="certificates"
-                                rules={[{ required: true, message: 'This field cannot be empty.' }]}
+                                rules={[{required: true, message: 'This field cannot be empty.'}]}
                             >
                                 <Upload {...propPaper}>
-                                    <Button icon={<UploadOutlined />}>Upload</Button>
+                                    <Button icon={<UploadOutlined/>}>Upload</Button>
                                 </Upload>
                             </Form.Item>
 
