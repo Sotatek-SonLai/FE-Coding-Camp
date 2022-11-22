@@ -68,3 +68,8 @@ section.ant-layout {
 .align-center{
   align-items: center;
 }
+.properties__table {
+  .ant-table-row {
+    cursor: pointer;
+  }
+}
