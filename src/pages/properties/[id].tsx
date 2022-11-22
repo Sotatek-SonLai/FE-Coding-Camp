@@ -121,12 +121,13 @@ const PortalPage = () => {
             <div className="rowSlide">
               <div className="slide">
                 <Carousel {...configCarousel}>
-                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((item) => {
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((item, index) => {
                     return (
                       <img
                         className="logo"
                         src="https://joeschmoe.io/api/v1/random"
                         style={{ width: 100, height: 100 }}
+                        key={index}
                       />
                     );
                   })}
@@ -137,12 +138,13 @@ const PortalPage = () => {
             <div className="rowSlide">
               <div className="slide">
                 <Carousel {...configCarousel}>
-                  {[1, 2, 3, 4].map((item) => {
+                  {[1, 2, 3, 4].map((item, index) => {
                     return (
                       <img
                         className="logo"
                         src="https://joeschmoe.io/api/v1/random"
                         style={{ width: 100, height: 100 }}
+                        key={index}
                       />
                     );
                   })}
