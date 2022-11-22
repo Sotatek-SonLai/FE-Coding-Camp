@@ -1,17 +1,21 @@
-import React from "react";
-import {Typography} from "antd";
+import React, { ReactElement } from "react";
+import { Typography } from "antd";
+import { NextPageWithLayout } from "../_app";
+import MainLayout from "../../components/Main-Layout";
 
-const {Title} = Typography;
+const { Title } = Typography;
 
-const DashboardPage: React.FC = () => {
-    return (
-        <>
-            <Title level={2}>Dashboard page</Title>
-            <div className='box'>
-                ...
-            </div>
-        </>
-    )
-}
+const DashboardPage: NextPageWithLayout = () => {
+  return (
+    <>
+      <Title level={2}>Dashboard page</Title>
+      <div className="box">...</div>
+    </>
+  );
+};
 
-export default DashboardPage
+DashboardPage.getLayout = (page: ReactElement) => {
+  return <MainLayout>{page}</MainLayout>;
+};
+
+export default DashboardPage;

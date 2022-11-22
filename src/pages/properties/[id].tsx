@@ -64,12 +64,18 @@ const PortalPage = () => {
               >
                 <Input />
               </Form.Item>
-              <p className="available--balance">Available Balance: 97,420,234.49 USDC</p>
+              <p className="available--balance">
+                Available Balance: 97,420,234.49 USDC
+              </p>
               <div className="you--receive">
                 <p className="key">You Receive</p>
                 <p className="value">0.05 ABC</p>
               </div>
-              <Button type="primary" htmlType="submit" style={{width: "100%"}}>
+              <Button
+                type="primary"
+                htmlType="submit"
+                style={{ width: "100%" }}
+              >
                 Buy
               </Button>
             </Form>
