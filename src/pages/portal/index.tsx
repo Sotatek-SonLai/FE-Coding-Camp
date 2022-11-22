@@ -1,6 +1,6 @@
-import {Table, Tabs, Button, Space, Typography} from "antd";
-import { PlusOutlined } from '@ant-design/icons';
-import React, {useState} from "react";
+import { Table, Tabs, Button, Space, Typography } from "antd";
+import { PlusOutlined } from "@ant-design/icons";
+import React, { ReactElement, useState } from "react";
 import {
   passedAssetColumns,
   PassedAssetDataType,
@@ -9,7 +9,9 @@ import {
 } from "../../components/PortalEvaluationPage/AssestTable";
 import Link from "next/link";
 import EvaluationService from "../../service/evaluation.service";
-const {Title} = Typography;
+import MainLayout from "../../components/Main-Layout";
+import { NextPageWithLayout } from "../_app";
+const { Title } = Typography;
 
 const requestAssetData: RequestAssetDataType[] = [
   {
@@ -59,8 +61,8 @@ const passedAssetData: PassedAssetDataType[] = [
   },
 ];
 
-const PortalPage:React.FC<any> = (props) => {
-  const {requestAssetData} = props.pageProps
+const PortalPage: NextPageWithLayout = (props) => {
+  // const { requestAssetData } = props.pageProps;
 
   const items = [
     {
@@ -68,12 +70,14 @@ const PortalPage:React.FC<any> = (props) => {
       key: "request_asset",
       children: (
         <>
-          {requestAssetData && <Table
+          {requestAssetData && (
+            <Table
               dataSource={requestAssetData}
               columns={requestAssetColumns}
               rowKey="id"
-              pagination={{pageSize: 6}}
-          />}
+              pagination={{ pageSize: 6 }}
+            />
+          )}
         </>
       ),
     },
@@ -94,8 +98,12 @@ const PortalPage:React.FC<any> = (props) => {
     <div>
       <Title level={2}>Portal Evaluation</Title>
       <div>
-        <Space style={{width: '100%'}} direction='vertical' align="end">
-          <Link href='/portal/new' passHref><Button type='primary' icon={<PlusOutlined/>}>Create New Land</Button></Link>
+        <Space style={{ width: "100%" }} direction="vertical" align="end">
+          <Link href="/portal/new" passHref>
+            <Button type="primary" icon={<PlusOutlined />}>
+              Create New Land
+            </Button>
+          </Link>
         </Space>
       </div>
       <Tabs items={items} />
@@ -103,13 +111,17 @@ const PortalPage:React.FC<any> = (props) => {
   );
 };
 
+PortalPage.getLayout = (page: ReactElement) => {
+  return <MainLayout>{page}</MainLayout>;
+};
+
 export default PortalPage;
 
 export async function getStaticProps(context: any) {
-  const [res]: any = await EvaluationService.getLand()
+  const [res]: any = await EvaluationService.getLand();
   return {
     props: {
-      requestAssetData: res
+      requestAssetData: res,
     }, // will be passed to the page component as props
-  }
+  };
 }

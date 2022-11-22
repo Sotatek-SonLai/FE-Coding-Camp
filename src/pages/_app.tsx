@@ -4,13 +4,25 @@ import Head from "next/head";
 import { PersistGate } from "redux-persist/integration/react";
 import store, { persistStorage } from "../store";
 import { Provider } from "react-redux";
-import React, { FC, ReactNode } from "react";
+import React, { FC, ReactElement, ReactNode } from "react";
 require("@solana/wallet-adapter-react-ui/styles.css");
 
 import MainLayout from "../components/Main-Layout";
 import AutoConnectWalletProvider from "../contexts/AutoConnectWalletContext";
+import { NextPage } from "next";
 
-export default function App({ Component, pageProps, ...props }: AppProps) {
+export type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {
+  getLayout?: (page: ReactElement) => ReactNode;
+};
+
+type AppPropsWithLayout = AppProps & {
+  Component: NextPageWithLayout;
+};
+
+export default function App({ Component, pageProps }: AppPropsWithLayout) {
+  // Use the layout defined at the page level, if available
+  const getLayout = Component.getLayout ?? ((page) => page);
+
   return (
     <>
       <Head>
@@ -19,13 +31,11 @@ export default function App({ Component, pageProps, ...props }: AppProps) {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <AutoConnectWalletProvider>
-          <Provider store={store}>
-            <PersistGate loading={null} persistor={persistStorage}>
-              <MainLayout pageProps={pageProps} Component={Component} {...props}>
-                    <Component {...pageProps} />
-              </MainLayout>
-            </PersistGate>
-          </Provider>
+        <Provider store={store}>
+          <PersistGate loading={null} persistor={persistStorage}>
+            {getLayout(<Component {...pageProps} />)}
+          </PersistGate>
+        </Provider>
       </AutoConnectWalletProvider>
     </>
   );
