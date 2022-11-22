@@ -1,6 +1,6 @@
 import {Table, Tabs, Button, Space, Typography} from "antd";
 import { PlusOutlined } from '@ant-design/icons';
-import React from "react";
+import React, {useState} from "react";
 import {
   passedAssetColumns,
   PassedAssetDataType,
@@ -8,6 +8,7 @@ import {
   RequestAssetDataType,
 } from "../../components/PortalEvaluationPage/AssestTable";
 import Link from "next/link";
+import EvaluationService from "../../service/evaluation.service";
 const {Title} = Typography;
 
 const requestAssetData: RequestAssetDataType[] = [
@@ -58,17 +59,22 @@ const passedAssetData: PassedAssetDataType[] = [
   },
 ];
 
-const PortalPage = () => {
+const PortalPage:React.FC<any> = (props) => {
+  const {requestAssetData} = props.pageProps
+
   const items = [
     {
       label: "Request Asset",
       key: "request_asset",
       children: (
-        <Table
-          dataSource={requestAssetData}
-          columns={requestAssetColumns}
-          rowKey="id"
-        />
+        <>
+          {requestAssetData && <Table
+              dataSource={requestAssetData}
+              columns={requestAssetColumns}
+              rowKey="id"
+              pagination={{pageSize: 6}}
+          />}
+        </>
       ),
     },
     {
@@ -98,3 +104,12 @@ const PortalPage = () => {
 };
 
 export default PortalPage;
+
+export async function getStaticProps(context: any) {
+  const [res]: any = await EvaluationService.getLand()
+  return {
+    props: {
+      requestAssetData: res
+    }, // will be passed to the page component as props
+  }
+}
