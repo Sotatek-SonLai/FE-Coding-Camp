@@ -98,3 +98,16 @@ section.ant-layout {
   from{box-shadow: inset -3px 0px 0px #888;}
   to{box-shadow: inset -3px 0px 0px transparent;}
 }
+.tbl {
+  &.table, th, td{
+    border: 1px solid black;
+    border-collapse: collapse;
+  }
+  td {
+    padding: 5px;
+  }
+}
+
+.wrapper {
+  margin-left: 200px;
+}

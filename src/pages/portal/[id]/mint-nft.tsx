@@ -73,9 +73,9 @@ const MintNftPage: NextPageWithLayout = (props: any) => {
                         const result: any = await program._provider.connection.getSignatureStatus(tx, {
                             searchTransactionHistory: true,
                         });
-                        console.log('result value: ',  result.value)
+                        console.log('result value: ', result.value)
                         // confirmationStatus : "confirmed"
-                        if(result?.value?.confirmationStatus === 'confirmed') {
+                        if (result?.value?.confirmationStatus === 'confirmed') {
                             message.success('Mint nft successfully')
                             clearInterval(flagInterval)
 
@@ -102,7 +102,12 @@ const MintNftPage: NextPageWithLayout = (props: any) => {
         console.log('Failed:', errorInfo);
     };
 
-
+    const x = [
+        {key: 122, value: 3232},
+        {key: 122, value: 3232},
+        {key: 122, value: 3232},
+        {key: 122, value: 3232},
+    ]
     return (
         <>
             <Row className='justify-center'>
@@ -126,6 +131,20 @@ const MintNftPage: NextPageWithLayout = (props: any) => {
                         <Title level={4}>description: {assetInfo?.description}</Title>
                         <Title level={4}>External Url: {assetInfo?.externalUrl}</Title>
                         <Title level={4}>Youtube Url: {assetInfo?.youtubeUrl}</Title>
+
+                        <Divider orientation="center" orientationMargin="0">Attributes</Divider>
+                        {(assetInfo?.attributes && assetInfo?.attributes.length) ? <table className='tbl' style={{width: '100%'}}>
+                            <tr>
+                                <th>key</th>
+                                <th>value</th>
+                            </tr>
+                            {assetInfo?.attributes.map((item: any, index: number) => (
+                                <tr key={index}>
+                                    <td>{item.key}</td>
+                                    <td>{item.value}</td>
+                                </tr>
+                            ))}
+                        </table> : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE}/>}
                         <Divider orientation="center" orientationMargin="0">Product Images</Divider>
                         <div className="rowSlide">
                             <div className="slide">
@@ -140,7 +159,7 @@ const MintNftPage: NextPageWithLayout = (props: any) => {
                                             />
                                         );
                                     })}
-                                </Carousel> : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+                                </Carousel> : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE}/>}
                             </div>
                         </div>
                         <br/>
@@ -158,7 +177,7 @@ const MintNftPage: NextPageWithLayout = (props: any) => {
                                             />
                                         );
                                     })}
-                                </Carousel> : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+                                </Carousel> : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE}/>}
                             </div>
                         </div>
 

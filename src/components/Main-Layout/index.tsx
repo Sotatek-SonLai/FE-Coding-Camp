@@ -63,7 +63,7 @@ const MainLayout: React.FC<any> = ({ children }) => {
   return (
     <>
       <Layout>
-        <Header className="header">
+        <Header  style={{ position: 'sticky', top: 0, zIndex: 1, width: '100%' }} className="header">
           <div className="logo">
             <img src="/logo.png" alt="" />
           </div>
@@ -72,7 +72,15 @@ const MainLayout: React.FC<any> = ({ children }) => {
           </div>
         </Header>
         <Layout>
-          <Sider width={200} style={{ background: "white" }}>
+          <Sider width={200} style={{
+              background: "white",
+              overflow: 'auto',
+              height: '100vh',
+              position: 'fixed',
+              left: 0,
+              top: 65,
+              bottom: 0,
+          }}>
             <Menu
               mode="inline"
               selectedKeys={selectedKeys}
