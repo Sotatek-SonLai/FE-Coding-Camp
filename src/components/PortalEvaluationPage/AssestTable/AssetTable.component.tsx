@@ -40,7 +40,7 @@ export const requestAssetColumns: ColumnsType<any> = [
     title: "Action",
     dataIndex: "_id",
     key: "_id",
-    render: (_, { _id }) => <Link href={`/portal/${_id}/mint-nft`}><Button type='primary'>Fractional NFT</Button></Link>,
+    render: (_, { _id }) => <Link href={`/portal/${_id}/mint-nft`}><Button type='primary'>MInt NFT</Button></Link>,
   },
 ];
 
