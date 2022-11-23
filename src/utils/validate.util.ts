@@ -151,40 +151,84 @@ export const validateSpecialCharacters = async (value: any, mess: string = '') =
 	return Promise.resolve();
 }
 
-export const onChangePrice = (
-	value: any,
+type ParamsOnChangePriceType = {
+	val: any,
 	form: any,
 	fieldName: string,
-	maxValue = 100000000000000,
-	decimal = 6
-) => {
-	if (value === '.') return form.setFieldsValue({ [fieldName]: null })
-	let number = value
-		.toString()
-		.replace(/[^0-9.]/g, '')
-		.replace(/(\..*?)\..*/g, '$1')
-	if (Number(number) >= maxValue) {
-		number = number.slice(0, -1)
-	}
-	if (number.includes('.')) {
-		const numString = number.toString().split('.')
-		if (numString[1].length > decimal) {
-			return form.setFieldsValue({ [fieldName]: formatMoneyToFixed({
-					val: number.substring(0, number.length - 1),
-					decimalCount: 0,
-					toFix: 0,
-					inputField: true
-				}) })
+	maxValue?: number,
+	limitLength?: number,
+	decimal?: number
+}
+
+export const onChangePrice = (params: ParamsOnChangePriceType) => {
+	const {
+		val,
+		form,
+		fieldName,
+		maxValue = 100000000000000,
+		limitLength = 14,
+		decimal = 6
+	} = params
+
+	try {
+
+		if (val === '.') return form.setFieldsValue({ [fieldName]: null })
+		let result;
+		let number = val
+			.toString()
+			.replace(/[^0-9.]/g, '')
+			.replace(/(\..*?)\..*/g, '$1')
+		if (Number(number) >= maxValue) {
+			number = number.slice(0, -1)
 		}
-	}
-	if(/^\d*(\.\d+)?$/.test(number) && !!Number(number)){
-		form.setFieldsValue({ [fieldName]: formatMoneyToFixed({
+		if(/^\d*(\.\d+)?$/.test(number) && !!Number(number)){
+			result = formatMoneyToFixed({
 				val: number,
 				decimalCount: 0,
 				toFix: 0,
 				inputField: true
-			}) })
-	} else {
-		form.setFieldsValue({ [fieldName]: number })
+			})
+			form.setFieldsValue({ [fieldName]: result })
+		} else {
+			result = number;
+			form.setFieldsValue({ [fieldName]: result })
+		}
+
+		if (number.includes('.')) {
+			const numString = number.toString().split('.')
+			if (numString[1].length > decimal) {
+				result = formatMoneyToFixed({
+					val: number.substring(0, number.length - 1),
+					decimalCount: 0,
+					toFix: decimal,
+					inputField: true
+				})
+				form.setFieldsValue({ [fieldName]: result })
+			}
+		}
+
+		//Block input limit length numbers, Block input limit decimals.
+		if(limitLength){
+			let [num, decimalNum] = number.toString().split('.');
+			if(decimalNum){
+				if(num.toString().replace(/,/g, '').length > limitLength){
+					num = num.slice(0, limitLength);
+					result = formatMoneyToFixed({
+						val: `${num}.${decimalNum}`
+					});
+
+				}
+			} else {
+				if(number.toString().replace(/\D/g, '').length > limitLength){
+					result = formatMoneyToFixed({
+						val: number.slice(0, limitLength)
+					});
+				}
+			}
+			form.setFieldsValue({ [fieldName]: result })
+		}
+		form.validateFields([fieldName])
+	} catch {
+		form.setFieldsValue({ [fieldName]: 0 })
 	}
-};
+}

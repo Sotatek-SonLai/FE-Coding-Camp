@@ -2,6 +2,7 @@ import React from "react";
 import { ColumnsType } from "antd/lib/table";
 import { Action, DetailButton, PropertyInfo, Status } from "./Column.component";
 import Link from "next/link";
+import {Button} from "antd";
 
 export interface RequestAssetDataType {
   id: string;
@@ -36,22 +37,10 @@ export const requestAssetColumns: ColumnsType<any> = [
     ellipsis: true,
   },
   {
-    title: "Status",
-    dataIndex: "status",
-    key: "status",
-    render: (text) => <Status status={'pending'} />,
-  },
-  {
     title: "Action",
-    dataIndex: "action",
-    key: "action",
-    render: (_, { id, action }) => <Action action={action} assetId={id} />,
-  },
-  {
-    title: "Detail",
     dataIndex: "_id",
     key: "_id",
-    render: (_, { _id }) => <Link href={`/portal/${_id}/mint-nft`}>detail</Link>,
+    render: (_, { _id }) => <Link href={`/portal/${_id}/mint-nft`}><Button type='primary'>Fractional NFT</Button></Link>,
   },
 ];
 

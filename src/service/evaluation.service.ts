@@ -8,6 +8,7 @@ export interface IBodyEvaluation {
     "description": string,
     "certificates": FileType[]
     "projectImages": FileType[]
+    "attributes": any
 }
 
 const EvaluationService = {

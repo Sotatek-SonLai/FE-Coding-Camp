@@ -14,14 +14,17 @@ import {
 } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 import { ColumnsType } from "antd/lib/table";
-import React from "react";
+import React, {ReactElement} from "react";
 import { AssetType } from "../../types";
 import Link from "next/link";
 const { Title } = Typography;
 import style from "./style.module.scss";
 import { configCarousel } from "./utils";
+import MainLayout from "../../components/Main-Layout";
+import NewLandPage from "../portal/new";
+import {NextPageWithLayout} from "../_app";
 
-const PortalPage = () => {
+const PortalPage: NextPageWithLayout = () => {
   const [form] = Form.useForm();
 
   const onFinish = (values: any) => {
@@ -165,3 +168,7 @@ const PortalPage = () => {
 };
 
 export default PortalPage;
+
+PortalPage.getLayout = (page: ReactElement) => {
+  return <MainLayout>{page}</MainLayout>;
+};

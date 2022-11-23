@@ -1,5 +1,5 @@
-import React, {useState} from "react";
-import {Typography, Button, Divider, Form, Input, Upload, message, Row, Col, Image as Img, Space} from 'antd';
+import React, {ReactElement, useEffect, useState} from "react";
+import {Typography, Button, Divider, Form, Empty, Input, Upload, message, Row, Col, Image as Img, Space, Carousel} from 'antd';
 
 const {Title} = Typography;
 import type {RcFile, UploadFile, UploadProps} from 'antd/es/upload/interface';
@@ -7,7 +7,18 @@ import type {UploadChangeParam} from 'antd/es/upload';
 import {LoadingOutlined, PlusOutlined, UploadOutlined} from '@ant-design/icons';
 import {onChangePrice, validateEmpty, validateIsNumber} from "../../../utils/validate.util";
 
-import {useWallet} from "@solana/wallet-adapter-react";
+import {useAnchorWallet, useWallet} from "@solana/wallet-adapter-react";
+import EvaluationService from "../../../service/evaluation.service";
+import * as anchor from "@project-serum/anchor";
+import {getProvider} from "../../../programs/utils";
+import mainProgram from "../../../programs/MainProgram";
+import {Transaction} from "@solana/web3.js";
+import {awaitTimeout, getUrl} from "../../../utils/utility";
+import MainLayout from "../../../components/Main-Layout";
+import PortalPage from "../index";
+import {NextPageWithLayout} from "../../_app";
+import {configCarousel} from "../../properties/utils";
+import {useRouter} from "next/router";
 
 const getBase64 = (img: RcFile, callback: (url: string) => void) => {
     const reader = new FileReader();
@@ -15,14 +26,31 @@ const getBase64 = (img: RcFile, callback: (url: string) => void) => {
     reader.readAsDataURL(img);
 };
 
+let flagInterval: NodeJS.Timeout
 
-const TokenizeNftPage: React.FC<any> = (props) => {
+const MintNftPage: NextPageWithLayout = (props: any) => {
+    console.log('assetData', props)
+    const {assetData} = props
+    const {publicKey, connected, sendTransaction} = useWallet()
+    const wallet = useAnchorWallet();
     const [loading, setLoading] = useState(false);
     const [form] = Form.useForm()
+    const [assetInfo] = useState<any>(assetData)
+    console.log('assetInfo', assetInfo)
+    const router = useRouter()
 
-
-    const onFinish = (values: any) => {
+    const onFinish = async (values: any) => {
         console.log('Success:', values);
+        try {
+            const provider = getProvider(wallet);
+            if (provider && publicKey) {
+                const program = new mainProgram(provider)
+                const [txToBase64, err]: any = await program.fractionalToken('', '', '')
+
+            }
+        } catch (e: any) {
+
+        }
 
     };
 
@@ -33,11 +61,23 @@ const TokenizeNftPage: React.FC<any> = (props) => {
 
     return (
         <>
-            <Row>
-                <Col span={12} offset={6}>
+            <Row className='justify-center'>
+                <Col xxl={12} md={20} xs={24}>
                     <div className='box'>
-                        <Title level={2} style={{textAlign: 'center'}}>Request Tokenize NFT</Title>
+                        <Title level={2} style={{textAlign: 'center'}}>Tokenize NFT</Title>
                         <br/>
+
+                        <div className="flex justify-center">
+                            <Img
+                                width={150}
+                                src={getUrl(assetInfo?.avatar)}
+                            />
+                        </div>
+
+                        <br/>
+
+                        <Divider orientation="center" orientationMargin="0"></Divider>
+
                         <Form
                             form={form}
                             labelCol={{span: 24}}
@@ -45,18 +85,7 @@ const TokenizeNftPage: React.FC<any> = (props) => {
                             onFinish={onFinish}
                             onFinishFailed={onFinishFailed}
                             autoComplete="off"
-                            layout='horizontal'
                         >
-                            <div className="flex justify-center">
-                                <Img
-                                    width={150}
-                                    src="https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png"
-                                />
-                            </div>
-                            <br/>
-
-                            <Divider orientation="center" orientationMargin="0">Information</Divider>
-
                             <Form.Item
                                 label="Token Name"
                                 name="tokenName"
@@ -64,6 +93,7 @@ const TokenizeNftPage: React.FC<any> = (props) => {
                             >
                                 <Input/>
                             </Form.Item>
+
                             <Form.Item
                                 label="Token Symbol"
                                 name="tokenSymbol"
@@ -71,49 +101,30 @@ const TokenizeNftPage: React.FC<any> = (props) => {
                             >
                                 <Input/>
                             </Form.Item>
+
                             <Form.Item
-                                label="Total Supply"
-                                name="totalSupply"
-                                rules={[
-                                    {
-                                        validator: async (_, value) => {
-                                            await validateEmpty(value);
-                                        }
-                                    }
-                                ]}
+                                label="Token Supply"
+                                name="tokenSupply"
+                                rules={[{required: true, message: 'This field cannot be empty.'}]}
                             >
                                 <Input
-                                    onChange={ async (e: any) => {
-                                        onChangePrice(e.target.value, form, "initialPrice")
+                                    onChange={async (e: any) => {
+                                        onChangePrice({val: e.target.value, form, fieldName: "tokenSupply"})
                                     }}
                                 />
                             </Form.Item>
-                            <Form.Item
-                                label="Initial Price"
-                                name="initialPrice"
-                                rules={[
-                                    {
-                                        validator: async (_, value) => {
-                                            await validateEmpty(value);
-                                        }
-                                    }
-                                ]}
-                            >
-                                <Input
-                                    onChange={ async (e: any) => {
-                                        onChangePrice(e.target.value, form, "initialPrice")
-                                    }}
-                                />
-                            </Form.Item>
+
+                            <br/>
 
                             <Divider orientation="center" orientationMargin="0"></Divider>
 
                             <div className="flex justify-center">
-                                <Button type="primary" htmlType="submit">
+                                <Button loading={loading} type="primary" htmlType="submit">
                                     Tokenize
                                 </Button>
                             </div>
                         </Form>
+
                     </div>
                 </Col>
             </Row>
@@ -121,4 +132,26 @@ const TokenizeNftPage: React.FC<any> = (props) => {
     )
 }
 
-export default TokenizeNftPage
+export default MintNftPage
+
+MintNftPage.getLayout = (page: ReactElement) => {
+    return <MainLayout>{page}</MainLayout>;
+};
+
+
+export async function getStaticPaths(context: any) {
+    const [res]: any = await EvaluationService.getDetail(context?.params?.id)
+    return {
+        paths: [{params: {id: '637b4f7607cfae931087352f'}}, {params: {id: '2'}}],
+        fallback: 'blocking', // can also be true or 'blocking'
+    }
+}
+
+export async function getStaticProps(context: any) {
+    const [res]: any = await EvaluationService.getDetail(context?.params?.id)
+    return {
+        props: {
+            assetData: res
+        }, // will be passed to the page component as props
+    }
+}

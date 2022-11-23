@@ -5,6 +5,7 @@ import {
   HomeOutlined,
   PicLeftOutlined,
   ProjectOutlined,
+  LoginOutlined
 } from "@ant-design/icons";
 import { Col, MenuProps, Row, Space } from "antd";
 import { Breadcrumb, Layout, Menu, Button, Modal } from "antd";
@@ -39,14 +40,14 @@ function getItem(
 }
 
 const items: MenuProps["items"] = [
-  getItem("Dashboard", "/dashboard", "/dashboard", <HomeOutlined />),
+  getItem("Portfolio", "/portfolio", "/portfolio", <HomeOutlined />),
   getItem("Portal Evaluation", "/portal", "/portal", <PicLeftOutlined />),
   getItem("Property List", "/properties", "/properties", <ProjectOutlined />),
 ];
 
 const MainLayout: React.FC<any> = ({ children }) => {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [selectedKeys, setSelectedKeys] = useState<string[]>(["/dashboard"]);
+  const [selectedKeys, setSelectedKeys] = useState<string[]>(["/portfolio"]);
   const { pathname } = useRouter();
   const router = useRouter();
 
@@ -83,7 +84,7 @@ const MainLayout: React.FC<any> = ({ children }) => {
               style={{ display: "block", margin: "auto" }}
               onClick={handleLogout}
             >
-              Logout
+              <LoginOutlined /> Logout
             </Button>
           </Sider>
           <Layout style={{ padding: "0 24px 24px" }}>

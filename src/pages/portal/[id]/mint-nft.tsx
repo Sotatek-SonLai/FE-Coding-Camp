@@ -1,5 +1,5 @@
-import React, {useEffect, useState} from "react";
-import {Typography, Button, Divider, Form, Input, Upload, message, Row, Col, Image as Img, Space} from 'antd';
+import React, {ReactElement, useEffect, useState} from "react";
+import {Typography, Button, Divider, Form, Empty, Input, Upload, message, Row, Col, Image as Img, Space, Carousel} from 'antd';
 
 const {Title} = Typography;
 import type {RcFile, UploadFile, UploadProps} from 'antd/es/upload/interface';
@@ -13,7 +13,12 @@ import * as anchor from "@project-serum/anchor";
 import {getProvider} from "../../../programs/utils";
 import mainProgram from "../../../programs/MainProgram";
 import {Transaction} from "@solana/web3.js";
-import {awaitTimeout} from "../../../utils/utility";
+import {awaitTimeout, getUrl} from "../../../utils/utility";
+import MainLayout from "../../../components/Main-Layout";
+import PortalPage from "../index";
+import {NextPageWithLayout} from "../../_app";
+import {configCarousel} from "../../properties/utils";
+import {useRouter} from "next/router";
 
 const getBase64 = (img: RcFile, callback: (url: string) => void) => {
     const reader = new FileReader();
@@ -21,24 +26,32 @@ const getBase64 = (img: RcFile, callback: (url: string) => void) => {
     reader.readAsDataURL(img);
 };
 
+let flagInterval: NodeJS.Timeout
 
-const NewLandPage: React.FC<any> = (props) => {
+const MintNftPage: NextPageWithLayout = (props: any) => {
+    console.log('assetData', props)
+    const {assetData} = props
     const {publicKey, connected, sendTransaction} = useWallet()
     const wallet = useAnchorWallet();
-    const {assetData} = props.pageProps
     const [loading, setLoading] = useState(false);
     const [form] = Form.useForm()
+    const [assetInfo] = useState<any>(assetData)
+    console.log('assetInfo', assetInfo)
+    const router = useRouter()
 
-    // useEffect(() =>{
-    //
-    // })
+    useEffect(() => {
+        return () => {
+            clearInterval(flagInterval)
+        }
+    }, [])
 
     const mint = async () => {
         try {
+            setLoading(true)
             const provider = getProvider(wallet);
             if (provider && publicKey) {
                 const program = new mainProgram(provider)
-                const [txToBase64, err]: any = await program.getSerializedTx(publicKey)
+                const [txToBase64, err]: any = await program.getSerializedTx()
                 if (!err) {
                     const [res]: any = await EvaluationService.mintNft(txToBase64)
                     const tx = await sendTransaction(
@@ -56,18 +69,26 @@ const NewLandPage: React.FC<any> = (props) => {
                     console.log('started await')
 
 
+                    flagInterval = setInterval(async () => {
+                        const result: any = await program._provider.connection.getSignatureStatus(tx, {
+                            searchTransactionHistory: true,
+                        });
+                        console.log('result value: ',  result.value)
+                        // confirmationStatus : "confirmed"
+                        if(result?.value?.confirmationStatus === 'confirmed') {
+                            message.success('Mint nft successfully')
+                            clearInterval(flagInterval)
 
-                    // setInterval(async () => {
-                    //     const result = await program._provider.connection.getSignatureStatus(tx, {
-                    //         searchTransactionHistory: true,
-                    //     });
-                    //     console.log('sldlsdksd',  result.value)
-                    //     // confirmationStatus : "confirmed"
-                    // }, 1000)
+                            setLoading(false)
+                            router.push(`/portal/${assetInfo?._id}/tokenize-nft`).then()
+                        }
+                    }, 1000)
+                    setLoading(false)
 
                 }
             }
         } catch (err: any) {
+            setLoading(false)
             console.log({err})
         }
     }
@@ -84,9 +105,8 @@ const NewLandPage: React.FC<any> = (props) => {
 
     return (
         <>
-            <Button onClick={mint}>Mint</Button>
-            <Row>
-                <Col span={12} offset={6}>
+            <Row className='justify-center'>
+                <Col xxl={12} md={20} xs={24}>
                     <div className='box'>
                         <Title level={2} style={{textAlign: 'center'}}>Request Mint NFT</Title>
                         <br/>
@@ -94,90 +114,61 @@ const NewLandPage: React.FC<any> = (props) => {
                         <div className="flex justify-center">
                             <Img
                                 width={150}
-                                src={`${assetData?.avatar.host}${assetData?.avatar.url}`}
+                                src={getUrl(assetInfo?.avatar)}
                             />
                         </div>
 
-                        <Form
-                            form={form}
-                            labelCol={{span: 24}}
-                            wrapperCol={{span: 24}}
-                            onFinish={onFinish}
-                            onFinishFailed={onFinishFailed}
-                            autoComplete="off"
-                            layout='horizontal'
-                        >
-                            <br/>
+                        <br/>
 
-                            <Divider orientation="center" orientationMargin="0">Information</Divider>
+                        <Divider orientation="center" orientationMargin="0">Information</Divider>
 
-                            <Form.Item
-                                label="Address"
-                                name="address"
-                                rules={[{required: true, message: 'This field cannot be empty.'}]}
-                            >
-                                <Input placeholder='Input Address'/>
-                            </Form.Item>
-
-                            <Form.Item
-                                label="Name"
-                                name="name"
-                                rules={[{required: true, message: 'This field cannot be empty.'}]}
-                            >
-                                <Input placeholder='Input Name'/>
-                            </Form.Item>
-
-
-                            <Form.Item
-                                label="Description"
-                                name="description"
-                                rules={[{required: true, message: 'This field cannot be empty.'}]}
-                            >
-                                <Input.TextArea placeholder='Input Description' rows={6}/>
-                            </Form.Item>
-
-                            <Form.Item
-                                label="external url"
-                                name="externalUrl"
-                                rules={[{required: true, message: 'This field cannot be empty.'}]}
-                            >
-                                <Input/>
-                            </Form.Item>
-
-
-                            <Form.Item
-                                label="animation url"
-                                name="animationUrl"
-                                rules={[{required: true, message: 'This field cannot be empty.'}]}
-                            >
-                                <Input/>
-                            </Form.Item>
-
-
-                            <Form.Item
-                                label="youtube url"
-                                name="youtubeUrl"
-                                rules={[{required: true, message: 'This field cannot be empty.'}]}
-                            >
-                                <Input/>
-                            </Form.Item>
-
-                            <Form.Item
-                                label="Attribute"
-                                name="attribute"
-                                rules={[{required: true, message: 'This field cannot be empty.'}]}
-                            >
-                                <Input/>
-                            </Form.Item>
-
-                            <Divider orientation="center" orientationMargin="0"></Divider>
-
-                            <div className="flex justify-center">
-                                <Button type="primary" htmlType="submit">
-                                    Mint NFT
-                                </Button>
+                        <Title level={4}>Address: {assetInfo?.address}</Title>
+                        <Title level={4}>description: {assetInfo?.description}</Title>
+                        <Title level={4}>External Url: {assetInfo?.externalUrl}</Title>
+                        <Title level={4}>Youtube Url: {assetInfo?.youtubeUrl}</Title>
+                        <Divider orientation="center" orientationMargin="0">Product Images</Divider>
+                        <div className="rowSlide">
+                            <div className="slide">
+                                {(assetInfo?.productImages && assetInfo?.productImages.length) ? <Carousel {...configCarousel}>
+                                    {assetInfo?.productImages?.map((item: any, index: any) => {
+                                        return (
+                                            <img
+                                                className="logo"
+                                                src={getUrl(item)}
+                                                style={{width: 100, height: 100}}
+                                                key={index}
+                                            />
+                                        );
+                                    })}
+                                </Carousel> : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
                             </div>
-                        </Form>
+                        </div>
+                        <br/>
+                        <Divider orientation="center" orientationMargin="0">Legal Paper</Divider>
+                        <div className="rowSlide">
+                            <div className="slide">
+                                {(assetInfo?.certificates && assetInfo?.certificates.length) ? <Carousel {...configCarousel}>
+                                    {assetInfo?.certificates.map((item: any, index: any) => {
+                                        return (
+                                            <img
+                                                className="logo"
+                                                src={getUrl(item)}
+                                                style={{width: 100, height: 100}}
+                                                key={index}
+                                            />
+                                        );
+                                    })}
+                                </Carousel> : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+                            </div>
+                        </div>
+
+                        <Divider orientation="center" orientationMargin="0"></Divider>
+
+                        <div className="flex justify-center">
+                            <Button type="primary" onClick={mint} loading={loading}>
+                                Mint NFT
+                            </Button>
+                        </div>
                     </div>
                 </Col>
             </Row>
@@ -185,18 +176,22 @@ const NewLandPage: React.FC<any> = (props) => {
     )
 }
 
-export default NewLandPage
+export default MintNftPage
+
+MintNftPage.getLayout = (page: ReactElement) => {
+    return <MainLayout>{page}</MainLayout>;
+};
+
 
 export async function getStaticPaths(context: any) {
     const [res]: any = await EvaluationService.getDetail(context?.params?.id)
     return {
         paths: [{params: {id: res?._id}}, {params: {id: '2'}}],
-        fallback: false, // can also be true or 'blocking'
+        fallback: 'blocking', // can also be true or 'blocking'
     }
 }
 
 export async function getStaticProps(context: any) {
-    console.log('-----------------', context)
     const [res]: any = await EvaluationService.getDetail(context?.params?.id)
     return {
         props: {

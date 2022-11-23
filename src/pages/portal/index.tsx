@@ -61,9 +61,8 @@ const passedAssetData: PassedAssetDataType[] = [
   },
 ];
 
-const PortalPage: NextPageWithLayout = (props) => {
-  // const { requestAssetData } = props.pageProps;
-
+const PortalPage:NextPageWithLayout = (props: any) => {
+  const { requestAssetData } = props;
   const items = [
     {
       label: "Request Asset",
