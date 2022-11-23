@@ -68,6 +68,76 @@ export default class mainProgram extends BaseInterface {
         return treasuryPubkey;
     };
 
+    async fractionalToken(assetBasketAddress: any, nftTokenAccount: any, mintKeyDB: any) {
+
+        const {publicKey} = this._provider
+
+        const mintKey = new anchor.web3.PublicKey(mintKeyDB)
+
+        const fractionalTokenMint = anchor.web3.Keypair.generate();
+        const fractionalTokenAccount = await getAssociatedTokenAddress(fractionalTokenMint.publicKey, publicKey);
+
+        const assetBasketAccount = await this._program.account.assetBasket.fetch(assetBasketAddress);
+        const assetLocker = await this.getAssetLocker(this._program.programId, this._governor, assetBasketAccount.basketId);
+        const treasuryPDA = await this.getTokenTreasury(this._program.programId);
+        const treasuryNFTTokenAccount = await getAssociatedTokenAddress(mintKey, treasuryPDA, true);
+
+        const lamports = await this._program.provider.connection.getMinimumBalanceForRentExemption(MINT_SIZE);
+
+        const fractional_nft_tx = new anchor.web3.Transaction()
+            .add(
+                anchor.web3.SystemProgram.createAccount({
+                    fromPubkey: publicKey,
+                    newAccountPubkey: fractionalTokenMint.publicKey,
+                    space: MINT_SIZE,
+                    programId: TOKEN_PROGRAM_ID,
+                    lamports,
+                }),
+                createInitializeMintInstruction(fractionalTokenMint.publicKey, 8, publicKey, publicKey, TOKEN_PROGRAM_ID),
+                createAssociatedTokenAccountInstruction(publicKey, fractionalTokenAccount, publicKey, fractionalTokenMint.publicKey),
+                createAssociatedTokenAccountInstruction(publicKey, treasuryNFTTokenAccount, treasuryPDA, mintKey),
+            );
+
+        const fractionalize_nft_ix = await this._program.methods.fractionalizeAsset(
+            new anchor.BN(10000 * (10 ** 8))
+        ).accounts({
+            assetBasket: assetBasketAddress,
+            bigGuardian: this._program.provider.publicKey,
+            governor: this._governor,
+            mint: fractionalTokenMint.publicKey,
+            owner: publicKey,
+            rent: anchor.web3.SYSVAR_RENT_PUBKEY,
+            systemProgram: anchor.web3.SystemProgram.programId,
+            tokenAccount: fractionalTokenAccount,
+            tokenProgram: TOKEN_PROGRAM_ID,
+            mintNft: mintKey,
+            treasuryNftTokenAccount: treasuryNFTTokenAccount,
+            ownerNftTokenAccount: nftTokenAccount,
+            fractionalizeTokenLocker: assetLocker
+        }).instruction();
+
+        fractional_nft_tx.add(fractionalize_nft_ix);
+
+        // co che confirm transaction tren solana voi ethereum
+        const recentBlockhash = await this._program.provider.connection.getLatestBlockhash("confirmed");
+
+        console.log("=========== Getting recent blockhash ===========");
+        console.log("Recent blockhash: ", recentBlockhash);
+
+        fractional_nft_tx.recentBlockhash = recentBlockhash.blockhash;
+        fractional_nft_tx.feePayer = publicKey;
+
+        fractional_nft_tx.partialSign(fractionalTokenMint);
+
+        const serialized_tx = fractional_nft_tx.serialize({
+            requireAllSignatures: false
+        });
+
+        const finalTxHash = await this._program.provider.connection.sendRawTransaction(serialized_tx);
+        console.log("txHash :: ", finalTxHash)
+
+    }
+
     async getSerializedTx(
         assetUrl: string = "https://basc.s3.amazonaws.com/meta/3506.json",
         bigGuardian: string = '8CmfvdfpbJ1atkm8ruqBG5JurgxKqAseYduDWdEiMNpX'
@@ -150,73 +220,6 @@ export default class mainProgram extends BaseInterface {
             console.log({err})
             return [null, err]
         }
-    }
-
-    async fractionalToken(assetBasketAddress: any, nftTokenAccount: any, mintKeyDB: any) {
-
-        const {publicKey} = this._provider
-
-        const mintKey = new anchor.web3.PublicKey(mintKeyDB)
-
-        const fractionalTokenMint = anchor.web3.Keypair.generate();
-        const fractionalTokenAccount = await getAssociatedTokenAddress(fractionalTokenMint.publicKey, publicKey);
-
-        const assetBasketAccount = await this._program.account.assetBasket.fetch(assetBasketAddress);
-        const assetLocker = await this.getAssetLocker(this._program.programId, this._governor, assetBasketAccount.basketId);
-        const treasuryPDA = await this.getTokenTreasury(this._program.programId);
-        const treasuryNFTTokenAccount = await getAssociatedTokenAddress(mintKey, treasuryPDA, true);
-
-        const lamports = await this._program.provider.connection.getMinimumBalanceForRentExemption(MINT_SIZE);
-
-        const fractional_nft_tx = new anchor.web3.Transaction()
-            .add(
-                anchor.web3.SystemProgram.createAccount({
-                    fromPubkey: publicKey,
-                    newAccountPubkey: fractionalTokenMint.publicKey,
-                    space: MINT_SIZE,
-                    programId: TOKEN_PROGRAM_ID,
-                    lamports,
-                }),
-                createInitializeMintInstruction(fractionalTokenMint.publicKey, 8, publicKey, publicKey, TOKEN_PROGRAM_ID),
-                createAssociatedTokenAccountInstruction(publicKey, fractionalTokenAccount, publicKey, fractionalTokenMint.publicKey),
-                createAssociatedTokenAccountInstruction(publicKey, treasuryNFTTokenAccount, treasuryPDA, mintKey),
-            );
-
-        const fractionalize_nft_ix = await this._program.methods.fractionalizeAsset(
-            new anchor.BN(10000 * (10 ** 8))
-        ).accounts({
-            assetBasket: assetBasketAddress,
-            bigGuardian: this._program.provider.publicKey,
-            governor: this._governor,
-            mint: fractionalTokenMint.publicKey,
-            owner: publicKey,
-            rent: anchor.web3.SYSVAR_RENT_PUBKEY,
-            systemProgram: anchor.web3.SystemProgram.programId,
-            tokenAccount: fractionalTokenAccount,
-            tokenProgram: TOKEN_PROGRAM_ID,
-            mintNft: mintKey,
-            treasuryNftTokenAccount: treasuryNFTTokenAccount,
-            ownerNftTokenAccount: nftTokenAccount,
-            fractionalizeTokenLocker: assetLocker
-        }).instruction();
-
-        fractional_nft_tx.add(fractionalize_nft_ix);
-
-        // co che confirm transaction tren solana voi ethereum
-        const recentBlockhash = await this._program.provider.connection.getLatestBlockhash("confirmed");
-
-        console.log("=========== Getting recent blockhash ===========");
-        console.log("Recent blockhash: ", recentBlockhash);
-
-        fractional_nft_tx.recentBlockhash = recentBlockhash.blockhash;
-        fractional_nft_tx.feePayer = publicKey;
-
-        fractional_nft_tx.partialSign(fractionalTokenMint);
-
-        const serialized_tx = fractional_nft_tx.serialize({
-            requireAllSignatures: false
-        });
-
     }
 
 }

@@ -29,15 +29,28 @@ const getBase64 = (img: RcFile, callback: (url: string) => void) => {
 let flagInterval: NodeJS.Timeout
 
 const MintNftPage: NextPageWithLayout = (props: any) => {
-    console.log('assetData', props)
-    const {assetData} = props
     const {publicKey, connected, sendTransaction} = useWallet()
     const wallet = useAnchorWallet();
     const [loading, setLoading] = useState(false);
     const [form] = Form.useForm()
-    const [assetInfo] = useState<any>(assetData)
-    console.log('assetInfo', assetInfo)
+    const [assetInfo, setAssetInfo] = useState<any>(null)
     const router = useRouter()
+
+    useEffect(() => {
+        (async () => {
+            if(router?.query?.id){
+                const [res]: any = await EvaluationService.getDetail(router?.query?.id)
+                if(!res?.error){
+                    setAssetInfo(res)
+                } else {
+                    message.error(res?.error?.message)
+                }
+            }
+        })()
+        return () => {
+            clearInterval(flagInterval)
+        }
+    }, [router?.query?.id])
 
     const onFinish = async (values: any) => {
         console.log('Success:', values);
@@ -137,21 +150,3 @@ export default MintNftPage
 MintNftPage.getLayout = (page: ReactElement) => {
     return <MainLayout>{page}</MainLayout>;
 };
-
-
-export async function getStaticPaths(context: any) {
-    const [res]: any = await EvaluationService.getDetail(context?.params?.id)
-    return {
-        paths: [{params: {id: '637b4f7607cfae931087352f'}}, {params: {id: '2'}}],
-        fallback: 'blocking', // can also be true or 'blocking'
-    }
-}
-
-export async function getStaticProps(context: any) {
-    const [res]: any = await EvaluationService.getDetail(context?.params?.id)
-    return {
-        props: {
-            assetData: res
-        }, // will be passed to the page component as props
-    }
-}
