@@ -17,7 +17,6 @@ import {awaitTimeout, getUrl} from "../../../utils/utility";
 import MainLayout from "../../../components/Main-Layout";
 import PortalPage from "../index";
 import {NextPageWithLayout} from "../../_app";
-import {configCarousel} from "../../properties/utils";
 import {useRouter} from "next/router";
 
 const getBase64 = (img: RcFile, callback: (url: string) => void) => {
