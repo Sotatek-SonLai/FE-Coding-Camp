@@ -57,6 +57,7 @@ const MainLayout: React.FC<any> = ({ children }) => {
 
   const handleLogout = () => {
     Cookies.set("refreshToken", "");
+    Cookies.set("walletAddress", "");
     router.push("/");
   };
 

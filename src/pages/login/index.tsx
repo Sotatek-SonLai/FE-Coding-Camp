@@ -34,10 +34,12 @@ const Login = () => {
         password: formData.password,
       });
 
-      const { accessToken, refreshToken } = response.data.data;
+      console.log("response.data.data: ", response.data.data);
+      const { accessToken, refreshToken, user } = response.data.data;
 
       // store access token in memory and refresh token in cookies
       Cookies.set("refreshToken", refreshToken);
+      Cookies.set("walletAddress", user?.walletAddress);
       dispatch(setAccessToken(accessToken));
 
       Router.push("/portfolio");
