@@ -259,3 +259,8 @@ export const toBase64 = (file: any) => new Promise((resolve, reject) => {
 	reader.onload = () => resolve(reader.result);
 	reader.onerror = error => reject(error);
 });
+
+
+export const getUrl = (file: any) => {
+	return `${file?.host}${file?.url}`
+}

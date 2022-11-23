@@ -25,6 +25,8 @@ import EvaluationService, {
 } from "../../service/evaluation.service";
 import { useRouter } from "next/router";
 import { NextPageWithLayout } from "../_app";
+import MainLayout from "../../components/Main-Layout";
+import PortalPage from "./index";
 
 const getBase64 = (img: RcFile, callback: (url: string) => void) => {
   const reader = new FileReader();
@@ -51,6 +53,17 @@ const NewLandPage: NextPageWithLayout = (props) => {
   const [projectImgList, setProjectImgList] = useState<UploadFile[]>([]);
   const [form] = Form.useForm();
   const router = useRouter();
+  const [attr, setAttr] = useState<any>([{
+    key: '',
+    value: ''
+  }])
+
+  const addAttr = () => {
+    setAttr([...attr, {
+      key: '',
+      value: ''
+    }])
+  }
 
   const propPaper: UploadProps = {
     onChange({ file, fileList }) {
@@ -63,15 +76,28 @@ const NewLandPage: NextPageWithLayout = (props) => {
 
   const onFinish = async (values: any) => {
     try {
+      console.log('values', values)
       setLoading(true);
+      let attributes: any = []
+      Object.entries(values).forEach(([key, val]) => {
+        if(key.startsWith("key")){
+          const [,index] = key.split('key')
+          attributes.push({
+            key: values[`key${index}`],
+            value: values[`value${index}`]
+          })
+        }
+      })
 
       const formData: IBodyEvaluation = {
+        ...values,
         address: values.address,
         description: values.description,
         avatar: {
           name: "logo.png",
           data: await toBase64(values.avatar.file.originFileObj),
         },
+        attributes,
         certificates: await Promise.all(
           values.certificates.fileList.map(
             async (file: any, index: number) => ({
@@ -152,8 +178,8 @@ const NewLandPage: NextPageWithLayout = (props) => {
 
   return (
     <>
-      <Row>
-        <Col span={12} offset={6}>
+      <Row className='justify-center'>
+        <Col xxl={12} md={20} xs={24}>
           <div className="box">
             <Title level={2} style={{ textAlign: "center" }}>
               New LAND
@@ -197,24 +223,69 @@ const NewLandPage: NextPageWithLayout = (props) => {
               </Form.Item>
 
               <Form.Item
-                label="Address"
-                name="address"
-                rules={[
-                  { required: true, message: "This field cannot be empty." },
-                ]}
+                  label="Address"
+                  name="address"
+                  rules={[{required: true, message: 'This field cannot be empty.'}]}
               >
-                <Input placeholder="Input Address" />
+                <Input placeholder='Input Address'/>
               </Form.Item>
 
               <Form.Item
-                label="Project Description"
-                name="description"
-                rules={[
-                  { required: true, message: "This field cannot be empty." },
-                ]}
+                  label="Project Description"
+                  name="description"
+                  rules={[{required: true, message: 'This field cannot be empty.'}]}
               >
-                <Input.TextArea placeholder="Input Description" rows={6} />
+                <Input.TextArea placeholder='Input Description' rows={6}/>
               </Form.Item>
+
+              <Form.Item
+                  label="external url"
+                  name="externalUrl"
+                  rules={[{required: true, message: 'This field cannot be empty.'}]}
+              >
+                <Input/>
+              </Form.Item>
+
+
+              <Form.Item
+                  label="youtube url"
+                  name="youtubeUrl"
+                  rules={[{required: true, message: 'This field cannot be empty.'}]}
+              >
+                <Input/>
+              </Form.Item>
+
+
+              <Divider orientation="center" orientationMargin="0">
+                Attribute
+              </Divider>
+
+              {attr.map((item: any, index: number) => (
+                  <Row key={index} gutter={15}>
+                    <Col span={12}>
+                      <Form.Item
+                          label=""
+                          name={`key[${index}]`}
+                          rules={[{required: true, message: 'This field cannot be empty.'}]}
+                      >
+                        <Input prefix={<span>Key: </span>}/>
+                      </Form.Item>
+                    </Col>
+                    <Col span={12}>
+                      <Form.Item
+                          label=""
+                          name={`value[${index}]`}
+                          rules={[{required: true, message: 'This field cannot be empty.'}]}
+                      >
+                        <Input prefix={<span>value: </span>}/>
+                      </Form.Item>
+                    </Col>
+                  </Row>
+              ))}
+              <div>
+                <Button onClick={addAttr} type='primary'> <PlusOutlined/> Add new</Button>
+              </div>
+
 
               <Divider orientation="center" orientationMargin="0">
                 Project Images
@@ -269,3 +340,8 @@ const NewLandPage: NextPageWithLayout = (props) => {
 };
 
 export default NewLandPage;
+
+
+NewLandPage.getLayout = (page: ReactElement) => {
+  return <MainLayout>{page}</MainLayout>;
+};

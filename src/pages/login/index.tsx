@@ -40,7 +40,7 @@ const Login = () => {
       Cookies.set("refreshToken", refreshToken);
       dispatch(setAccessToken(accessToken));
 
-      Router.push("/dashboard");
+      Router.push("/portfolio");
     } catch (error: any) {
       console.log("Faild to sign in: ", error.response.data.error);
       openNotification(
