@@ -89,9 +89,10 @@ const NewLandPage: NextPageWithLayout = (props) => {
         }
       })
 
-      const formData: IBodyEvaluation = {
-        ...values,
+      const formData: any = {
         address: values.address,
+        externalUrl: values.externalUrl,
+        youtubeUrl: values.youtubeUrl,
         description: values.description,
         avatar: {
           name: "logo.png",
@@ -118,9 +119,14 @@ const NewLandPage: NextPageWithLayout = (props) => {
       console.log({ formData });
 
       const [res]: any = await EvaluationService.createLand(formData);
-      router.push("/portal").then();
+      console.log('res', res)
+      if(!res?.error){
+        router.push("/portal").then();
+        message.success("Create evaluation successfully");
+      } else {
+        message.error(res?.error?.message)
+      }
       setLoading(false);
-      message.success("Create evaluation successfully");
     } catch (err: any) {
       console.log({ err });
       setLoading(false);
