@@ -1,1 +1,6 @@
-export * from "./asset.type"
+export * from "./asset.type";
+declare global {
+  interface Window {
+    phantom: any;
+  }
+}

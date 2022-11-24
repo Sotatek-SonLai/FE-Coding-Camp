@@ -2,21 +2,34 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 export function middleware(request: NextRequest) {
-  const allCookies = request.cookies.getAll();
-  console.log("allCookies: ", allCookies);
   const refreshToken = request.cookies.get("refreshToken")?.value;
-  console.log("refreshToken: ", refreshToken);
-  if (
-    refreshToken === undefined ||
-    refreshToken === "undefined" ||
-    refreshToken === ""
-  ) {
-    return NextResponse.redirect(new URL("/login", request.url));
-  }
-  return NextResponse.next();
+  const walletAddress = request.cookies.get("walletAddress")?.value;
+  console.log({ refreshToken, walletAddress });
+
+  if (isNothing(refreshToken)) return redirectTo("/login", request);
+
+  if (isNothing(walletAddress)) return redirectTo("/connect-wallet", request);
+
+  const { pathname } = request.nextUrl;
+  return pathname === "/"
+    ? redirectTo("/dashboard", request)
+    : NextResponse.next();
 }
 
-// See "Matching Paths" below to learn more
 export const config = {
-  matcher: ["/", "/portfolio/:path*", "/portal/:path*", "/properties/:path"],
+  matcher: [
+    "/",
+    "/dashboard/:path*",
+    "/portfolio/:path*",
+    "/portal/:path*",
+    "/properties/:path",
+    "/connect-wallet/:path",
+  ],
 };
+
+const isNothing = (value: any) => {
+  return value === undefined || value === "undefined" || value === "";
+};
+
+const redirectTo = (url: string, request: NextRequest) =>
+  NextResponse.redirect(new URL(url, request.url));

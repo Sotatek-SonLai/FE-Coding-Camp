@@ -11,11 +11,11 @@ export interface SignUpData {
 }
 
 export const login = (credentials: AuthCredentials) => {
-  return axios.post("/api/v1/auth/login", credentials);
+  return axios.post("/auth/login", credentials);
 };
 
 export const signUp = (data: SignUpData) => {
-  return axios.post("/api/v1/auth/register", data);
+  return axios.post("/auth/register", data);
 };
 
 export const getAccessToken = () => {
