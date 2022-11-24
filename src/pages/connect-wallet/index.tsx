@@ -35,7 +35,7 @@ const ConnectWalletPage = () => {
     });
 
     Cookies.set("walletAddress", publicKey);
-    router.push("/dashboard");
+    router.push("/");
     console.log("responce: ", responce);
   };
 

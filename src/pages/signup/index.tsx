@@ -29,11 +29,11 @@ const SignUp = () => {
         "Your registration has been sucessful"
       );
     } catch (error: any) {
-      console.log("Faild to sign up: ", error.response.data.error);
+      console.log("Faild to sign up: ", error?.response?.data?.error);
       openNotification(
         "error",
         "Fail to sign up",
-        error.response.data.error.message
+        error?.response?.data?.error?.message
       );
     }
   };

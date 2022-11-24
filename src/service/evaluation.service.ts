@@ -45,6 +45,14 @@ const EvaluationService = {
         } catch (error) {
             return [null, error];
         }
+    },
+    frac: async (id: any, body: any) => {
+        try {
+            const response = await Request.put(`evaluations/${id}/tokenize`, body);
+            return [response.data, null];
+        } catch (error) {
+            return [null, error];
+        }
     }
 
 };

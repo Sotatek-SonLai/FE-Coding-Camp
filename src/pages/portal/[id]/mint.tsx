@@ -1,15 +1,12 @@
 import React, {ReactElement, useEffect, useState} from "react";
 import {Typography, Button, Divider, Form, Empty, Input, Upload, message, Row, Col, Image as Img, Space, Carousel} from 'antd';
-
 const {Title} = Typography;
 import type {RcFile, UploadFile, UploadProps} from 'antd/es/upload/interface';
-import type {UploadChangeParam} from 'antd/es/upload';
-import {LoadingOutlined, PlusOutlined, UploadOutlined} from '@ant-design/icons';
-import {onChangePrice, validateEmpty, validateIsNumber} from "../../../utils/validate.util";
+import {ArrowRightOutlined} from '@ant-design/icons';
+import Link from "next/link"
 
 import {useAnchorWallet, useWallet} from "@solana/wallet-adapter-react";
 import EvaluationService from "../../../service/evaluation.service";
-import * as anchor from "@project-serum/anchor";
 import {getProvider} from "../../../programs/utils";
 import mainProgram from "../../../programs/MainProgram";
 import {Transaction} from "@solana/web3.js";
@@ -19,6 +16,7 @@ import PortalPage from "../index";
 import {NextPageWithLayout} from "../../_app";
 import {useRouter} from "next/router";
 import {configCarousel} from "../../properties/[id]";
+import TransactionModal from "../../../components/common/TransactionModal";
 
 const getBase64 = (img: RcFile, callback: (url: string) => void) => {
     const reader = new FileReader();
@@ -36,6 +34,9 @@ const MintNftPage: NextPageWithLayout = (props: any) => {
     const [assetInfo, setAssetInfo] = useState<any>(null)
     console.log('assetInfo', assetInfo)
     const router = useRouter()
+
+    const [tx, setTx] = useState<any>('')
+    const [isShownModalTx, setIsShownModalTx] = useState<boolean>(false)
 
     useEffect(() => {
         (async () => {
@@ -76,6 +77,8 @@ const MintNftPage: NextPageWithLayout = (props: any) => {
                     console.log(tx);
                     console.log('started await')
 
+                    setTx(tx)
+                    setIsShownModalTx(true)
 
                     flagInterval = setInterval(async () => {
                         const result: any = await program._provider.connection.getSignatureStatus(tx, {
@@ -88,7 +91,7 @@ const MintNftPage: NextPageWithLayout = (props: any) => {
                             clearInterval(flagInterval)
 
                             setLoading(false)
-                            router.push(`/portal/${assetInfo?._id}/tokenize-nft`).then()
+                            // router.push(`/portal/${assetInfo?._id}/tokenize`).then()
                         }
                     }, 1000)
                     setLoading(false)
@@ -112,6 +115,12 @@ const MintNftPage: NextPageWithLayout = (props: any) => {
 
     return (
         <>
+            <TransactionModal close={() => setIsShownModalTx(false)} tx={tx}  isShown={isShownModalTx}>
+                <Link href={`/portal/${assetInfo?._id}/frac`}>
+                    <Button type='primary'><ArrowRightOutlined/> Tokenize nft</Button>
+                </Link>
+            </TransactionModal>
+
             <Row className='justify-center'>
                 <Col xxl={12} md={20} xs={24}>
                     <div className='box'>
@@ -150,8 +159,8 @@ const MintNftPage: NextPageWithLayout = (props: any) => {
                         <Divider orientation="center" orientationMargin="0">Product Images</Divider>
                         <div className="rowSlide">
                             <div className="slide">
-                                {(assetInfo?.productImages && assetInfo?.productImages.length) ? <Carousel {...configCarousel}>
-                                    {assetInfo?.productImages?.map((item: any, index: any) => {
+                                {(assetInfo?.projectImages && assetInfo?.projectImages.length) ? <Carousel {...configCarousel}>
+                                    {assetInfo?.projectImages?.map((item: any, index: any) => {
                                         return (
                                             <img
                                                 className="logo"

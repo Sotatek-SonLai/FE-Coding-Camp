@@ -1,5 +1,5 @@
 import React from "react";
-import Router from "next/router";
+import Router, {useRouter} from "next/router";
 import { Typography, Button, Card, Form, Input, notification } from "antd";
 import { login } from "../../service/api/user.service";
 import { useDispatch, useSelector } from "react-redux";
@@ -13,6 +13,7 @@ type NotificationType = "success" | "error";
 const Login = () => {
   const [api, contextHolder] = notification.useNotification();
   const dispatch = useDispatch();
+  const router = useRouter()
 
   const openNotification = (
     type: NotificationType,
@@ -42,13 +43,13 @@ const Login = () => {
       Cookies.set("walletAddress", user?.walletAddress);
       dispatch(setAccessToken(accessToken));
 
-      Router.push("/portfolio");
+      router.push("/");
     } catch (error: any) {
-      console.log("Faild to sign in: ", error.response.data.error);
+      console.log("Faild to sign in: ", error?.response?.data?.error);
       openNotification(
         "error",
         "Fail to sign in",
-        error.response.data.error.message
+        error?.response?.data?.error?.message
       );
     }
   };

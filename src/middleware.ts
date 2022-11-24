@@ -10,10 +10,11 @@ export function middleware(request: NextRequest) {
 
   if (isNothing(walletAddress)) return redirectTo("/connect-wallet", request);
 
-  const { pathname } = request.nextUrl;
-  return pathname === "/"
-    ? redirectTo("/dashboard", request)
-    : NextResponse.next();
+  // const { pathname } = request.nextUrl;
+  // return pathname === "/"
+  //   ? redirectTo("/", request)
+  //   : NextResponse.next();
+  // NextResponse.next()
 }
 
 export const config = {
