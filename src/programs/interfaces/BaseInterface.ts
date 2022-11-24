@@ -7,11 +7,12 @@ export default class BaseInterface {
 
 	constructor(
 		provider: AnchorProvider,
+		programAddress: string,
 		idl: any
 	) {
 		this._provider = provider;
 		this._programAddress = idl.metadata.address;
 		this._idl = idl;
-		this._program = new Program(idl, idl.metadata.address, provider);
+		this._program = new Program(idl, programAddress, provider);
 	}
 }

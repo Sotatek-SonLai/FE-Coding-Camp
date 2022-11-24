@@ -2,7 +2,7 @@ import {BaseInterface} from "./interfaces";
 import {getMainIdl} from "./utils";
 import {web3, BN, AnchorProvider} from "@project-serum/anchor";
 import * as anchor from "@project-serum/anchor";
-import {GOVERNOR_ADDRESS, SOL_TREASURY_ADDRESS} from "../constants";
+import {GOVERNOR_ADDRESS, PROGRAM_ADDRESS, SOL_TREASURY_ADDRESS} from "../constants";
 import {createAssociatedTokenAccountInstruction, createInitializeMintInstruction, getAssociatedTokenAddress, MINT_SIZE, TOKEN_PROGRAM_ID} from "@solana/spl-token";
 import {PublicKey} from "@solana/web3.js";
 
@@ -13,7 +13,7 @@ export default class mainProgram extends BaseInterface {
     _sol_treasury = new anchor.web3.PublicKey(SOL_TREASURY_ADDRESS)
 
     constructor(provider: AnchorProvider) {
-        super(provider, getMainIdl());
+        super(provider, PROGRAM_ADDRESS, getMainIdl());
     }
 
     async getMetadata(mint: any) {
@@ -215,7 +215,7 @@ export default class mainProgram extends BaseInterface {
 
             const txToBase64 = serialized_tx.toString("base64")
             console.log("Tx: ", txToBase64);
-            return [txToBase64, null]
+            return [txToBase64, null, metadataAddress]
 
         } catch (err) {
             console.log({err})

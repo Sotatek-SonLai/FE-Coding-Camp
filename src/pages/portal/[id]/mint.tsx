@@ -60,8 +60,10 @@ const MintNftPage: NextPageWithLayout = (props: any) => {
             const provider = getProvider(wallet);
             if (provider && publicKey) {
                 const program = new mainProgram(provider)
-                const [txToBase64, err]: any = await program.getSerializedTx(assetInfo?.assetUrl, assetInfo?.bigGuardian)
+                const [txToBase64, err, metadataAddress]: any = await program.getSerializedTx(assetInfo?.assetUrl, assetInfo?.bigGuardian)
                 if (!err) {
+                    const [resUMetaDt]: any = await EvaluationService.updateAssetMetadata(assetInfo?._id, metadataAddress)
+                    console.log('resUMetaDt', resUMetaDt)
                     const [res]: any = await EvaluationService.mintNft(txToBase64)
                     const tx = await sendTransaction(
                         Transaction.from(

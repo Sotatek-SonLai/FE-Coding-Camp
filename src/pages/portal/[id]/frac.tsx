@@ -1,6 +1,5 @@
 import React, {ReactElement, useEffect, useState} from "react";
 import {Typography, Button, Divider, Form, Empty, Input, Upload, message, Row, Col, Image as Img, Space, Carousel} from 'antd';
-const {Title} = Typography;
 import type {RcFile} from 'antd/es/upload/interface';
 import {onChangePrice} from "../../../utils/validate.util";
 import {useAnchorWallet, useWallet} from "@solana/wallet-adapter-react";
@@ -12,6 +11,8 @@ import MainLayout from "../../../components/Main-Layout";
 import {NextPageWithLayout} from "../../_app";
 import {useRouter} from "next/router";
 import TransactionModal from "../../../components/common/TransactionModal";
+import {Transaction} from "@solana/web3.js";
+const {Title} = Typography;
 
 const getBase64 = (img: RcFile, callback: (url: string) => void) => {
     const reader = new FileReader();
@@ -63,8 +64,39 @@ const MintNftPage: NextPageWithLayout = (props: any) => {
                 const [txToBase64, err]: any = await program.fractionalToken('', '', '')
 
 
-                const finalTxHash = await program._provider.connection.sendRawTransaction(txToBase64);
-                console.log("txHash :: ", finalTxHash)
+                if(!err){
+                    const [res]: any = await EvaluationService.mintNft(txToBase64)
+
+                    const tx = await sendTransaction(
+                        Transaction.from(
+                            Buffer.from(res, "base64")
+                        ),
+                        program._provider.connection,
+                        {
+                            skipPreflight: true,
+                            maxRetries: 5,
+
+                        },
+                    );
+                    console.log(tx);
+                    console.log('started await')
+
+                    flagInterval = setInterval(async () => {
+
+                        const result: any = await program._provider.connection.sendRawTransaction(txToBase64);
+                        console.log('result value: ', result?.value)
+                        // confirmationStatus : "confirmed"
+                        if (result?.value?.confirmationStatus === 'confirmed') {
+                            message.success('Tokenize nft successfully')
+                            clearInterval(flagInterval)
+
+                            setLoading(false)
+                            // router.push(`/portal/${assetInfo?._id}/tokenize`).then()
+                        }
+                    }, 1000)
+                    setLoading(false)
+
+                }
 
                 setLoading(false)
             }
