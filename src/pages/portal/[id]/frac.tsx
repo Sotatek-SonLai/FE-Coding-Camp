@@ -1,23 +1,17 @@
 import React, {ReactElement, useEffect, useState} from "react";
 import {Typography, Button, Divider, Form, Empty, Input, Upload, message, Row, Col, Image as Img, Space, Carousel} from 'antd';
-
 const {Title} = Typography;
-import type {RcFile, UploadFile, UploadProps} from 'antd/es/upload/interface';
-import type {UploadChangeParam} from 'antd/es/upload';
-import {LoadingOutlined, PlusOutlined, UploadOutlined} from '@ant-design/icons';
-import {onChangePrice, validateEmpty, validateIsNumber} from "../../../utils/validate.util";
-
+import type {RcFile} from 'antd/es/upload/interface';
+import {onChangePrice} from "../../../utils/validate.util";
 import {useAnchorWallet, useWallet} from "@solana/wallet-adapter-react";
 import EvaluationService from "../../../service/evaluation.service";
-import * as anchor from "@project-serum/anchor";
 import {getProvider} from "../../../programs/utils";
 import mainProgram from "../../../programs/MainProgram";
-import {Transaction} from "@solana/web3.js";
-import {awaitTimeout, getUrl} from "../../../utils/utility";
+import {getUrl} from "../../../utils/utility";
 import MainLayout from "../../../components/Main-Layout";
-import PortalPage from "../index";
 import {NextPageWithLayout} from "../../_app";
 import {useRouter} from "next/router";
+import TransactionModal from "../../../components/common/TransactionModal";
 
 const getBase64 = (img: RcFile, callback: (url: string) => void) => {
     const reader = new FileReader();
@@ -34,12 +28,14 @@ const MintNftPage: NextPageWithLayout = (props: any) => {
     const [form] = Form.useForm()
     const [assetInfo, setAssetInfo] = useState<any>(null)
     const router = useRouter()
+    const [tx, setTx] = useState<any>('')
+    const [isShownModalTx, setIsShownModalTx] = useState<boolean>(false)
 
     useEffect(() => {
         (async () => {
-            if(router?.query?.id){
+            if (router?.query?.id) {
                 const [res]: any = await EvaluationService.getDetail(router?.query?.id)
-                if(!res?.error){
+                if (!res?.error) {
                     setAssetInfo(res)
                 } else {
                     message.error(res?.error?.message)
@@ -56,12 +52,26 @@ const MintNftPage: NextPageWithLayout = (props: any) => {
         try {
             const provider = getProvider(wallet);
             if (provider && publicKey) {
+                setLoading(true)
+                const [res]: any = await EvaluationService.frac( assetInfo?._id, {
+                    tokenName: values.tokenName,
+                    tokenSymbol: values.tokenSymbol,
+                    tokenSupply: values.tokenSupply.replace(/,/g, "")
+                })
+                console.log({res})
                 const program = new mainProgram(provider)
                 const [txToBase64, err]: any = await program.fractionalToken('', '', '')
 
-            }
-        } catch (e: any) {
 
+                const finalTxHash = await program._provider.connection.sendRawTransaction(txToBase64);
+                console.log("txHash :: ", finalTxHash)
+
+                setLoading(false)
+            }
+        } catch (error: any) {
+            console.log({error})
+            error?.message && message.error(error?.message)
+            setLoading(false)
         }
 
     };
@@ -73,6 +83,7 @@ const MintNftPage: NextPageWithLayout = (props: any) => {
 
     return (
         <>
+            <TransactionModal close={() => setIsShownModalTx(false)} tx={tx} isShown={isShownModalTx}/>
             <Row className='justify-center'>
                 <Col xxl={12} md={20} xs={24}>
                     <div className='box'>

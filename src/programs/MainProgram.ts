@@ -133,8 +133,9 @@ export default class mainProgram extends BaseInterface {
             requireAllSignatures: false
         });
 
-        const finalTxHash = await this._program.provider.connection.sendRawTransaction(serialized_tx);
-        console.log("txHash :: ", finalTxHash)
+        const txToBase64 = serialized_tx.toString("base64")
+        console.log("Tx: ", txToBase64);
+        return [txToBase64, null]
 
     }
 
