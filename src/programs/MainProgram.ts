@@ -101,7 +101,7 @@ export default class mainProgram extends BaseInterface {
         return treasuryPubkey;
     }
 
-    async fractionalToken(mintKeyDB: any) {
+    async tokenizeNft(mintKeyDB: any) {
 
         const {publicKey} = this._provider;
 
@@ -226,7 +226,8 @@ export default class mainProgram extends BaseInterface {
                 await this._provider.connection.getMinimumBalanceForRentExemption(
                     MINT_SIZE
                 );
-            const nftTokenAccount = anchor.web3.Keypair.generate();
+            // const nftTokenAccount = anchor.web3.Keypair.generate();
+            const nftTokenAccount = await getAssociatedTokenAddress(mintKey.publicKey, publicKey, false);
 
             const mint_tx = new anchor.web3.Transaction().add(
                 anchor.web3.SystemProgram.createAccount({
@@ -242,7 +243,8 @@ export default class mainProgram extends BaseInterface {
                     publicKey,
                     publicKey,
                     TOKEN_PROGRAM_ID
-                )
+                ),
+                createAssociatedTokenAccountInstruction(publicKey, nftTokenAccount, publicKey, mintKey.publicKey, TOKEN_PROGRAM_ID),
             );
 
             const metadataAddress = await this.getMetadata(mintKey.publicKey);
@@ -280,7 +282,7 @@ export default class mainProgram extends BaseInterface {
                     mint: mintKey.publicKey,
                     mintAuthority: publicKey,
                     updateAuthority: publicKey,
-                    tokenAccount: nftTokenAccount.publicKey,
+                    tokenAccount: nftTokenAccount,
                     owner: publicKey,
                     tokenMetadataProgram: TOKEN_METADATA_PROGRAM_ID,
                     assetBasket: assetBasketAddress,
@@ -297,7 +299,6 @@ export default class mainProgram extends BaseInterface {
             mint_tx.feePayer = publicKey;
 
             mint_tx.partialSign(mintKey);
-            mint_tx.partialSign(nftTokenAccount);
 
             const serialized_tx = mint_tx.serialize({
                 requireAllSignatures: false,
@@ -306,10 +307,10 @@ export default class mainProgram extends BaseInterface {
 
             const txToBase64 = serialized_tx.toString("base64");
             console.log("Tx: ", txToBase64);
-            return [txToBase64, null, metadataAddress];
+            return [txToBase64, null, metadataAddress, mintKey];
         } catch (err) {
             console.log({err});
-            return [null, err];
+            return [null, err, null, null];
         }
     }
 }
