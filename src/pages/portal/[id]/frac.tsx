@@ -12,6 +12,8 @@ import {NextPageWithLayout} from "../../_app";
 import {useRouter} from "next/router";
 import TransactionModal from "../../../components/common/TransactionModal";
 import {Transaction} from "@solana/web3.js";
+import AssetInfo from "../../../components/PortalEvaluationPage/AssetInfo";
+import * as anchor from "@project-serum/anchor";
 const {Title} = Typography;
 
 const getBase64 = (img: RcFile, callback: (url: string) => void) => {
@@ -61,8 +63,7 @@ const MintNftPage: NextPageWithLayout = (props: any) => {
                 })
                 console.log({res})
                 const program = new mainProgram(provider)
-                const [txToBase64, err]: any = await program.fractionalToken('', '', '')
-
+                const [txToBase64, err]: any = await program.fractionalToken(assetInfo?.mintKeyDB)
 
                 if(!err){
                     const [res]: any = await EvaluationService.mintNft(txToBase64)
@@ -116,22 +117,11 @@ const MintNftPage: NextPageWithLayout = (props: any) => {
     return (
         <>
             <TransactionModal close={() => setIsShownModalTx(false)} tx={tx} isShown={isShownModalTx}/>
-            <Row className='justify-center'>
-                <Col xxl={12} md={20} xs={24}>
+            <Row gutter={25}>
+                <Col span={12}>
                     <div className='box'>
                         <Title level={2} style={{textAlign: 'center'}}>Tokenize NFT</Title>
                         <br/>
-
-                        <div className="flex justify-center">
-                            <Img
-                                width={150}
-                                src={getUrl(assetInfo?.avatar)}
-                            />
-                        </div>
-
-                        <br/>
-
-                        <Divider orientation="center" orientationMargin="0"></Divider>
 
                         <Form
                             form={form}
@@ -180,6 +170,13 @@ const MintNftPage: NextPageWithLayout = (props: any) => {
                             </div>
                         </Form>
 
+                    </div>
+                </Col>
+                <Col span={12}>
+                    <div className='box'>
+                        <Title level={2} style={{textAlign: 'center'}}>NFT Info</Title>
+                        <br/>
+                        <AssetInfo assetInfo={assetInfo}/>
                     </div>
                 </Col>
             </Row>
