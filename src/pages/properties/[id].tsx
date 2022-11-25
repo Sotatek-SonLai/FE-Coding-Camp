@@ -11,17 +11,21 @@ import {
   Carousel,
   Form,
   Input,
+  message,
 } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 import { ColumnsType } from "antd/lib/table";
-import React, {ReactElement} from "react";
+import React, { ReactElement, useEffect, useState } from "react";
 import { AssetType } from "../../types";
 import Link from "next/link";
 const { Title } = Typography;
 import style from "./style.module.scss";
 import MainLayout from "../../components/Main-Layout";
 import NewLandPage from "../portal/new";
-import {NextPageWithLayout} from "../_app";
+import { NextPageWithLayout } from "../_app";
+import { useRouter } from "next/router";
+import EvaluationService from "../../service/evaluation.service";
+import { getUrl } from "../../utils/utility";
 
 export const configCarousel = {
   arrows: true,
@@ -52,18 +56,21 @@ export const configCarousel = {
     },
   ],
   nextArrow: (
-      <div>
-        <img src="/icons/arrow-right.svg" alt="" />
-      </div>
+    <div>
+      <img src="/icons/arrow-right.svg" alt="" />
+    </div>
   ),
   prevArrow: (
-      <div>
-        <img src="/icons/arrow-left.svg" alt="" />
-      </div>
+    <div>
+      <img src="/icons/arrow-left.svg" alt="" />
+    </div>
   ),
 };
 const PortalPage: NextPageWithLayout = () => {
   const [form] = Form.useForm();
+  const router = useRouter();
+  const { id } = router?.query;
+  const [assetInfo, setAssetInfo] = useState<any>(null);
 
   const onFinish = (values: any) => {
     console.log("Success:", values);
@@ -72,21 +79,31 @@ const PortalPage: NextPageWithLayout = () => {
     console.log("Failed:", errorInfo);
   };
 
+  useEffect(() => {
+    (async () => {
+      if (id) {
+        const [res]: any = await EvaluationService.getDetail(router?.query?.id);
+        if (!res?.error) {
+          setAssetInfo(res);
+        } else {
+          message.error(res?.error?.message);
+        }
+      }
+    })();
+  }, [id]);
+
   return (
     <div className={style.assetDetailContainer}>
       <Row gutter={[20, 0]}>
         <Col span={8}>
           <div className="box info--left">
             <div className="info--left__general">
-              <Avatar
-                className="logo"
-                src="https://joeschmoe.io/api/v1/random"
-              />
-              <p className="token--name">Token Name: ABC</p>
-              <p className="address">Address: 79 Cau Giay, T.P HN</p>
-              <p className="address">ID: 123</p>
+              <Avatar className="logo" src={getUrl(assetInfo?.avatar)} />
+              <p className="token--name">Token Name: {assetInfo?.tokenName}</p>
+              <p className="address">Address: {assetInfo?.address}</p>
+              <p className="address">ID: {assetInfo?.ID}</p>
             </div>
-            <Divider orientation="left">Buy ABC (1 USDT = 20 ABC) </Divider>
+            <Divider orientation="left">Buy </Divider>
             <Form
               form={form}
               labelCol={{ span: 24 }}
@@ -97,7 +114,7 @@ const PortalPage: NextPageWithLayout = () => {
               layout="horizontal"
             >
               <Form.Item
-                label="Buy Amount"
+                label="Buy Amount(1 USDT = 20 ABC)"
                 name="amount"
                 rules={[
                   { required: true, message: "This field cannot be empty." },
@@ -112,14 +129,26 @@ const PortalPage: NextPageWithLayout = () => {
                 <p className="key">You Receive</p>
                 <p className="value">0.05 ABC</p>
               </div>
-              <Button
-                type="primary"
-                htmlType="submit"
-                style={{ width: "100%" }}
-              >
-                Buy
-              </Button>
+              <div className="actions">
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  style={{ width: "50%" }}
+                >
+                  Buy
+                </Button>
+              </div>
             </Form>
+            <Divider orientation="left">Claim </Divider>
+            <div className="you--receive">
+              <p className="key">Your Monthly Reward</p>
+              <p className="value">100 USDT</p>
+            </div>
+            <div className="actions">
+              <Button type="primary" htmlType="submit" style={{ width: "50%" }}>
+                Claim
+              </Button>
+            </div>
           </div>
         </Col>
         <Col span={16}>
@@ -127,7 +156,7 @@ const PortalPage: NextPageWithLayout = () => {
             <Row>
               <Col span={8}>
                 <p className="key">Token Total Supply</p>
-                <p className="value">10,000,000</p>
+                <p className="value">{assetInfo?.tokenSupply}</p>
               </Col>
               <Col span={8}>
                 <p className="key">Token Listing Price</p>
@@ -168,11 +197,11 @@ const PortalPage: NextPageWithLayout = () => {
             <div className="rowSlide">
               <div className="slide">
                 <Carousel {...configCarousel}>
-                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((item, index) => {
+                  {assetInfo?.projectImages.map((item: any, index: number) => {
                     return (
                       <img
                         className="logo"
-                        src="https://joeschmoe.io/api/v1/random"
+                        src={getUrl(item)}
                         style={{ width: 100, height: 100 }}
                         key={index}
                       />
@@ -185,11 +214,11 @@ const PortalPage: NextPageWithLayout = () => {
             <div className="rowSlide">
               <div className="slide">
                 <Carousel {...configCarousel}>
-                  {[1, 2, 3, 4].map((item, index) => {
+                  {assetInfo?.certificates.map((item: any, index: number) => {
                     return (
                       <img
                         className="logo"
-                        src="https://joeschmoe.io/api/v1/random"
+                        src={getUrl(item)}
                         style={{ width: 100, height: 100 }}
                         key={index}
                       />

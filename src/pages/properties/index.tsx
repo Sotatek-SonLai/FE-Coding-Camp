@@ -10,7 +10,7 @@ import MainLayout from "../../components/Main-Layout";
 
 const requestAssetData: AssetType[] = [
   {
-    id: "1",
+    id: "637df4a92395decac58befb9",
     propertyInfo: "https://joeschmoe.io/api/v1/random",
     name: "ABC",
     totalSupply: 100000,
@@ -19,7 +19,7 @@ const requestAssetData: AssetType[] = [
     rewardDate: "12/12",
   },
   {
-    id: "2",
+    id: "637df4a92395decac58befb9",
     propertyInfo: "https://joeschmoe.io/api/v1/random",
     name: "Trinh Thi Thu Trang Trinh Thi Thu Trang Trinh Thi Thu Trang",
     totalSupply: 1000000000,
