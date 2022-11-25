@@ -1,5 +1,5 @@
 import React from "react";
-import Router, {useRouter} from "next/router";
+import Router, { useRouter } from "next/router";
 import { Typography, Button, Card, Form, Input, notification } from "antd";
 import { login } from "../../service/api/user.service";
 import { useDispatch, useSelector } from "react-redux";
@@ -13,7 +13,7 @@ type NotificationType = "success" | "error";
 const Login = () => {
   const [api, contextHolder] = notification.useNotification();
   const dispatch = useDispatch();
-  const router = useRouter()
+  const router = useRouter();
 
   const openNotification = (
     type: NotificationType,
@@ -40,7 +40,7 @@ const Login = () => {
 
       // store access token in memory and refresh token in cookies
       Cookies.set("refreshToken", refreshToken);
-      Cookies.set("walletAddress", user?.walletAddress);
+      Cookies.set("walletAddress", user?.wallet_address);
       dispatch(setAccessToken(accessToken));
 
       router.push("/");

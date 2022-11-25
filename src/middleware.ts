@@ -4,17 +4,16 @@ import type { NextRequest } from "next/server";
 export function middleware(request: NextRequest) {
   const refreshToken = request.cookies.get("refreshToken")?.value;
   const walletAddress = request.cookies.get("walletAddress")?.value;
-  console.log({ refreshToken, walletAddress });
 
   if (isNothing(refreshToken)) return redirectTo("/login", request);
 
-  if (isNothing(walletAddress)) return redirectTo("/connect-wallet", request);
+  const { pathname } = request.nextUrl;
 
-  // const { pathname } = request.nextUrl;
-  // return pathname === "/"
-  //   ? redirectTo("/", request)
-  //   : NextResponse.next();
-  // NextResponse.next()
+  if (isNothing(walletAddress) && pathname !== "/connect-wallet") {
+    return redirectTo("/connect-wallet", request);
+  }
+
+  NextResponse.next();
 }
 
 export const config = {
@@ -23,8 +22,8 @@ export const config = {
     "/dashboard/:path*",
     "/portfolio/:path*",
     "/portal/:path*",
-    "/properties/:path",
-    "/connect-wallet/:path",
+    "/properties/:path*",
+    "/connect-wallet/:path*",
   ],
 };
 
