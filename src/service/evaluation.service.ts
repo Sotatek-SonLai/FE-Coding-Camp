@@ -53,6 +53,14 @@ const EvaluationService = {
         } catch (error) {
             return [null, error];
         }
+    },
+    updateAssetMetadata: async (id: any, assetMetadata: any) => {
+        try {
+            const response = await Request.put(`evaluations/${id}/assetMetadata`,{assetMetadata});
+            return [response.data, null];
+        } catch (error) {
+            return [null, error];
+        }
     }
 
 };
