@@ -17,6 +17,7 @@ import {NextPageWithLayout} from "../../_app";
 import {useRouter} from "next/router";
 import {configCarousel} from "../../properties/[id]";
 import TransactionModal from "../../../components/common/TransactionModal";
+import AssetInfo from "../../../components/PortalEvaluationPage/AssetInfo";
 
 const getBase64 = (img: RcFile, callback: (url: string) => void) => {
     const reader = new FileReader();
@@ -60,7 +61,7 @@ const MintNftPage: NextPageWithLayout = (props: any) => {
             const provider = getProvider(wallet);
             if (provider && publicKey) {
                 const program = new mainProgram(provider)
-                const [txToBase64, err, metadataAddress]: any = await program.getSerializedTx(assetInfo?.assetUrl, assetInfo?.bigGuardian)
+                const [txToBase64, err, metadataAddress]: any = await program.mintNft(assetInfo?.assetUrl, assetInfo?.bigGuardian)
                 if (!err) {
                     const [resUMetaDt]: any = await EvaluationService.updateAssetMetadata(assetInfo?._id, metadataAddress)
                     console.log('resUMetaDt', resUMetaDt)
@@ -129,70 +130,7 @@ const MintNftPage: NextPageWithLayout = (props: any) => {
                         <Title level={2} style={{textAlign: 'center'}}>Request Mint NFT</Title>
                         <br/>
 
-                        <div className="flex justify-center">
-                            <Img
-                                width={150}
-                                src={getUrl(assetInfo?.avatar)}
-                            />
-                        </div>
-
-                        <br/>
-
-                        <Divider orientation="center" orientationMargin="0">Information</Divider>
-
-                        <Title level={4}>Address: {assetInfo?.address}</Title>
-                        <Title level={4}>description: {assetInfo?.description}</Title>
-                        <Title level={4}>External Url: {assetInfo?.externalUrl}</Title>
-                        <Title level={4}>Youtube Url: {assetInfo?.youtubeUrl}</Title>
-
-                        <Divider orientation="center" orientationMargin="0">Attributes</Divider>
-                        {(assetInfo?.attributes && assetInfo?.attributes.length) ? <table className='tbl' style={{width: '100%'}}>
-                            <tr>
-                                <th>key</th>
-                                <th>value</th>
-                            </tr>
-                            {assetInfo?.attributes.map((item: any, index: number) => (
-                                <tr key={index}>
-                                    <td>{item.key}</td>
-                                    <td>{item.value}</td>
-                                </tr>
-                            ))}
-                        </table> : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE}/>}
-                        <Divider orientation="center" orientationMargin="0">Product Images</Divider>
-                        <div className="rowSlide">
-                            <div className="slide">
-                                {(assetInfo?.projectImages && assetInfo?.projectImages.length) ? <Carousel {...configCarousel}>
-                                    {assetInfo?.projectImages?.map((item: any, index: any) => {
-                                        return (
-                                            <img
-                                                className="logo"
-                                                src={getUrl(item)}
-                                                style={{width: 100, height: 100}}
-                                                key={index}
-                                            />
-                                        );
-                                    })}
-                                </Carousel> : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE}/>}
-                            </div>
-                        </div>
-                        <br/>
-                        <Divider orientation="center" orientationMargin="0">Legal Paper</Divider>
-                        <div className="rowSlide">
-                            <div className="slide">
-                                {(assetInfo?.certificates && assetInfo?.certificates.length) ? <Carousel {...configCarousel}>
-                                    {assetInfo?.certificates.map((item: any, index: any) => {
-                                        return (
-                                            <img
-                                                className="logo"
-                                                src={getUrl(item)}
-                                                style={{width: 100, height: 100}}
-                                                key={index}
-                                            />
-                                        );
-                                    })}
-                                </Carousel> : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE}/>}
-                            </div>
-                        </div>
+                        <AssetInfo assetInfo={assetInfo}/>
 
                         <Divider orientation="center" orientationMargin="0"></Divider>
 
