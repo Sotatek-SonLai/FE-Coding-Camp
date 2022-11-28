@@ -4,12 +4,12 @@ import Head from "next/head";
 import { PersistGate } from "redux-persist/integration/react";
 import store, { persistStorage } from "../store";
 import { Provider } from "react-redux";
-import React, { FC, ReactElement, ReactNode } from "react";
+import React, { ReactElement, ReactNode, useEffect, useState } from "react";
 require("@solana/wallet-adapter-react-ui/styles.css");
-
-import MainLayout from "../components/Main-Layout";
 import AutoConnectWalletProvider from "../contexts/AutoConnectWalletContext";
 import { NextPage } from "next";
+import { useRouter } from "next/router";
+import { Spin } from "antd";
 
 export type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {
   getLayout?: (page: ReactElement) => ReactNode;
@@ -17,6 +17,50 @@ export type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {
 
 type AppPropsWithLayout = AppProps & {
   Component: NextPageWithLayout;
+};
+
+const Loading = () => {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const handleStart = (url: string) => {
+      return setLoading(true);
+    };
+    const handleComplete = (url: string) => {
+      setLoading(false);
+    };
+
+    router.events.on("routeChangeStart", handleStart);
+    router.events.on("routeChangeComplete", handleComplete);
+    router.events.on("routeChangeError", handleComplete);
+    return () => {
+      router.events.off("routeChangeStart", handleStart);
+      router.events.off("routeChangeComplete", handleComplete);
+      router.events.off("routeChangeError", handleComplete);
+    };
+  });
+
+  return loading ? (
+    <div
+      style={{
+        position: "fixed",
+        height: "100vh",
+        width: "100%",
+        zIndex: 100,
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "#ffffff96",
+      }}
+    >
+      <div>
+        <Spin size="large" />
+      </div>
+    </div>
+  ) : (
+    <></>
+  );
 };
 
 export default function App({ Component, pageProps }: AppPropsWithLayout) {
@@ -33,6 +77,7 @@ export default function App({ Component, pageProps }: AppPropsWithLayout) {
       <AutoConnectWalletProvider>
         <Provider store={store}>
           <PersistGate loading={null} persistor={persistStorage}>
+            <Loading />
             {getLayout(<Component {...pageProps} />)}
           </PersistGate>
         </Provider>
