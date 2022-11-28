@@ -1,12 +1,13 @@
-import React from "react";
+import React, { useState } from "react";
 import Router, { useRouter } from "next/router";
 import { Typography, Button, Card, Form, Input, notification } from "antd";
 import { login } from "../../service/api/user.service";
 import { useDispatch, useSelector } from "react-redux";
 import { setAccessToken } from "../../store/auth/auth.slice";
 import Cookies from "js-cookie";
+import Link from "next/link";
 
-const { Text, Link, Title } = Typography;
+const { Text, Title } = Typography;
 
 type NotificationType = "success" | "error";
 
@@ -14,6 +15,7 @@ const Login = () => {
   const [api, contextHolder] = notification.useNotification();
   const dispatch = useDispatch();
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
 
   const openNotification = (
     type: NotificationType,
@@ -29,6 +31,7 @@ const Login = () => {
   const onFinish = async (formData: any) => {
     try {
       console.log("Success:", formData);
+      setLoading(true);
 
       const response = await login({
         email: formData.email,
@@ -42,7 +45,7 @@ const Login = () => {
       Cookies.set("refreshToken", refreshToken);
       Cookies.set("walletAddress", user?.wallet_address);
       dispatch(setAccessToken(accessToken));
-
+      setLoading(false);
       router.push("/");
     } catch (error: any) {
       console.log("Faild to sign in: ", error?.response?.data?.error);
@@ -59,9 +62,9 @@ const Login = () => {
   };
 
   return (
-    <>
+    <div style={{ height: "100vh", padding: "150px" }}>
       {contextHolder}
-      <Card style={{ width: 400, margin: "150px auto" }}>
+      <Card style={{ width: 400, margin: "auto" }}>
         <Title level={2} style={{ marginBottom: "30px" }}>
           Sign in
         </Title>
@@ -90,6 +93,7 @@ const Login = () => {
           </Form.Item>
           <Form.Item>
             <Button
+              loading={loading}
               size="large"
               type="primary"
               htmlType="submit"
@@ -103,7 +107,7 @@ const Login = () => {
           </Text>
         </Form>
       </Card>
-    </>
+    </div>
   );
 };
 

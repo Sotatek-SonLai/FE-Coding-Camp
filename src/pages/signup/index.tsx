@@ -1,11 +1,13 @@
 import { Typography, Button, Card, Form, Input, notification } from "antd";
-import React from "react";
+import Link from "next/link";
+import React, { useState } from "react";
 import { signUp } from "../../service/api/user.service";
 
-const { Text, Link, Title } = Typography;
+const { Text, Title } = Typography;
 type NotificationType = "success" | "error";
 const SignUp = () => {
   const [api, contextHolder] = notification.useNotification();
+  const [loading, setLoading] = useState(false);
 
   const openNotification = (
     type: NotificationType,
@@ -21,6 +23,7 @@ const SignUp = () => {
   const onFinish = async (formData: any) => {
     try {
       console.log("Success:", formData);
+      setLoading(true);
       const { email, password } = formData;
       await signUp({ email, password });
       openNotification(
@@ -28,6 +31,7 @@ const SignUp = () => {
         "Congratulations!",
         "Your registration has been sucessful"
       );
+      setLoading(false);
     } catch (error: any) {
       console.log("Faild to sign up: ", error?.response?.data?.error);
       openNotification(
@@ -43,9 +47,9 @@ const SignUp = () => {
   };
 
   return (
-    <>
+    <div style={{ height: "100vh", padding: "150px" }}>
       {contextHolder}
-      <Card style={{ width: 400, margin: "150px auto" }}>
+      <Card style={{ width: 400, margin: "auto" }}>
         <Title level={2} style={{ marginBottom: "30px" }}>
           Sign up
         </Title>
@@ -86,6 +90,7 @@ const SignUp = () => {
           </Form.Item>
           <Form.Item>
             <Button
+              loading={loading}
               size="large"
               type="primary"
               htmlType="submit"
@@ -99,7 +104,7 @@ const SignUp = () => {
           </Text>
         </Form>
       </Card>
-    </>
+    </div>
   );
 };
 
