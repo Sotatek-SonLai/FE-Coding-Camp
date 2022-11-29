@@ -1,11 +1,9 @@
-import React, { useState } from "react";
+import React from "react";
 import { useRouter } from "next/router";
 import { Typography, Button, Card, Form, Input, notification } from "antd";
-import { login } from "../../service/api/user.service";
-import { useDispatch } from "react-redux";
-import { setAccessToken } from "../../store/auth/auth.slice";
 import Cookies from "js-cookie";
 import Link from "next/link";
+import UserService from "../../service/user.service";
 
 const { Text, Title } = Typography;
 
@@ -13,7 +11,6 @@ type NotificationType = "success" | "error";
 
 const Login = () => {
   const [api, contextHolder] = notification.useNotification();
-  const dispatch = useDispatch();
   const router = useRouter();
 
   const openNotification = (
@@ -29,17 +26,16 @@ const Login = () => {
 
   const onFinish = async (formData: any) => {
     try {
-      console.log("Success:", formData);
-      const response = await login({
+      const [response] = await UserService.login({
         email: formData.email,
         password: formData.password,
       });
-      console.log("response.data.data: ", response.data.data);
-      const { accessToken, user } = response.data.data;
+      const { accessToken, user } = response.data;
+
       // store access token in memory and refresh token in cookies
       Cookies.set("accessToken", accessToken);
       Cookies.set("walletAddress", user?.wallet_address);
-      dispatch(setAccessToken(accessToken));
+
       if (user?.wallet_address === "") router.push("/connect-wallet");
       else router.push("/");
     } catch (error: any) {

@@ -1,6 +1,6 @@
 import { Table, Tabs, Button, Space, Typography } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
-import React, {ReactElement, useEffect, useState} from "react";
+import React, { ReactElement, useEffect, useState } from "react";
 import {
   passedAssetColumns,
   PassedAssetDataType,
@@ -38,14 +38,14 @@ const passedAssetData: PassedAssetDataType[] = [
   },
 ];
 
-const PortalPage:NextPageWithLayout = (props: any) => {
-  const [requestAssetData, setRequestAssetData] = useState(null)
+const PortalPage: NextPageWithLayout = (props: any) => {
+  const [requestAssetData, setRequestAssetData] = useState(null);
   useEffect(() => {
     (async () => {
       const [res]: any = await EvaluationService.getLand();
-      setRequestAssetData(res)
-    })()
-  }, [])
+      setRequestAssetData(res);
+    })();
+  }, []);
   const items = [
     {
       label: "Request Asset",
@@ -56,7 +56,7 @@ const PortalPage:NextPageWithLayout = (props: any) => {
             <Table
               dataSource={requestAssetData}
               columns={requestAssetColumns}
-              rowKey="id"
+              rowKey="_id"
               pagination={{ pageSize: 6 }}
             />
           )}
