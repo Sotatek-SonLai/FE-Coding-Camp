@@ -25,27 +25,21 @@ const Login = () => {
   };
 
   const onFinish = async (formData: any) => {
-    try {
-      const [response] = await UserService.login({
-        email: formData.email,
-        password: formData.password,
-      });
-      const { accessToken, user } = response.data;
+    const [response] = await UserService.login({
+      email: formData.email,
+      password: formData.password,
+    });
 
-      // store access token in memory and refresh token in cookies
-      Cookies.set("accessToken", accessToken);
-      Cookies.set("walletAddress", user?.wallet_address);
-
-      if (user?.wallet_address === "") router.push("/connect-wallet");
-      else router.push("/");
-    } catch (error: any) {
-      console.log("Faild to sign in: ", error?.response?.data?.error);
-      openNotification(
-        "error",
-        "Fail to sign in",
-        error?.response?.data?.error?.message
-      );
+    if (response?.error) {
+      openNotification("error", "Fail to sign in", response.error.message);
+      return;
     }
+    const { accessToken, user } = response.data;
+    // store access token in memory and refresh token in cookies
+    Cookies.set("accessToken", accessToken);
+    Cookies.set("walletAddress", user?.wallet_address);
+    if (user?.wallet_address === "") router.push("/connect-wallet");
+    else router.push("/");
   };
 
   return (

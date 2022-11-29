@@ -1,36 +1,32 @@
-import {message, message as msg} from "antd";
-import {AxiosResponse} from "axios";
-import store from "../store";
-// import {signOut} from "../store/auth/auth.slice";
+import { message, message as msg } from "antd";
+import { AxiosResponse } from "axios";
 
 const UnauthorizedCallback = (mess: string) => {
-	message.error(mess)
-}
+  message.error(mess);
+};
 
-let timeoutFlag: NodeJS.Timeout
+let timeoutFlag: NodeJS.Timeout;
 
 const handleErrorUtil = (response: AxiosResponse<any>) => {
-	const {status, data} = response
-	switch (status) {
-		case 401:
-			// store.dispatch(signOut())
+  const { status, data } = response;
+  switch (status) {
+    case 401:
+      // clearTimeout(timeoutFlag);
+      // timeoutFlag = setTimeout(() => {
+      // UnauthorizedCallback(data?.message)
+      // }, 1500);
+      return {
+        ...response,
+        data: {
+          ...response.data,
+          message: null,
+        },
+      };
+    default:
+      return response;
+  }
 
-			clearTimeout(timeoutFlag)
-			timeoutFlag = setTimeout(() => {
-				UnauthorizedCallback(data?.message)
-			}, 1500)
-			return {
-				...response,
-				data: {
-					...response.data,
-					message: null
-				}
-			};
-		default:
-			return response
-	}
+  return response;
+};
 
-	return response
-}
-
-export default handleErrorUtil
+export default handleErrorUtil;
