@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import Router, { useRouter } from "next/router";
+import { useRouter } from "next/router";
 import { Typography, Button, Card, Form, Input, notification } from "antd";
 import { login } from "../../service/api/user.service";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { setAccessToken } from "../../store/auth/auth.slice";
 import Cookies from "js-cookie";
 import Link from "next/link";
@@ -43,6 +43,7 @@ const Login = () => {
 
       // store access token in memory and refresh token in cookies
       Cookies.set("refreshToken", refreshToken);
+      Cookies.set("assetToken", accessToken);
       Cookies.set("walletAddress", user?.wallet_address);
       dispatch(setAccessToken(accessToken));
       setLoading(false);
