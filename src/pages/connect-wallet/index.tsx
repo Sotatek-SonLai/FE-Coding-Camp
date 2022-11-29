@@ -1,46 +1,39 @@
 import { useWallet } from "@solana/wallet-adapter-react";
-import { PhantomWalletName } from "@solana/wallet-adapter-wallets";
-import { Button } from "antd";
+import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
+import { PublicKey } from "@solana/web3.js";
 import Cookies from "js-cookie";
 import { useRouter } from "next/router";
-import React from "react";
+import React, { useEffect } from "react";
 import useUserApi from "../../service/useUserApi";
 
 const ConnectWalletPage = () => {
   const router = useRouter();
-  const { wallet, connect, connecting, connected, publicKey, select } =
-    useWallet();
+  const { publicKey } = useWallet();
   const { updateWalletAddress } = useUserApi();
   const { signMessage } = useWallet();
-  const getProvider = () => {
-    if ("phantom" in window) {
-      const provider = window.phantom?.solana;
 
-      if (provider?.isPhantom) {
-        return provider;
-      }
+  const verifyWalletAddress = async (publicKey: PublicKey) => {
+    try {
+      const base58 = publicKey.toBase58();
+      console.log(base58);
+      if (!base58 || !signMessage) return;
+      var enc = new TextEncoder();
+      const signature = await signMessage(enc.encode("solana-coding-camp"));
+      const responce = await updateWalletAddress({
+        message: Buffer.from(signature).toString("base64"),
+        wallet_address: base58,
+      });
+      Cookies.set("walletAddress", base58);
+      router.push("/");
+    } catch (error) {
+      console.log("Faild to sign message: ", error);
     }
-
-    window.open("https://phantom.app/", "_blank");
   };
 
-  const handleClick = async () => {
-    console.log("connect wallet btn click");
-    select(PhantomWalletName);
-    await connect();
+  useEffect(() => {
     if (!publicKey) return;
-    const base58 = publicKey.toBase58();
-    console.log(base58);
-    if (!base58 || !signMessage) return;
-    var enc = new TextEncoder();
-    const signature = await signMessage(enc.encode("solana-coding-camp"));
-    const responce = await updateWalletAddress({
-      message: Buffer.from(signature).toString("base64"),
-      wallet_address: base58,
-    });
-    Cookies.set("walletAddress", base58);
-    router.push("/");
-  };
+    verifyWalletAddress(publicKey);
+  }, [publicKey]);
 
   return (
     <div
@@ -51,9 +44,7 @@ const ConnectWalletPage = () => {
         alignItems: "center",
       }}
     >
-      <Button type="primary" onClick={handleClick}>
-        Connect Wallet
-      </Button>
+      <WalletMultiButton />
     </div>
   );
 };
