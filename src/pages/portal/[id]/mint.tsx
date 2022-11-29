@@ -63,7 +63,7 @@ const MintNftPage: NextPageWithLayout = (props: any) => {
                 const program = new mainProgram(provider)
                 const [txToBase64, err, metadataAddress, mintKey]: any = await program.mintNft(assetInfo?.assetUrl, assetInfo?.bigGuardian)
                 if (!err) {
-                    const [resUMetaDt]: any = await EvaluationService.updateAssetMetadata(assetInfo?._id, {metadataAddress, mintKey})
+                    const [resUMetaDt]: any = await EvaluationService.updateAssetMetadata(assetInfo?._id, {assetMetadata: metadataAddress, mintKey: mintKey.publicKey.toBase58()})
                     console.log('resUMetaDt', resUMetaDt)
                     const [res]: any = await EvaluationService.mintNft(txToBase64)
                     const tx = await sendTransaction(

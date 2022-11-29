@@ -308,9 +308,7 @@ const NewLandPage: NextPageWithLayout = (props) => {
                                 ]}
                             >
                                 <Upload
-                                    customRequest={({file, onSuccess}: any) => {
-                                        onSuccess("ok")
-                                    }}
+
                                     listType="picture-card"
                                     fileList={projectImgList}
                                     onChange={onChangeProjectImages}

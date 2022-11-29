@@ -15,6 +15,7 @@ export interface RequestAssetDataType {
   detail: string;
 }
 
+
 export const requestAssetColumns: ColumnsType<any> = [
   {
     title: "Logo",
@@ -40,7 +41,15 @@ export const requestAssetColumns: ColumnsType<any> = [
     title: "Action",
     dataIndex: "_id",
     key: "_id",
-    render: (_, { _id }) => <Link href={`/portal/${_id}/mint`}><Button type='primary'>MInt NFT</Button></Link>,
+    render: (_, { _id, status }) => {
+      if(status === "PASSED"){
+        return <Link href={`/portal/${_id}/mint`}><Button type='default'>MInt NFT</Button></Link>
+      } else if (status ===  "MINTED"){
+        return <Link href={`/portal/${_id}/frac`}><Button type='primary'>Tokenize NFT</Button></Link>
+      } else {
+        return <></>
+      }
+    },
   },
 ];
 
