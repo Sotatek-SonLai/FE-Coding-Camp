@@ -3,28 +3,17 @@ import type { NextRequest } from "next/server";
 
 export function middleware(request: NextRequest) {
   const accessToken = request.cookies.get("accessToken")?.value;
-  const walletAddress = request.cookies.get("walletAddress")?.value;
 
-  if (isNothing(accessToken)) return redirectTo("/login", request);
-
-  const { pathname } = request.nextUrl;
-
-  if (isNothing(walletAddress) && pathname !== "/connect-wallet") {
-    return redirectTo("/connect-wallet", request);
+  if (isNothing(accessToken)) {
+    console.log("no access token");
+    return redirectTo("/login", request);
   }
 
   NextResponse.next();
 }
 
 export const config = {
-  matcher: [
-    "/",
-    "/dashboard/:path*",
-    "/portfolio/:path*",
-    "/portal/:path*",
-    "/properties/:path*",
-    "/connect-wallet/:path*",
-  ],
+  matcher: ["/", "/portfolio/:path*", "/portal/:path*", "/properties/:path*"],
 };
 
 const isNothing = (value: any) => {

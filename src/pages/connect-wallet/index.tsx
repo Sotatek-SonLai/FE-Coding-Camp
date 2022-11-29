@@ -3,19 +3,19 @@ import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { PublicKey } from "@solana/web3.js";
 import Cookies from "js-cookie";
 import { useRouter } from "next/router";
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import useUserApi from "../../service/useUserApi";
-import {Button} from "antd"
 
 const ConnectWalletPage = () => {
   const router = useRouter();
   const { publicKey, connected } = useWallet();
   const { updateWalletAddress } = useUserApi();
   const { signMessage } = useWallet();
+  const verifyWallet = useRef(false);
 
-  const verifyWalletAddress = async () => {
+  const verifyWalletAddress = async (publicKey: PublicKey) => {
     try {
-      if(!publicKey) return
+      if (!publicKey) return;
       const base58 = publicKey.toBase58();
       console.log(base58);
       if (!base58 || !signMessage) return;
@@ -32,6 +32,17 @@ const ConnectWalletPage = () => {
     }
   };
 
+  const handleClick = (e: React.MouseEvent<HTMLElement>) => {
+    verifyWallet.current = true;
+    if (!publicKey) return;
+    e.preventDefault();
+    verifyWalletAddress(publicKey);
+  };
+
+  useEffect(() => {
+    if (!verifyWallet.current || !publicKey) return;
+    verifyWalletAddress(publicKey);
+  }, [publicKey]);
 
   return (
     <div
@@ -43,11 +54,7 @@ const ConnectWalletPage = () => {
       }}
     >
       <div className="box">
-        <WalletMultiButton />
-        <br/><br/>
-        <div className="flex justify-center">
-          <Button onClick={verifyWalletAddress} type='primary'>Click to link Wallet with your account</Button>
-        </div>
+        <WalletMultiButton onClick={handleClick} />
       </div>
     </div>
   );
