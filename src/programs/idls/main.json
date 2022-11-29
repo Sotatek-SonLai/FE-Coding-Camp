@@ -42,6 +42,14 @@
           "type": "string"
         },
         {
+          "name": "escrowLockDuration",
+          "type": "i64"
+        },
+        {
+          "name": "preLockBeforeDistribution",
+          "type": "i64"
+        },
+        {
           "name": "mintingProtocolPrice",
           "type": "u64"
         },
@@ -159,14 +167,6 @@
           "isSigner": true
         },
         {
-          "name": "fractionalizeTokenLocker",
-          "isMut": true,
-          "isSigner": false,
-          "docs": [
-            "[Locker]."
-          ]
-        },
-        {
           "name": "assetBasket",
           "isMut": true,
           "isSigner": false
@@ -233,12 +233,15 @@
           "isSigner": true
         },
         {
-          "name": "assetBasket",
+          "name": "fractionalizeTokenLocker",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "[Locker]."
+          ]
         },
         {
-          "name": "governor",
+          "name": "assetBasket",
           "isMut": true,
           "isSigner": false
         },
@@ -246,6 +249,21 @@
           "name": "owner",
           "isMut": true,
           "isSigner": true
+        },
+        {
+          "name": "bigGuardian",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "setting",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "governor",
+          "isMut": true,
+          "isSigner": false
         },
         {
           "name": "mint",
@@ -280,15 +298,6 @@
       ],
       "args": [
         {
-          "name": "root",
-          "type": {
-            "array": [
-              "u8",
-              32
-            ]
-          }
-        },
-        {
           "name": "totalDistributionAmount",
           "type": "u64"
         }
@@ -301,6 +310,27 @@
           "name": "dividendDistributor",
           "isMut": true,
           "isSigner": false
+        },
+        {
+          "name": "governor",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "locker",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The [Locker] being exited from."
+          ]
+        },
+        {
+          "name": "escrow",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The [Escrow] that is being closed. Sent the funds back to claimer"
+          ]
         },
         {
           "name": "claimer",
@@ -343,23 +373,7 @@
           "isSigner": false
         }
       ],
-      "args": [
-        {
-          "name": "amount",
-          "type": "u64"
-        },
-        {
-          "name": "proof",
-          "type": {
-            "vec": {
-              "array": [
-                "u8",
-                32
-              ]
-            }
-          }
-        }
-      ]
+      "args": []
     },
     {
       "name": "newEscrow",
@@ -371,6 +385,11 @@
           "docs": [
             "[Locker]."
           ]
+        },
+        {
+          "name": "governor",
+          "isMut": false,
+          "isSigner": false
         },
         {
           "name": "escrow",
@@ -497,16 +516,6 @@
             "type": "publicKey"
           },
           {
-            "name": "auctionState",
-            "type": {
-              "defined": "AuctionState"
-            }
-          },
-          {
-            "name": "averagePrice",
-            "type": "u64"
-          },
-          {
             "name": "totalDistributionCheckpoint",
             "type": "u64"
           },
@@ -563,13 +572,8 @@
             "type": "u64"
           },
           {
-            "name": "root",
-            "type": {
-              "array": [
-                "u8",
-                32
-              ]
-            }
+            "name": "governor",
+            "type": "publicKey"
           },
           {
             "name": "owner",
@@ -645,7 +649,7 @@
             "type": "u64"
           },
           {
-            "name": "base",
+            "name": "dividendDistributor",
             "docs": [
               "Base account used to generate signer seeds."
             ],
@@ -671,6 +675,10 @@
               "Total number of tokens locked in [Escrow]s."
             ],
             "type": "u64"
+          },
+          {
+            "name": "lockEndTime",
+            "type": "i64"
           },
           {
             "name": "bump",
@@ -743,6 +751,14 @@
           {
             "name": "governor",
             "type": "publicKey"
+          },
+          {
+            "name": "escrowLockDuration",
+            "type": "i64"
+          },
+          {
+            "name": "preLockBeforeDistribution",
+            "type": "i64"
           },
           {
             "name": "minReserveFactor",
@@ -822,7 +838,7 @@
           "index": false
         },
         {
-          "name": "ownerPda",
+          "name": "assetBasket",
           "type": "publicKey",
           "index": false
         },
@@ -840,6 +856,11 @@
           "name": "iat",
           "type": "i64",
           "index": false
+        },
+        {
+          "name": "basketId",
+          "type": "u64",
+          "index": false
         }
       ]
     },
@@ -849,15 +870,20 @@
         {
           "name": "assetBasket",
           "type": "publicKey",
-          "index": false
+          "index": true
         },
         {
           "name": "governor",
           "type": "publicKey",
-          "index": false
+          "index": true
         },
         {
           "name": "mint",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "owner",
           "type": "publicKey",
           "index": false
         },
@@ -882,18 +908,23 @@
           "index": false
         },
         {
+          "name": "locker",
+          "type": "publicKey",
+          "index": false
+        },
+        {
           "name": "owner",
           "type": "publicKey",
           "index": false
         },
         {
-          "name": "root",
-          "type": "string",
+          "name": "totalDistributionAmount",
+          "type": "u64",
           "index": false
         },
         {
-          "name": "totalDistributionAmount",
-          "type": "u64",
+          "name": "startDistributionAt",
+          "type": "i64",
           "index": false
         }
       ]
@@ -924,36 +955,6 @@
         {
           "name": "lastClaimedAt",
           "type": "i64",
-          "index": false
-        }
-      ]
-    },
-    {
-      "name": "NewLockerEvent",
-      "fields": [
-        {
-          "name": "governor",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "locker",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "tokenMint",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "assetId",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "basketId",
-          "type": "u64",
           "index": false
         }
       ]
@@ -1012,6 +1013,36 @@
           "index": false
         }
       ]
+    },
+    {
+      "name": "ExitEscrowEvent",
+      "fields": [
+        {
+          "name": "escrowOwner",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "locker",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "timestamp",
+          "type": "i64",
+          "index": false
+        },
+        {
+          "name": "lockerSupply",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "releasedAmount",
+          "type": "u64",
+          "index": false
+        }
+      ]
     }
   ],
   "errors": [
@@ -1052,88 +1083,97 @@
     },
     {
       "code": 6008,
-      "name": "NotEnoughTokens"
+      "name": "PublicKeyDidMatch"
     },
     {
       "code": 6009,
-      "name": "NotEnoughSOL"
+      "name": "NotEnoughTokens"
     },
     {
       "code": 6010,
-      "name": "MintingAmountCantBeZero"
+      "name": "NotEnoughSOL"
     },
     {
       "code": 6011,
-      "name": "DividendCheckpointCantBeZero"
+      "name": "MintingAmountCantBeZero"
     },
     {
       "code": 6012,
-      "name": "ImmutableGovernor"
+      "name": "DistributionEndTimePassed",
+      "msg": "Distribution end time is already passed!"
     },
     {
       "code": 6013,
-      "name": "GovernorMismatch"
+      "name": "DividendCheckpointCantBeZero"
     },
     {
       "code": 6014,
-      "name": "NFTOwnerMismatch"
+      "name": "ImmutableGovernor"
     },
     {
       "code": 6015,
-      "name": "NoFreezeAuthoritySet"
+      "name": "GovernorMismatch"
     },
     {
       "code": 6016,
-      "name": "InvalidAccountData"
+      "name": "NFTOwnerMismatch"
     },
     {
       "code": 6017,
-      "name": "FractionalTokenZeroDecimals"
+      "name": "NoFreezeAuthoritySet"
     },
     {
       "code": 6018,
-      "name": "FractionalTokenSupplyNotPure"
+      "name": "InvalidAccountData"
     },
     {
       "code": 6019,
-      "name": "NFTIsAlreadyFractionalized"
+      "name": "FractionalTokenZeroDecimals"
     },
     {
       "code": 6020,
-      "name": "TokenTreasuryPDANotFound"
+      "name": "FractionalTokenSupplyNotPure"
     },
     {
       "code": 6021,
+      "name": "NFTIsAlreadyFractionalized"
+    },
+    {
+      "code": 6022,
+      "name": "TokenTreasuryPDANotFound"
+    },
+    {
+      "code": 6023,
       "name": "InvalidMerkleProof",
       "msg": "Invalid Dividend Distribution Merkle proofs!!"
     },
     {
-      "code": 6022,
+      "code": 6024,
       "name": "DividendAlreadyClaimed",
       "msg": "Dividend from this checkpoint is already claimed!!"
     },
     {
-      "code": 6023,
+      "code": 6025,
       "name": "ExceedsTotalDistributionAmount"
     },
     {
-      "code": 6024,
+      "code": 6026,
       "name": "InvalidReserveFactorForSetting"
     },
     {
-      "code": 6025,
+      "code": 6027,
       "name": "MinReserveFactorGreaterThanMax"
     },
     {
-      "code": 6026,
+      "code": 6028,
       "name": "ReserveFactorMoreThanBasisPoint"
     },
     {
-      "code": 6027,
+      "code": 6029,
       "name": "SettingAccountMismatched"
     }
   ],
   "metadata": {
-    "address": "2bUX9z3VgNm8yYzqxBMS1Fto3L5r7dkWTUp85ukciBcg"
+    "address": "7RLLimHKvGkFGZSiVipaBDYGZNKGCve9twDHfdsBDsN9"
   }
 }
