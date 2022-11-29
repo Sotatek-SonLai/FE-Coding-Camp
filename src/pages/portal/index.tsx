@@ -1,6 +1,6 @@
 import { Table, Tabs, Button, Space, Typography } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
-import React, { ReactElement, useState } from "react";
+import React, {ReactElement, useEffect, useState} from "react";
 import {
   passedAssetColumns,
   PassedAssetDataType,
@@ -12,29 +12,6 @@ import EvaluationService from "../../service/evaluation.service";
 import MainLayout from "../../components/Main-Layout";
 import { NextPageWithLayout } from "../_app";
 const { Title } = Typography;
-
-const requestAssetData: RequestAssetDataType[] = [
-  {
-    id: "1",
-    propertyInfo: "https://joeschmoe.io/api/v1/random",
-    name: "ABC",
-    totalSupply: 100000,
-    tokenPrice: 0.0001,
-    status: "pending",
-    action: "Fractionalize",
-    detail: "Detail",
-  },
-  {
-    id: "2",
-    propertyInfo: "https://joeschmoe.io/api/v1/random",
-    name: "Trinh Thi Thu Trang Trinh Thi Thu Trang Trinh Thi Thu Trang",
-    totalSupply: 1000000000,
-    tokenPrice: 0.001,
-    status: "rejected",
-    action: "Fractionalize",
-    detail: "Detail",
-  },
-];
 
 const passedAssetData: PassedAssetDataType[] = [
   {
@@ -62,7 +39,13 @@ const passedAssetData: PassedAssetDataType[] = [
 ];
 
 const PortalPage:NextPageWithLayout = (props: any) => {
-  const { requestAssetData } = props;
+  const [requestAssetData, setRequestAssetData] = useState(null)
+  useEffect(() => {
+    (async () => {
+      const [res]: any = await EvaluationService.getLand();
+      setRequestAssetData(res)
+    })()
+  }, [])
   const items = [
     {
       label: "Request Asset",
@@ -115,12 +98,3 @@ PortalPage.getLayout = (page: ReactElement) => {
 };
 
 export default PortalPage;
-
-export async function getStaticProps(context: any) {
-  const [res]: any = await EvaluationService.getLand();
-  return {
-    props: {
-      requestAssetData: res,
-    }, // will be passed to the page component as props
-  };
-}

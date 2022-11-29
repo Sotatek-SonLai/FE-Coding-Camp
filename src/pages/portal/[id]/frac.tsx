@@ -15,6 +15,8 @@ import {Transaction} from "@solana/web3.js";
 import AssetInfo from "../../../components/PortalEvaluationPage/AssetInfo";
 import * as anchor from "@project-serum/anchor";
 const {Title} = Typography;
+import Link from "next/link"
+import {ArrowRightOutlined} from '@ant-design/icons';
 
 const getBase64 = (img: RcFile, callback: (url: string) => void) => {
     const reader = new FileReader();
@@ -84,12 +86,17 @@ const MintNftPage: NextPageWithLayout = (props: any) => {
 
                     flagInterval = setInterval(async () => {
 
-                        const result: any = await program._provider.connection.sendRawTransaction(txToBase64);
+                        // const result: any = await program._provider.connection.sendRawTransaction(txToBase64);
+                        const result: any = await program._provider.connection.getSignatureStatus(tx, {
+                            searchTransactionHistory: true,
+                        });
                         console.log('result value: ', result?.value)
                         // confirmationStatus : "confirmed"
                         if (result?.value?.confirmationStatus === 'confirmed') {
                             message.success('Tokenize nft successfully')
                             clearInterval(flagInterval)
+                            setTx(tx)
+                            setIsShownModalTx(true)
 
                             setLoading(false)
                             // router.push(`/portal/${assetInfo?._id}/tokenize`).then()
@@ -116,7 +123,9 @@ const MintNftPage: NextPageWithLayout = (props: any) => {
 
     return (
         <>
-            <TransactionModal close={() => setIsShownModalTx(false)} tx={tx} isShown={isShownModalTx}/>
+            <TransactionModal close={() => setIsShownModalTx(false)} tx={tx} isShown={isShownModalTx}>
+                <Link href='/properties'><Button type='primary'>Go to properties <ArrowRightOutlined/></Button></Link>
+            </TransactionModal>
             <Row gutter={25}>
                 <Col span={12}>
                     <div className='box'>
