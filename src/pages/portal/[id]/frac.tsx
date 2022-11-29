@@ -63,7 +63,7 @@ const MintNftPage: NextPageWithLayout = (props: any) => {
                 })
                 console.log({res})
                 const program = new mainProgram(provider)
-                const [txToBase64, err]: any = await program.tokenizeNft(assetInfo?.mintKey)
+                const [txToBase64, err]: any = await program.tokenizeNft(assetInfo?.mintKey, assetInfo?.assetBasket)
 
                 if(!err){
                     const [res]: any = await EvaluationService.mintNft(txToBase64)
