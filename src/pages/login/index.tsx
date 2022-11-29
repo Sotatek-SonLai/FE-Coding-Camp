@@ -15,7 +15,6 @@ const Login = () => {
   const [api, contextHolder] = notification.useNotification();
   const dispatch = useDispatch();
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
 
   const openNotification = (
     type: NotificationType,
@@ -31,25 +30,19 @@ const Login = () => {
   const onFinish = async (formData: any) => {
     try {
       console.log("Success:", formData);
-      setLoading(true);
-
       const response = await login({
         email: formData.email,
         password: formData.password,
       });
-
       console.log("response.data.data: ", response.data.data);
       const { accessToken, user } = response.data.data;
-
       // store access token in memory and refresh token in cookies
       Cookies.set("accessToken", accessToken);
       Cookies.set("walletAddress", user?.wallet_address);
       dispatch(setAccessToken(accessToken));
-      setLoading(false);
       if (user?.wallet_address === "") router.push("/connect-wallet");
       else router.push("/");
     } catch (error: any) {
-      setLoading(false);
       console.log("Faild to sign in: ", error?.response?.data?.error);
       openNotification(
         "error",
@@ -57,10 +50,6 @@ const Login = () => {
         error?.response?.data?.error?.message
       );
     }
-  };
-
-  const onFinishFailed = (errorInfo: any) => {
-    console.log("Failed:", errorInfo);
   };
 
   return (
@@ -76,13 +65,21 @@ const Login = () => {
           layout="vertical"
           initialValues={{ remember: true }}
           onFinish={onFinish}
-          onFinishFailed={onFinishFailed}
           autoComplete="off"
         >
           <Form.Item
             label="Email"
             name="email"
-            rules={[{ required: true, message: "Please input your username!" }]}
+            rules={[
+              {
+                required: true,
+                message: "Please input your email!",
+              },
+              {
+                pattern: new RegExp(`^[^\s@]+@([^\s@.,]+\.)+[^\s@.,]{2,}$`),
+                message: "Invalid email!",
+              },
+            ]}
           >
             <Input size="large" />
           </Form.Item>
@@ -95,7 +92,6 @@ const Login = () => {
           </Form.Item>
           <Form.Item>
             <Button
-              loading={loading}
               size="large"
               type="primary"
               htmlType="submit"
