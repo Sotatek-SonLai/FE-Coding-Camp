@@ -43,11 +43,11 @@ const Login = () => {
 
       // store access token in memory and refresh token in cookies
       Cookies.set("accessToken", accessToken);
-      Cookies.set("assetToken", accessToken);
       Cookies.set("walletAddress", user?.wallet_address);
       dispatch(setAccessToken(accessToken));
       setLoading(false);
-      router.push("/");
+      if (user?.wallet_address === "") router.push("/connect-wallet");
+      else router.push("/");
     } catch (error: any) {
       setLoading(false);
       console.log("Faild to sign in: ", error?.response?.data?.error);

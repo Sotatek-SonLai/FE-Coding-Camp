@@ -5,9 +5,9 @@ import {
   HomeOutlined,
   PicLeftOutlined,
   ProjectOutlined,
-  LoginOutlined
+  LoginOutlined,
 } from "@ant-design/icons";
-import { Col, MenuProps, Row, Space } from "antd";
+import { Col, Image, MenuProps, Row, Space } from "antd";
 import { Breadcrumb, Layout, Menu, Button, Modal } from "antd";
 
 type MenuItem = Required<MenuProps>["items"][number];
@@ -57,31 +57,37 @@ const MainLayout: React.FC<any> = ({ children }) => {
 
   const handleLogout = () => {
     Cookies.remove("accessToken");
-    Cookies.set("walletAddress", "");
-    router.push("/");
+    Cookies.remove("walletAddress");
+    router.push("/login");
   };
 
   return (
     <>
       <Layout>
-        <Header  style={{ position: 'sticky', top: 0, zIndex: 1, width: '100%' }} className="header">
+        <Header
+          style={{ position: "sticky", top: 0, zIndex: 1, width: "100%" }}
+          className="header"
+        >
           <div className="logo">
-            <img src="/logo.png" alt="" />
+            <Image src="/logo.png" alt="" />
           </div>
           <div className="connect-wrap">
             <DynamicCustomWallet />
           </div>
         </Header>
         <Layout>
-          <Sider width={200} style={{
+          <Sider
+            width={200}
+            style={{
               background: "white",
-              overflow: 'auto',
-              height: '100vh',
-              position: 'fixed',
+              overflow: "auto",
+              height: "100vh",
+              position: "fixed",
               left: 0,
               top: 65,
               bottom: 0,
-          }}>
+            }}
+          >
             <Menu
               mode="inline"
               selectedKeys={selectedKeys}
