@@ -15,6 +15,11 @@ export interface RequestAssetDataType {
   detail: string;
 }
 
+export enum AssetStatusType {
+  PASSED = 'PASSED',
+  MINTED = 'MINTED',
+  TOKENIZED = 'TOKENIZED'
+}
 
 export const requestAssetColumns: ColumnsType<any> = [
   {
@@ -42,12 +47,19 @@ export const requestAssetColumns: ColumnsType<any> = [
     dataIndex: "_id",
     key: "_id",
     render: (_, { _id, status }) => {
-      if(status === "PASSED"){
+      if(status === AssetStatusType.PASSED){
         return <Link href={`/portal/${_id}/mint`}><Button type='default'>MInt NFT</Button></Link>
-      } else if (status ===  "MINTED"){
+      } else if (status ===  AssetStatusType.MINTED){
         return <Link href={`/portal/${_id}/frac`}><Button type='primary'>Tokenize NFT</Button></Link>
       } else {
-        return <></>
+        return (
+            <div>
+              <span style={{color: '#52c41a'}}>Tokenized</span>
+              <Link href={'/properties'}>
+                <Button type='link'>Detail</Button>
+              </Link>
+            </div>
+        )
       }
     },
   },

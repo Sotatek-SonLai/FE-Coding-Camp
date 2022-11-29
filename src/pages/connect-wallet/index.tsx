@@ -5,15 +5,17 @@ import Cookies from "js-cookie";
 import { useRouter } from "next/router";
 import React, { useEffect } from "react";
 import useUserApi from "../../service/useUserApi";
+import {Button} from "antd"
 
 const ConnectWalletPage = () => {
   const router = useRouter();
-  const { publicKey } = useWallet();
+  const { publicKey, connected } = useWallet();
   const { updateWalletAddress } = useUserApi();
   const { signMessage } = useWallet();
 
-  const verifyWalletAddress = async (publicKey: PublicKey) => {
+  const verifyWalletAddress = async () => {
     try {
+      if(!publicKey) return
       const base58 = publicKey.toBase58();
       console.log(base58);
       if (!base58 || !signMessage) return;
@@ -30,10 +32,6 @@ const ConnectWalletPage = () => {
     }
   };
 
-  useEffect(() => {
-    if (!publicKey) return;
-    verifyWalletAddress(publicKey);
-  }, [publicKey]);
 
   return (
     <div
@@ -44,7 +42,13 @@ const ConnectWalletPage = () => {
         alignItems: "center",
       }}
     >
-      <WalletMultiButton />
+      <div className="box">
+        <WalletMultiButton />
+        <br/><br/>
+        <div className="flex justify-center">
+          <Button onClick={verifyWalletAddress} type='primary'>Click to link Wallet with your account</Button>
+        </div>
+      </div>
     </div>
   );
 };

@@ -19,6 +19,7 @@ class Request {
 		instance.interceptors.request.use(
 			async (config: any) => {
 				const accessToken = Cookies.get("accessToken");
+				console.log('alsdkjlsdkasdja', accessToken)
 				if (accessToken) {
 					config.headers["Authorization"] = `Bearer ${accessToken}`;
 				}

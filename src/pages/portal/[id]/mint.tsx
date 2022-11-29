@@ -1,5 +1,6 @@
 import React, {ReactElement, useEffect, useState} from "react";
 import {Typography, Button, Divider, Form, Empty, Input, Upload, message, Row, Col, Image as Img, Space, Carousel} from 'antd';
+
 const {Title} = Typography;
 import type {RcFile, UploadFile, UploadProps} from 'antd/es/upload/interface';
 import {ArrowRightOutlined} from '@ant-design/icons';
@@ -41,9 +42,9 @@ const MintNftPage: NextPageWithLayout = (props: any) => {
 
     useEffect(() => {
         (async () => {
-            if(router?.query?.id){
+            if (router?.query?.id) {
                 const [res]: any = await EvaluationService.getDetail(router?.query?.id)
-                if(!res?.error){
+                if (!res?.error) {
                     setAssetInfo(res)
                 } else {
                     message.error(res?.error?.message)
@@ -81,23 +82,68 @@ const MintNftPage: NextPageWithLayout = (props: any) => {
                     console.log('started await')
 
                     setTx(tx)
-                    setIsShownModalTx(true)
 
-                    flagInterval = setInterval(async () => {
-                        const result: any = await program._provider.connection.getSignatureStatus(tx, {
-                            searchTransactionHistory: true,
-                        });
-                        console.log('result value: ', result.value)
-                        // confirmationStatus : "confirmed"
-                        if (result?.value?.confirmationStatus === 'confirmed') {
-                            message.success('Mint nft successfully')
-                            clearInterval(flagInterval)
+                    // flagInterval = setInterval(async () => {
+                    //     const result: any = await program._provider.connection.getSignatureStatus(tx, {
+                    //         searchTransactionHistory: true,
+                    //     });
+                    //     console.log('result value: ', result.value)
+                    //     // confirmationStatus : "confirmed"
+                    //     if (result?.value?.confirmationStatus === 'confirmed') {
+                    //         message.success('Mint nft successfully')
+                    //         clearInterval(flagInterval)
+                    //
+                    //         setLoading(false)
+                    //         // router.push(`/portal/${assetInfo?._id}/tokenize`).then()
+                    //     }
+                    // }, 1000)
+                    // setLoading(false)
 
-                            setLoading(false)
-                            // router.push(`/portal/${assetInfo?._id}/tokenize`).then()
+
+                    //
+
+                    const statusCheckInterval = 300;
+                    const timeout = 90000;
+                    let isBlockhashValid = true;
+                    const sleep = (ms: any) => {
+                        return new Promise(resolve => setTimeout(resolve, ms));
+                    }
+
+                    const isBlockhashExpired = async (initialBlockHeight: any) => {
+                        let currentBlockHeight = (await program._provider.connection.getBlockHeight());
+                        console.log(currentBlockHeight);
+                        return (currentBlockHeight > initialBlockHeight);
+                    }
+
+                    const inititalBlock = (await program._provider.connection.getSignatureStatus(tx)).context.slot;
+                    let done = false;
+                    setTimeout(() => {
+                        if (done) {
+                            return;
                         }
-                    }, 1000)
-                    setLoading(false)
+                        done = true;
+                        console.log('Timed out for txid', tx);
+                        console.log(`${isBlockhashValid ? 'Blockhash not yet expired.' : 'Blockhash has expired.' }`)
+                    }, timeout);
+
+                    while (!done && isBlockhashValid) {
+                        const confirmation = await program._provider.connection.getSignatureStatus(tx);
+
+                        if (confirmation.value && ((confirmation.value.confirmationStatus === 'confirmed') || (confirmation.value.confirmationStatus === 'finalized'))) {
+
+                            console.log(`Confirmation Status: ${confirmation.value.confirmationStatus}, ${tx}`)
+                            done = true;
+                            //Run any additional code you'd like with your txId (e.g. notify user of succesful transaction)
+                        } else {
+                            console.log(`Confirmation Status: ${confirmation.value?.confirmationStatus || 'not yet found.'}`);
+                        }
+                        isBlockhashValid = !(await isBlockhashExpired(inititalBlock));
+                        await sleep(statusCheckInterval);
+                    }
+
+                    if(done){
+                        setIsShownModalTx(true)
+                    }
 
                 }
             }
@@ -118,7 +164,7 @@ const MintNftPage: NextPageWithLayout = (props: any) => {
 
     return (
         <>
-            <TransactionModal close={() => setIsShownModalTx(false)} tx={tx}  isShown={isShownModalTx}>
+            <TransactionModal close={() => setIsShownModalTx(false)} tx={tx} isShown={isShownModalTx}>
                 <Link href={`/portal/${assetInfo?._id}/frac`}>
                     <Button type='primary'><ArrowRightOutlined/> Tokenize nft</Button>
                 </Link>

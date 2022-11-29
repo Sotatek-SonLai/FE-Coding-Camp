@@ -2,6 +2,7 @@ import { Typography, Button, Card, Form, Input, notification } from "antd";
 import Link from "next/link";
 import React, { useState } from "react";
 import { signUp } from "../../service/api/user.service";
+import {useRouter} from "next/router";
 
 const { Text, Title } = Typography;
 type NotificationType = "success" | "error";
@@ -19,6 +20,7 @@ const SignUp = () => {
       description,
     });
   };
+  const router = useRouter()
 
   const onFinish = async (formData: any) => {
     try {
@@ -29,12 +31,13 @@ const SignUp = () => {
       openNotification(
         "success",
         "Congratulations!",
-        "Your registration has been sucessful"
+        "Your registration has been successfully"
       );
       setLoading(false);
+      router.push('/login').then()
     } catch (error: any) {
       setLoading(false);
-      console.log("Faild to sign up: ", error?.response?.data?.error);
+      console.log("Failed to sign up: ", error?.response?.data?.error);
       openNotification(
         "error",
         "Fail to sign up",
