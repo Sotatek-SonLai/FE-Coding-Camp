@@ -10,6 +10,9 @@ import AutoConnectWalletProvider from "../contexts/AutoConnectWalletContext";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 import { Spin } from "antd";
+import { useConnection } from "@solana/wallet-adapter-react";
+import { useMemo } from "react";
+import Cookies from "js-cookie";
 
 export type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {
   getLayout?: (page: ReactElement) => ReactNode;
@@ -64,8 +67,33 @@ const Loading = () => {
 };
 
 export default function App({ Component, pageProps }: AppPropsWithLayout) {
+  const router = useRouter();
   // Use the layout defined at the page level, if available
   const getLayout = Component.getLayout ?? ((page) => page);
+  const connection = useConnection();
+
+  const getProvider = () => {
+    if (typeof window === "undefined") return;
+    if ("phantom" in window) {
+      const provider = window.phantom?.solana;
+
+      if (provider?.isPhantom) {
+        return provider;
+      }
+    }
+
+    window.open("https://phantom.app/", "_blank");
+  };
+
+  const provider = getProvider();
+
+  if (provider) {
+    provider.on("accountChanged", () => {
+      Cookies.remove("accessToken");
+      Cookies.remove("walletAddress");
+      router.push("/login");
+    });
+  }
 
   return (
     <>

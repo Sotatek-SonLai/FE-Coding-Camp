@@ -4,12 +4,11 @@ import { PublicKey } from "@solana/web3.js";
 import Cookies from "js-cookie";
 import { useRouter } from "next/router";
 import React, { useEffect, useRef } from "react";
-import useUserApi from "../../service/useUserApi";
+import UserService from "../../service/user.service";
 
 const ConnectWalletPage = () => {
   const router = useRouter();
-  const { publicKey, connected } = useWallet();
-  const { updateWalletAddress } = useUserApi();
+  const { publicKey } = useWallet();
   const { signMessage } = useWallet();
   const verifyWallet = useRef(false);
 
@@ -21,10 +20,11 @@ const ConnectWalletPage = () => {
       if (!base58 || !signMessage) return;
       var enc = new TextEncoder();
       const signature = await signMessage(enc.encode("solana-coding-camp"));
-      const responce = await updateWalletAddress({
+      await UserService.updateWalletAddress({
         message: Buffer.from(signature).toString("base64"),
         wallet_address: base58,
       });
+
       Cookies.set("walletAddress", base58);
       router.push("/");
     } catch (error) {

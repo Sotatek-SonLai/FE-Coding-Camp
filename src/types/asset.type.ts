@@ -1,10 +1,10 @@
 export type FileType = {
-    name: string
-    data: any
+  name: string;
+  data: any;
 };
 export interface AssetType {
-  id: string;
-  propertyInfo: string;
+  _id: string;
+  avatar: any;
   name: string;
   totalSupply: number;
   tokenPrice: number;

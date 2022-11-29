@@ -7,55 +7,39 @@ import { useRouter } from "next/router";
 const { Title } = Typography;
 import { URL_PROPERTIES } from "../../constants";
 import MainLayout from "../../components/Main-Layout";
-
-const requestAssetData: AssetType[] = [
-  {
-    id: "1",
-    propertyInfo: "https://joeschmoe.io/api/v1/random",
-    name: "ABC",
-    totalSupply: 100000,
-    tokenPrice: 0.0001,
-    detail: "Detail",
-    rewardDate: "12/12",
-  },
-  {
-    id: "2",
-    propertyInfo: "https://joeschmoe.io/api/v1/random",
-    name: "Trinh Thi Thu Trang Trinh Thi Thu Trang Trinh Thi Thu Trang",
-    totalSupply: 1000000000,
-    tokenPrice: 0.001,
-    detail: "Detail",
-    rewardDate: "12/3",
-  },
-];
+import { useState } from "react";
+import { useEffect } from "react";
+import EvaluationService from "../../service/evaluation.service";
 
 export const requestAssetColumns: ColumnsType<AssetType> = [
   {
     title: "Property Info",
-    dataIndex: "propertyInfo",
-    key: "propertyInfo",
-    render: (url) => {
-      return <PropertyInfo imageUrl={url} />;
+    dataIndex: "avatar",
+    key: "avatar",
+    render: (url, dt) => {
+      return (
+        <PropertyInfo imageUrl={`${dt?.avatar?.host}${dt?.avatar?.url}`} />
+      );
     },
   },
   {
-    title: "Name",
-    dataIndex: "name",
-    key: "name",
+    title: "Address",
+    dataIndex: "address",
+    key: "address",
     ellipsis: true,
   },
-  {
-    title: "Total Supply",
-    dataIndex: "totalSupply",
-    key: "totalSupply",
-    render: (number) => number.toLocaleString("en"),
-  },
-  {
-    title: "Token Price",
-    dataIndex: "tokenPrice",
-    key: "tokenPrice",
-    render: (price) => `$${price}`,
-  },
+  // {
+  //   title: "Total Supply",
+  //   dataIndex: "totalSupply",
+  //   key: "totalSupply",
+  //   render: (number) => number.toLocaleString("en"),
+  // },
+  // {
+  //   title: "Token Price",
+  //   dataIndex: "tokenPrice",
+  //   key: "tokenPrice",
+  //   render: (price) => `$${price}`,
+  // },
   {
     title: "Reward Date",
     dataIndex: "rewardDate",
@@ -64,7 +48,16 @@ export const requestAssetColumns: ColumnsType<AssetType> = [
 ];
 
 const PorpertiesPage = () => {
+  const [requestAssetData, setRequestAssetData] = useState([]);
   const router = useRouter();
+  useEffect(() => {
+    const fetchData = async () => {
+      const [res]: any = await EvaluationService.getLand();
+      setRequestAssetData(res);
+    };
+
+    fetchData();
+  }, []);
 
   return (
     <div>
@@ -73,11 +66,12 @@ const PorpertiesPage = () => {
         className="properties__table"
         dataSource={requestAssetData}
         columns={requestAssetColumns}
-        rowKey="id"
+        rowKey="_id"
+        pagination={{ pageSize: 6 }}
         onRow={(record: AssetType, rowIndex) => {
           return {
             onClick: (event) => {
-              router.push(`${URL_PROPERTIES}/${record?.id}`);
+              router.push(`${URL_PROPERTIES}/${record?._id}`);
             },
           };
         }}

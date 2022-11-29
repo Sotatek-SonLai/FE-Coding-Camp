@@ -1,8 +1,8 @@
 import { Typography, Button, Card, Form, Input, notification } from "antd";
 import Link from "next/link";
 import React, { useState } from "react";
-import { signUp } from "../../service/api/user.service";
-import {useRouter} from "next/router";
+import { useRouter } from "next/router";
+import UserService from "../../service/user.service";
 
 const { Text, Title } = Typography;
 type NotificationType = "success" | "error";
@@ -20,34 +20,26 @@ const SignUp = () => {
       description,
     });
   };
-  const router = useRouter()
+  const router = useRouter();
 
   const onFinish = async (formData: any) => {
-    try {
-      console.log("Success:", formData);
-      setLoading(true);
-      const { email, password } = formData;
-      await signUp({ email, password });
-      openNotification(
-        "success",
-        "Congratulations!",
-        "Your registration has been successfully"
-      );
-      setLoading(false);
-      router.push('/login').then()
-    } catch (error: any) {
-      setLoading(false);
-      console.log("Failed to sign up: ", error?.response?.data?.error);
-      openNotification(
-        "error",
-        "Fail to sign up",
-        error?.response?.data?.error?.message
-      );
-    }
-  };
+    setLoading(true);
+    const { email, password } = formData;
+    const [response] = await UserService.signUp({ email, password });
 
-  const onFinishFailed = (errorInfo: any) => {
-    console.log("Failed:", errorInfo);
+    if (response?.error?.statusCode) {
+      openNotification("error", "Fail to sign up", response.error.message);
+      setLoading(false);
+      return;
+    }
+
+    openNotification(
+      "success",
+      "Congratulations!",
+      "Your registration has been successfully"
+    );
+    setLoading(false);
+    router.push("/login").then();
   };
 
   return (
@@ -63,13 +55,18 @@ const SignUp = () => {
           layout="vertical"
           initialValues={{ remember: true }}
           onFinish={onFinish}
-          onFinishFailed={onFinishFailed}
           autoComplete="off"
         >
           <Form.Item
             label="Email"
             name="email"
-            rules={[{ required: true, message: "Please input your username!" }]}
+            rules={[
+              { required: true, message: "Please input your username!" },
+              {
+                pattern: new RegExp(`^[^\s@]+@([^\s@.,]+\.)+[^\s@.,]{2,}$`),
+                message: "Invalid email!",
+              },
+            ]}
           >
             <Input size="large" />
           </Form.Item>
@@ -88,6 +85,18 @@ const SignUp = () => {
                 required: true,
                 message: "Please input your confirm password!",
               },
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  if (!value || getFieldValue("password") === value) {
+                    return Promise.resolve();
+                  }
+                  return Promise.reject(
+                    new Error(
+                      "The two passwords that you entered do not match!"
+                    )
+                  );
+                },
+              }),
             ]}
           >
             <Input.Password size="large" />
