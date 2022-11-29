@@ -49,6 +49,7 @@ const Login = () => {
       setLoading(false);
       router.push("/");
     } catch (error: any) {
+      setLoading(false);
       console.log("Faild to sign in: ", error?.response?.data?.error);
       openNotification(
         "error",

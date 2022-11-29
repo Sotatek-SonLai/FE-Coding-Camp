@@ -33,6 +33,7 @@ const SignUp = () => {
       );
       setLoading(false);
     } catch (error: any) {
+      setLoading(false);
       console.log("Faild to sign up: ", error?.response?.data?.error);
       openNotification(
         "error",
