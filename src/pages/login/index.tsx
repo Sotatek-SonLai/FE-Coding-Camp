@@ -39,10 +39,10 @@ const Login = () => {
       });
 
       console.log("response.data.data: ", response.data.data);
-      const { accessToken, refreshToken, user } = response.data.data;
+      const { accessToken, user } = response.data.data;
 
       // store access token in memory and refresh token in cookies
-      Cookies.set("refreshToken", refreshToken);
+      Cookies.set("accessToken", accessToken);
       Cookies.set("assetToken", accessToken);
       Cookies.set("walletAddress", user?.wallet_address);
       dispatch(setAccessToken(accessToken));

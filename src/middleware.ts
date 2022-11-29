@@ -2,10 +2,10 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 export function middleware(request: NextRequest) {
-  const refreshToken = request.cookies.get("refreshToken")?.value;
+  const accessToken = request.cookies.get("accessToken")?.value;
   const walletAddress = request.cookies.get("walletAddress")?.value;
 
-  if (isNothing(refreshToken)) return redirectTo("/login", request);
+  if (isNothing(accessToken)) return redirectTo("/login", request);
 
   const { pathname } = request.nextUrl;
 
