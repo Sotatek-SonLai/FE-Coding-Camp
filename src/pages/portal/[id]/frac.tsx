@@ -35,11 +35,12 @@ const MintNftPage: NextPageWithLayout = (props: any) => {
     const router = useRouter()
     const [tx, setTx] = useState<any>('')
     const [isShownModalTx, setIsShownModalTx] = useState<boolean>(false)
+    const id = router?.query?.id
 
     useEffect(() => {
         (async () => {
-            if (router?.query?.id) {
-                const [res]: any = await EvaluationService.getDetail(router?.query?.id)
+            if (id) {
+                const [res]: any = await EvaluationService.getDetail(id)
                 if (!res?.error) {
                     setAssetInfo(res)
                 } else {
@@ -50,7 +51,7 @@ const MintNftPage: NextPageWithLayout = (props: any) => {
         return () => {
             clearInterval(flagInterval)
         }
-    }, [router?.query?.id])
+    }, [id])
 
     const onFinish = async (values: any) => {
         console.log('Success:', values);
@@ -68,7 +69,7 @@ const MintNftPage: NextPageWithLayout = (props: any) => {
                 const [txToBase64, err]: any = await program.tokenizeNft(assetInfo?.mintKey, assetInfo?.assetBasket)
 
                 if(!err){
-                    const [res]: any = await EvaluationService.mintNft(txToBase64)
+                    const [res]: any = await EvaluationService.mintNft(txToBase64, id)
 
                     const tx = await sendTransaction(
                         Transaction.from(

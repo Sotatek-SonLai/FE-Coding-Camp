@@ -36,10 +36,11 @@ const EvaluationService = {
             return [null, error];
         }
     },
-    mintNft: async (base64_serialized_tx: any) => {
+    mintNft: async (base64_serialized_tx: any, id: any) => {
         try {
             const response = await Request.post(`mint`, {
-                base64_serialized_tx
+                base64_serialized_tx,
+                id
             });
             return [response.data, null];
         } catch (error) {
