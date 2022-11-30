@@ -38,9 +38,18 @@ const EvaluationService = {
     },
     mintNft: async (base64_serialized_tx: any, id: any) => {
         try {
-            const response = await Request.post(`mint`, {
-                base64_serialized_tx,
-                id
+            const response = await Request.post(`mint/${id}`, {
+                base64_serialized_tx
+            });
+            return [response.data, null];
+        } catch (error) {
+            return [null, error];
+        }
+    },
+    frac_sign: async (base64_serialized_tx: any, id: any) => {
+        try {
+            const response = await Request.post(`fractionalize/${id}`, {
+                base64_serialized_tx
             });
             return [response.data, null];
         } catch (error) {
