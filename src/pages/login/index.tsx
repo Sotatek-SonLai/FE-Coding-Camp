@@ -4,6 +4,9 @@ import { Typography, Button, Card, Form, Input, notification } from "antd";
 import Cookies from "js-cookie";
 import Link from "next/link";
 import UserService from "../../service/user.service";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { useDispatch } from "react-redux";
+import { updateWalletAddress } from "../../store/wallet/wallet.slice";
 
 const { Text, Title } = Typography;
 
@@ -12,6 +15,8 @@ type NotificationType = "success" | "error";
 const Login = () => {
   const [api, contextHolder] = notification.useNotification();
   const router = useRouter();
+  const { publicKey } = useWallet();
+  const dispatch = useDispatch();
 
   const openNotification = (
     type: NotificationType,
@@ -35,11 +40,17 @@ const Login = () => {
       return;
     }
     const { accessToken, user } = response.data;
+    const { wallet_address } = user;
     // store access token in memory and refresh token in cookies
     Cookies.set("accessToken", accessToken);
-    Cookies.set("walletAddress", user?.wallet_address);
-    if (user?.wallet_address === "") router.push("/connect-wallet");
-    else router.push("/");
+    dispatch(updateWalletAddress(wallet_address));
+
+    if (wallet_address === "") return router.push("/connect-wallet");
+    if (!publicKey) return router.push("/unmatched-wallet");
+    console.log("publicKey: ", publicKey?.toBase58());
+    console.log("wallet_address: ", wallet_address);
+    if (publicKey?.toBase58() === wallet_address) router.push("/");
+    else router.push("/unmatched-wallet");
   };
 
   return (
