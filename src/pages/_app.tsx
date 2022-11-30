@@ -13,6 +13,7 @@ import { Spin } from "antd";
 import { useConnection } from "@solana/wallet-adapter-react";
 import { useMemo } from "react";
 import Cookies from "js-cookie";
+import { PublicKey } from "@solana/web3.js";
 
 export type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {
   getLayout?: (page: ReactElement) => ReactNode;
@@ -89,6 +90,11 @@ export default function App({ Component, pageProps }: AppPropsWithLayout) {
 
   if (provider) {
     provider.on("accountChanged", () => {
+      const accessToken = Cookies.get("accessToken");
+      const path = window.location.pathname;
+      console.log("path: ", window.location.pathname);
+      if (!accessToken) return;
+      if (path === "/connect-wallet" || path === "/unmatched-wallet") return;
       Cookies.remove("accessToken");
       Cookies.remove("walletAddress");
       router.push("/login");

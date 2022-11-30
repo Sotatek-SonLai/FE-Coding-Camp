@@ -1,20 +1,14 @@
-import { message, message as msg } from "antd";
 import { AxiosResponse } from "axios";
-
-const UnauthorizedCallback = (mess: string) => {
-  message.error(mess);
-};
-
-let timeoutFlag: NodeJS.Timeout;
+import Cookies from "js-cookie";
 
 const handleErrorUtil = (response: AxiosResponse<any>) => {
   const { status, data } = response;
   switch (status) {
     case 401:
-      // clearTimeout(timeoutFlag);
-      // timeoutFlag = setTimeout(() => {
-      // UnauthorizedCallback(data?.message)
-      // }, 1500);
+      if (data.error.message !== "Unauthorized") {
+        Cookies.remove("accessToken");
+        window.location.reload();
+      }
       return {
         ...response,
         data: {
