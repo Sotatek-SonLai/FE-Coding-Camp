@@ -11,6 +11,9 @@ import Link from "next/link";
 import EvaluationService from "../../service/evaluation.service";
 import MainLayout from "../../components/Main-Layout";
 import { NextPageWithLayout } from "../_app";
+import { AssetType } from "../../types";
+import { useRouter } from "next/router";
+import { URL_PROPERTIES } from "../../constants";
 const { Title } = Typography;
 
 const passedAssetData: PassedAssetDataType[] = [
@@ -40,6 +43,7 @@ const passedAssetData: PassedAssetDataType[] = [
 
 const PortalPage: NextPageWithLayout = (props: any) => {
   const [requestAssetData, setRequestAssetData] = useState(null);
+  const router = useRouter();
   useEffect(() => {
     (async () => {
       const [res]: any = await EvaluationService.getLand();
@@ -58,6 +62,14 @@ const PortalPage: NextPageWithLayout = (props: any) => {
               columns={requestAssetColumns}
               rowKey="_id"
               pagination={{ pageSize: 6 }}
+              onRow={(record: AssetType) => {
+                return {
+                  onClick: (event) => {
+                    console.log("event: ", event);
+                    router.push(`${router.asPath}/${record?._id}`);
+                  },
+                };
+              }}
             />
           )}
         </>

@@ -2,7 +2,7 @@ import React from "react";
 import { ColumnsType } from "antd/lib/table";
 import { Action, DetailButton, PropertyInfo, Status } from "./Column.component";
 import Link from "next/link";
-import {Button} from "antd";
+import { Button } from "antd";
 
 export interface RequestAssetDataType {
   id: string;
@@ -16,9 +16,9 @@ export interface RequestAssetDataType {
 }
 
 export enum AssetStatusType {
-  PASSED = 'PASSED',
-  MINTED = 'MINTED',
-  TOKENIZED = 'TOKENIZED'
+  PASSED = "PASSED",
+  MINTED = "MINTED",
+  TOKENIZED = "TOKENIZED",
 }
 
 export const requestAssetColumns: ColumnsType<any> = [
@@ -27,7 +27,9 @@ export const requestAssetColumns: ColumnsType<any> = [
     dataIndex: "avatar",
     key: "avatar",
     render: (url, dt) => {
-      return <PropertyInfo imageUrl={`${dt?.avatar?.host}${dt?.avatar?.url}`} />;
+      return (
+        <PropertyInfo imageUrl={`${dt?.avatar?.host}${dt?.avatar?.url}`} />
+      );
     },
   },
   {
@@ -43,23 +45,38 @@ export const requestAssetColumns: ColumnsType<any> = [
     ellipsis: true,
   },
   {
+    title: "Status",
+    dataIndex: "status",
+    key: "status",
+    render: (text) => <Status status={text} />,
+  },
+  {
     title: "Action",
     dataIndex: "_id",
     key: "_id",
     render: (_, { _id, status }) => {
-      if(status === AssetStatusType.PASSED){
-        return <Link href={`/portal/${_id}/mint`}><Button type='default'>MInt NFT</Button></Link>
-      } else if (status ===  AssetStatusType.MINTED){
-        return <Link href={`/portal/${_id}/frac`}><Button type='primary'>Tokenize NFT</Button></Link>
-      } else {
+      if (status === AssetStatusType.PASSED) {
         return (
-            <div>
-              <span style={{color: '#52c41a'}}>Tokenized</span>
-              <Link href={'/properties'}>
-                <Button type='link'>Detail</Button>
-              </Link>
-            </div>
-        )
+          <Link
+            href={`/portal/${_id}/mint`}
+            onClick={(e: Event) => {
+              e.stopPropagation();
+            }}
+          >
+            <Button type="default">Mint NFT</Button>
+          </Link>
+        );
+      } else if (status === AssetStatusType.MINTED) {
+        return (
+          <Link
+            href={`/portal/${_id}/frac`}
+            onClick={(e: Event) => {
+              e.stopPropagation();
+            }}
+          >
+            <Button type="default">Tokenize NFT</Button>
+          </Link>
+        );
       }
     },
   },

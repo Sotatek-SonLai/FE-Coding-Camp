@@ -26,14 +26,14 @@ export const PropertyInfo = ({ imageUrl }: PropertyInfoProps) => {
 
 export const Status = ({ status }: StatusProps) => {
   let color = "";
-  switch (status) {
+  switch (status.toLowerCase()) {
     case "pending":
       color = "default";
       break;
-    case "listed":
+    case "tokenized":
       color = "success";
       break;
-    case "fractionalize":
+    case "passed":
       color = "processing";
       break;
     case "rejected":
