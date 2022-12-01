@@ -1,47 +1,24 @@
 import React, { ReactElement, useEffect, useState } from "react";
-import {
-  Typography,
-  Button,
-  Divider,
-  Form,
-  Empty,
-  Input,
-  Upload,
-  message,
-  Row,
-  Col,
-  Image as Img,
-  Space,
-  Carousel,
-} from "antd";
-import type { RcFile } from "antd/es/upload/interface";
+import { Typography, Button, Form, Input, message, Row, Col } from "antd";
 import { onChangePrice } from "../../../utils/validate.util";
 import { useAnchorWallet, useWallet } from "@solana/wallet-adapter-react";
 import EvaluationService from "../../../service/evaluation.service";
 import { getProvider } from "../../../programs/utils";
 import mainProgram from "../../../programs/MainProgram";
-import { getUrl } from "../../../utils/utility";
 import MainLayout from "../../../components/Main-Layout";
 import { NextPageWithLayout } from "../../_app";
 import { useRouter } from "next/router";
 import TransactionModal from "../../../components/common/TransactionModal";
 import { Transaction } from "@solana/web3.js";
 import AssetInfo from "../../../components/PortalEvaluationPage/AssetInfo";
-import * as anchor from "@project-serum/anchor";
 const { Title } = Typography;
 import Link from "next/link";
-import { ArrowRightOutlined } from "@ant-design/icons";
-
-const getBase64 = (img: RcFile, callback: (url: string) => void) => {
-  const reader = new FileReader();
-  reader.addEventListener("load", () => callback(reader.result as string));
-  reader.readAsDataURL(img);
-};
+import { ArrowRightOutlined, CloseOutlined } from "@ant-design/icons";
 
 let flagInterval: NodeJS.Timeout;
 
 const MintNftPage: NextPageWithLayout = (props: any) => {
-  const { publicKey, connected, sendTransaction } = useWallet();
+  const { publicKey, sendTransaction } = useWallet();
   const wallet = useAnchorWallet();
   const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
@@ -146,14 +123,37 @@ const MintNftPage: NextPageWithLayout = (props: any) => {
           </Button>
         </Link>
       </TransactionModal>
-      <Row gutter={25}>
-        <Col span={12}>
-          <div className="box">
-            <Title level={2} style={{ textAlign: "center" }}>
-              Tokenize NFT
-            </Title>
-            <br />
 
+      <div className="box">
+        <Row
+          className="justify-center"
+          style={{ position: "relative", marginBottom: 40 }}
+        >
+          <Title level={2} style={{ textAlign: "center" }}>
+            Tokenize NFT
+          </Title>
+          <CloseOutlined
+            style={{
+              fontSize: 20,
+              cursor: "pointer",
+              position: "absolute",
+              top: 10,
+              right: 30,
+            }}
+            onClick={() => router.push("/portal")}
+          />
+          <br />
+          <br />
+        </Row>
+
+        <Row gutter={25}>
+          <Col
+            span={16}
+            style={{ overflowY: "auto", height: "calc(100vh - 280px)" }}
+          >
+            <AssetInfo assetInfo={assetInfo} />
+          </Col>
+          <Col span={8} style={{ padding: "0px 40px" }}>
             <Form
               form={form}
               labelCol={{ span: 24 }}
@@ -200,28 +200,13 @@ const MintNftPage: NextPageWithLayout = (props: any) => {
                 />
               </Form.Item>
 
-              <br />
-
-              <Divider orientation="center" orientationMargin="0"></Divider>
-
-              <div className="flex justify-center">
-                <Button loading={loading} type="primary" htmlType="submit">
-                  Tokenize
-                </Button>
-              </div>
+              <Button block loading={loading} type="primary" htmlType="submit">
+                Tokenize
+              </Button>
             </Form>
-          </div>
-        </Col>
-        <Col span={12}>
-          <div className="box">
-            <Title level={2} style={{ textAlign: "center" }}>
-              NFT Info
-            </Title>
-            <br />
-            <AssetInfo assetInfo={assetInfo} />
-          </div>
-        </Col>
-      </Row>
+          </Col>
+        </Row>
+      </div>
     </>
   );
 };
