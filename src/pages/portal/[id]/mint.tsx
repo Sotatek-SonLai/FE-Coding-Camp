@@ -25,21 +25,15 @@ import EvaluationService from "../../../service/evaluation.service";
 import { getProvider } from "../../../programs/utils";
 import mainProgram from "../../../programs/MainProgram";
 import { Transaction } from "@solana/web3.js";
-import { awaitTimeout, getUrl } from "../../../utils/utility";
 import MainLayout from "../../../components/Main-Layout";
-import PortalPage from "../index";
 import { NextPageWithLayout } from "../../_app";
 import { useRouter } from "next/router";
-import { configCarousel } from "../../properties/[id]";
 import TransactionModal from "../../../components/common/TransactionModal";
 import AssetInfo from "../../../components/PortalEvaluationPage/AssetInfo";
+import { useSelector } from "react-redux";
+import { selectWallet } from "../../../store/wallet/wallet.slice";
 
-const getBase64 = (img: RcFile, callback: (url: string) => void) => {
-  const reader = new FileReader();
-  reader.addEventListener("load", () => callback(reader.result as string));
-  reader.readAsDataURL(img);
-};
-
+const { Text } = Typography;
 let flagInterval: NodeJS.Timeout;
 
 const MintNftPage: NextPageWithLayout = (props: any) => {
@@ -50,10 +44,22 @@ const MintNftPage: NextPageWithLayout = (props: any) => {
   const [assetInfo, setAssetInfo] = useState<any>(null);
   console.log("assetInfo", assetInfo);
   const router = useRouter();
+  const { walletAddress } = useSelector(selectWallet);
 
   const [tx, setTx] = useState<any>("");
   const [isShownModalTx, setIsShownModalTx] = useState<boolean>(false);
   const id = router?.query?.id;
+  const [messageApi, contextHolder] = message.useMessage();
+  const warning = () => {
+    messageApi.open({
+      type: "warning",
+      content: (
+        <Text>
+          Please connect with <Text strong>{walletAddress}</Text> to continue
+        </Text>
+      ),
+    });
+  };
 
   useEffect(() => {
     (async () => {
@@ -182,6 +188,10 @@ const MintNftPage: NextPageWithLayout = (props: any) => {
             setIsShownModalTx(true);
           }
         }
+      } else {
+        console.log("show warning message");
+        setLoading(false);
+        warning();
       }
     } catch (err: any) {
       setLoading(false);
@@ -189,16 +199,9 @@ const MintNftPage: NextPageWithLayout = (props: any) => {
     }
   };
 
-  const onFinish = async (values: any) => {
-    console.log("Success:", values);
-  };
-
-  const onFinishFailed = (errorInfo: any) => {
-    console.log("Failed:", errorInfo);
-  };
-
   return (
     <>
+      {contextHolder}
       <TransactionModal
         close={() => setIsShownModalTx(false)}
         tx={tx}
@@ -211,11 +214,12 @@ const MintNftPage: NextPageWithLayout = (props: any) => {
         </Link>
       </TransactionModal>
 
+      {/* <Button onClick={warning}>Warning</Button> */}
       <Row className="justify-center">
         <Col xxl={12} md={20} xs={24}>
           <div className="box">
             <Title level={2} style={{ textAlign: "center" }}>
-              New LAND
+              Mint NFT
             </Title>
             <CloseOutlined
               style={{
