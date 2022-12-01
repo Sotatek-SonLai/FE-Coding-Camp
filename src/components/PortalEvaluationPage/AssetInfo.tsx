@@ -1,6 +1,6 @@
 import React from "react";
 import {Carousel, Divider, Empty, Image as Img, Typography} from "antd";
-import {getUrl} from "../../utils/utility";
+import {getEmbedUrlYoutube, getUrl} from "../../utils/utility";
 import {configCarousel} from "../../pages/properties/[id]";
 
 const {Title} = Typography
@@ -21,8 +21,11 @@ const AssetInfo: React.FC<{assetInfo: any}> = ({assetInfo}) => {
 
             <Title level={5}>Address: {assetInfo?.address}</Title>
             <Title level={5}>description: {assetInfo?.description}</Title>
-            <Title level={5}>External Url: {assetInfo?.externalUrl}</Title>
-            <Title level={5}>Youtube Url: {assetInfo?.youtubeUrl}</Title>
+            <Title level={5}>External Url: <a rel="noreferrer" href={assetInfo?.externalUrl} target='_blank'>{assetInfo?.externalUrl}</a></Title>
+            <Title level={5}>Youtube Url: <a rel="noreferrer" href={assetInfo?.youtubeUrl} target='_blank'>{assetInfo?.externalUrl}</a></Title>
+            <div>
+                <iframe width="100%" height="315" src={`//www.youtube.com/embed/${getEmbedUrlYoutube(assetInfo?.youtubeUrl)}`}></iframe>
+            </div>
 
             <Divider orientation="center" orientationMargin="0">Attributes</Divider>
             {(assetInfo?.attributes && assetInfo?.attributes.length) ? <table className='tbl' style={{width: '100%'}}>
