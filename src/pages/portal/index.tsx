@@ -65,6 +65,7 @@ const PortalPage: NextPageWithLayout = (props: any) => {
               onRow={(record: AssetType) => {
                 return {
                   onClick: (event) => {
+                    console.log("event: ", event);
                     router.push(`${router.asPath}/${record?._id}`);
                   },
                 };
