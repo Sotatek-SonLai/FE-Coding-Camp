@@ -1,22 +1,7 @@
 import React, { ReactElement, useEffect, useState } from "react";
-import {
-  Typography,
-  Button,
-  Divider,
-  Form,
-  Empty,
-  Input,
-  Upload,
-  message,
-  Row,
-  Col,
-  Image as Img,
-  Space,
-  Carousel,
-} from "antd";
+import { Typography, Button, Divider, message, Row, Col } from "antd";
 
 const { Title } = Typography;
-import type { RcFile, UploadFile, UploadProps } from "antd/es/upload/interface";
 import { ArrowRightOutlined, CloseOutlined } from "@ant-design/icons";
 import Link from "next/link";
 
@@ -40,9 +25,7 @@ const MintNftPage: NextPageWithLayout = (props: any) => {
   const { publicKey, connected, sendTransaction } = useWallet();
   const wallet = useAnchorWallet();
   const [loading, setLoading] = useState(false);
-  const [form] = Form.useForm();
   const [assetInfo, setAssetInfo] = useState<any>(null);
-  console.log("assetInfo", assetInfo);
   const router = useRouter();
   const { walletAddress } = useSelector(selectWallet);
 
@@ -50,9 +33,9 @@ const MintNftPage: NextPageWithLayout = (props: any) => {
   const [isShownModalTx, setIsShownModalTx] = useState<boolean>(false);
   const id = router?.query?.id;
   const [messageApi, contextHolder] = message.useMessage();
-  const warning = () => {
+  const error = () => {
     messageApi.open({
-      type: "warning",
+      type: "error",
       content: (
         <Text>
           Please connect with <Text strong>{walletAddress}</Text> to continue
@@ -189,9 +172,8 @@ const MintNftPage: NextPageWithLayout = (props: any) => {
           }
         }
       } else {
-        console.log("show warning message");
         setLoading(false);
-        warning();
+        error();
       }
     } catch (err: any) {
       setLoading(false);

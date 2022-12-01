@@ -14,7 +14,10 @@ import AssetInfo from "../../../components/PortalEvaluationPage/AssetInfo";
 const { Title } = Typography;
 import Link from "next/link";
 import { ArrowRightOutlined, CloseOutlined } from "@ant-design/icons";
+import { useSelector } from "react-redux";
+import { selectWallet } from "../../../store/wallet/wallet.slice";
 
+const { Text } = Typography;
 let flagInterval: NodeJS.Timeout;
 
 const MintNftPage: NextPageWithLayout = (props: any) => {
@@ -27,6 +30,19 @@ const MintNftPage: NextPageWithLayout = (props: any) => {
   const [tx, setTx] = useState<any>("");
   const [isShownModalTx, setIsShownModalTx] = useState<boolean>(false);
   const id = router?.query?.id;
+  const [messageApi, contextHolder] = message.useMessage();
+  const { walletAddress } = useSelector(selectWallet);
+
+  const error = () => {
+    messageApi.open({
+      type: "error",
+      content: (
+        <Text>
+          Please connect with <Text strong>{walletAddress}</Text> to continue
+        </Text>
+      ),
+    });
+  };
 
   useEffect(() => {
     (async () => {
@@ -98,6 +114,8 @@ const MintNftPage: NextPageWithLayout = (props: any) => {
         }
 
         setLoading(false);
+      } else {
+        error();
       }
     } catch (error: any) {
       console.log({ error });
@@ -112,6 +130,7 @@ const MintNftPage: NextPageWithLayout = (props: any) => {
 
   return (
     <>
+      {contextHolder}
       <TransactionModal
         close={() => setIsShownModalTx(false)}
         tx={tx}
