@@ -6,12 +6,6 @@ import CarouselCustom from "../../common/CarouselCustom";
 const AssetInfo: React.FC<{ assetInfo: any }> = ({ assetInfo }) => {
   if (!assetInfo) return <></>;
   const { projectImages, avatar } = assetInfo;
-
-  const imageUrls = useMemo(
-    () => projectImages.map((item: any) => getUrl(item)),
-    [projectImages]
-  );
-
   return (
     <>
       <div
@@ -101,7 +95,7 @@ const AssetInfo: React.FC<{ assetInfo: any }> = ({ assetInfo }) => {
         Land Images
       </Divider>
       {projectImages ? (
-        <CarouselCustom urls={imageUrls} />
+        <CarouselCustom imagesData={projectImages} />
       ) : (
         <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
       )}

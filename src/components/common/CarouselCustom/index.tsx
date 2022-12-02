@@ -1,5 +1,6 @@
 import { Image, Carousel } from "antd";
 import React from "react";
+import { getUrl } from "../../../utils/utility";
 import style from "./CarouselCustom.module.scss";
 
 export const configCarousel = {
@@ -43,15 +44,16 @@ export const configCarousel = {
 };
 
 interface CarouselCustom {
-  urls: string[];
+  imagesData: any;
 }
-const CarouselCustom = ({ urls = [] }: CarouselCustom) => {
+const CarouselCustom = ({ imagesData = [] }: CarouselCustom) => {
+  console.log("imagesData: ", imagesData);
   return (
     <div className={style.carouselContainer}>
       <div className="slide">
         <Carousel {...configCarousel}>
-          {urls.map((url, index) => {
-            return <Image alt="" height={100} src={url} key={index} />;
+          {imagesData.map((item: any, index: number) => {
+            return <Image alt="" height={100} src={getUrl(item)} key={index} />;
           })}
         </Carousel>
       </div>
