@@ -137,7 +137,7 @@ const MintNftPage: NextPageWithLayout = (props: any) => {
         isShown={isShownModalTx}
       >
         <Link href="/properties">
-          <Button type="primary">
+          <Button block type="primary">
             Go to properties <ArrowRightOutlined />
           </Button>
         </Link>
@@ -159,7 +159,7 @@ const MintNftPage: NextPageWithLayout = (props: any) => {
               top: 10,
               right: 30,
             }}
-            onClick={() => router.push("/portal")}
+            onClick={() => router.back()}
           />
           <br />
           <br />

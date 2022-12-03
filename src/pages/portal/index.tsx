@@ -1,11 +1,9 @@
 import { Table, Tabs, Button, Space, Typography } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
-import React, { ReactElement, useEffect, useState } from "react";
+import React, { ReactElement, useEffect, useRef, useState } from "react";
 import {
   passedAssetColumns,
-  PassedAssetDataType,
   requestAssetColumns,
-  RequestAssetDataType,
 } from "../../components/PortalEvaluationPage/AssestTable";
 import Link from "next/link";
 import EvaluationService from "../../service/evaluation.service";
@@ -13,47 +11,44 @@ import MainLayout from "../../components/Main-Layout";
 import { NextPageWithLayout } from "../_app";
 import { AssetType } from "../../types";
 import { useRouter } from "next/router";
-import { URL_PROPERTIES } from "../../constants";
 const { Title } = Typography;
 
-const passedAssetData: PassedAssetDataType[] = [
-  {
-    id: "1",
-    propertyInfo: "https://joeschmoe.io/api/v1/random",
-    name: "ABC",
-    totalSupply: 100000,
-    tokenPrice: 0.0001,
-    status: "fractionalize",
-    payRewardDate: "",
-    action: "Listing",
-    detail: "Detail",
-  },
-  {
-    id: "2",
-    propertyInfo: "https://joeschmoe.io/api/v1/random",
-    name: "Trinh Thi Thu Trang Trinh Thi Thu Trang Trinh Thi Thu Trang",
-    totalSupply: 1000000000,
-    tokenPrice: 0.001,
-    status: "listed",
-    payRewardDate: "11/11/2022",
-    action: "Deposit",
-    detail: "Detail",
-  },
-];
-
 const PortalPage: NextPageWithLayout = (props: any) => {
-  const [requestAssetData, setRequestAssetData] = useState(null);
+  const [requestAssetData, setRequestAssetData] = useState([]);
+  const [passedAssetData, setPassedAssetData] = useState([]);
   const router = useRouter();
+  const [activeKey, setActiveKey] = useState("request");
+
+  const handleTabClick = (activeKey: string) => {
+    setActiveKey(activeKey);
+    router.push({
+      pathname: "/portal",
+      query: { status: activeKey },
+    });
+  };
   useEffect(() => {
     (async () => {
       const [res]: any = await EvaluationService.getLand();
-      setRequestAssetData(res);
+      const passed = [];
+      const request = [];
+      for (const item of res) {
+        if (item.status.toUpperCase() === "PENDING") request.push(item);
+        else passed.push(item);
+      }
+
+      setRequestAssetData(request as any);
+      setPassedAssetData(passed as any);
     })();
+
+    const { query } = router;
+    if (query.status === "request") setActiveKey("request");
+    else if (query.status === "passed") setActiveKey("passed");
   }, []);
+
   const items = [
     {
       label: "Request Asset",
-      key: "request_asset",
+      key: "request",
       children: (
         <>
           {requestAssetData && (
@@ -65,7 +60,6 @@ const PortalPage: NextPageWithLayout = (props: any) => {
               onRow={(record: AssetType) => {
                 return {
                   onClick: (event) => {
-                    console.log("event: ", event);
                     router.push(`${router.asPath}/${record?._id}`);
                   },
                 };
@@ -77,12 +71,20 @@ const PortalPage: NextPageWithLayout = (props: any) => {
     },
     {
       label: "Passed Asset",
-      key: "passed_asset",
+      key: "passed",
       children: (
         <Table
           dataSource={passedAssetData}
           columns={passedAssetColumns}
           rowKey="id"
+          pagination={{ pageSize: 6 }}
+          onRow={(record: AssetType) => {
+            return {
+              onClick: (event) => {
+                router.push(`${router.pathname}/${record?._id}`);
+              },
+            };
+          }}
         />
       ),
     },
@@ -100,7 +102,7 @@ const PortalPage: NextPageWithLayout = (props: any) => {
           </Link>
         </Space>
       </div>
-      <Tabs items={items} />
+      <Tabs items={items} activeKey={activeKey} onTabClick={handleTabClick} />
     </div>
   );
 };

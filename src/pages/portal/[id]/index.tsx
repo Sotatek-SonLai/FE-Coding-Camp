@@ -1,15 +1,13 @@
-import { message, Tag } from "antd";
+import { Button, message } from "antd";
 import { useRouter } from "next/router";
 import React, { ReactElement, useEffect, useState } from "react";
 import EvaluationService from "../../../service/evaluation.service";
-import { Row, Col, Typography, Divider, Descriptions } from "antd";
 import MainLayout from "../../../components/Main-Layout";
 import { NextPageWithLayout } from "../../_app";
-import AssetInfo from "../../../components/PortalEvaluationPage/AssetInfo";
+import PropertyDetail from "../../../components/PropertyDetail";
+import { ArrowLeftOutlined } from "@ant-design/icons";
 
 let flagInterval: NodeJS.Timeout;
-
-const { Title } = Typography;
 
 const DetailNftPage: NextPageWithLayout = () => {
   const [assetInfo, setAssetInfo] = useState<any>({});
@@ -34,86 +32,30 @@ const DetailNftPage: NextPageWithLayout = () => {
   console.log({ assetInfo });
 
   return (
-    <div>
-      {assetInfo?.status === "TOKENIZED" && (
-        <Row gutter={[20, 0]}>
-          <Col span={16}>
-            <div className="box">
-              <div style={{ display: "flex", gap: 30 }}>
-                <Title level={3}>LAND INFO</Title>
+    <>
+      <Button
+        type="ghost"
+        shape="circle"
+        size="large"
+        icon={<ArrowLeftOutlined />}
+        style={{ marginBottom: 20 }}
+        onClick={() => router.back()}
+      />
+      <PropertyDetail assetInfo={assetInfo} type={assetInfo.status} />
+    </>
+  );
+};
 
-                <div>
-                  <Tag
-                    style={{ padding: "5px 10px", fontWeight: 500 }}
-                    color="#108ee9"
-                  >
-                    {assetInfo.status}
-                  </Tag>
-                </div>
-              </div>
-              <Divider />
+export default DetailNftPage;
 
-              <Row>
-                <div style={{ width: "100%" }}>
-                  <AssetInfo assetInfo={assetInfo} />
-                </div>
-              </Row>
-            </div>
-          </Col>
+DetailNftPage.getLayout = (page: ReactElement) => {
+  return <MainLayout>{page}</MainLayout>;
+};
 
-          <Col span={8}>
-            <div className="box">
-              <Descriptions
-                layout="vertical"
-                colon={false}
-                column={2}
-                title={
-                  <Divider orientation="left" orientationMargin={0}>
-                    <Title level={3}>Token Infomation</Title>{" "}
-                  </Divider>
-                }
-              >
-                <Descriptions.Item
-                  label={
-                    <span className="description-label">
-                      Token Total Supply
-                    </span>
-                  }
-                >
-                  <span className="description-value">
-                    {assetInfo.tokenSupply}
-                  </span>
-                </Descriptions.Item>
-                <Descriptions.Item
-                  label={
-                    <span className="description-label">
-                      Token Listing Price
-                    </span>
-                  }
-                >
-                  <span className="description-value">$0.05</span>
-                </Descriptions.Item>
-                <Descriptions.Item
-                  label={<span className="description-label">Token Name</span>}
-                >
-                  <span className="description-value">
-                    {assetInfo.tokenName}
-                  </span>
-                </Descriptions.Item>
+{
+  /* 
 
-                <Descriptions.Item
-                  label={
-                    <span className="description-label">Token Symbol</span>
-                  }
-                >
-                  <span className="description-value">
-                    {assetInfo.tokenSymbol}
-                  </span>
-                </Descriptions.Item>
-              </Descriptions>
-            </div>
-
-            {/* <div className="box" style={{ marginTop: 20 }}>
+            <div className="box" style={{ marginTop: 20 }}>
             <Divider orientation="left">Buy ABC (1 USDT = 20 ABC) </Divider>
             <Form
               form={form}
@@ -149,35 +91,5 @@ const DetailNftPage: NextPageWithLayout = () => {
                 Buy
               </Button>
             </Form>
-          </div> */}
-          </Col>
-        </Row>
-      )}
-      {(assetInfo.status === "PASSED" || assetInfo.status === "PENDING") && (
-        <div className="box">
-          <div style={{ display: "flex", gap: 30 }}>
-            <Title level={3}>LAND INFO</Title>
-
-            <div>
-              <Tag
-                style={{ padding: "5px 10px", fontWeight: 500 }}
-                color="#108ee9"
-              >
-                {assetInfo.status}
-              </Tag>
-            </div>
-          </div>
-
-          <Divider />
-          <AssetInfo assetInfo={assetInfo} />
-        </div>
-      )}
-    </div>
-  );
-};
-
-export default DetailNftPage;
-
-DetailNftPage.getLayout = (page: ReactElement) => {
-  return <MainLayout>{page}</MainLayout>;
-};
+       */
+}

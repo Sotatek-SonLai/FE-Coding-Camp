@@ -18,7 +18,12 @@ const AssetInfo: React.FC<{ assetInfo: any }> = ({ assetInfo }) => {
         }}
       ></div>
       <br />
-
+      {projectImages ? (
+        <CarouselCustom imagesData={projectImages} />
+      ) : (
+        <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+      )}
+      <br />
       <Divider orientation="center" orientationMargin="0">
         Information
       </Divider>
@@ -87,18 +92,6 @@ const AssetInfo: React.FC<{ assetInfo: any }> = ({ assetInfo }) => {
         <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
       )}
 
-      <Divider
-        orientation="center"
-        orientationMargin="0"
-        style={{ marginTop: 40 }}
-      >
-        Land Images
-      </Divider>
-      {projectImages ? (
-        <CarouselCustom imagesData={projectImages} />
-      ) : (
-        <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
-      )}
       <Divider
         orientation="center"
         orientationMargin="0"
