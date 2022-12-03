@@ -3,9 +3,7 @@ import { PlusOutlined } from "@ant-design/icons";
 import React, { ReactElement, useState } from "react";
 import {
   passedAssetColumns,
-  PassedAssetDataType,
   requestAssetColumns,
-  RequestAssetDataType,
 } from "../components/PortalEvaluationPage/AssestTable";
 import Link from "next/link";
 import EvaluationService from "../service/evaluation.service";
@@ -13,7 +11,7 @@ import MainLayout from "../components/Main-Layout";
 import { NextPageWithLayout } from "./_app";
 const { Title } = Typography;
 
-const passedAssetData: PassedAssetDataType[] = [
+const passedAssetData = [
   {
     id: "1",
     propertyInfo: "https://joeschmoe.io/api/v1/random",
@@ -38,17 +36,16 @@ const passedAssetData: PassedAssetDataType[] = [
   },
 ];
 
-const PortalPage:NextPageWithLayout = (props: any) => {
-
+const PortalPage: NextPageWithLayout = (props: any) => {
   return (
-      <div>
-        <Title level={2}>Portfolio</Title>
-        <Table
-            dataSource={passedAssetData}
-            columns={passedAssetColumns}
-            rowKey="id"
-        />
-      </div>
+    <div>
+      <Title level={2}>Portfolio</Title>
+      <Table
+        dataSource={passedAssetData}
+        columns={passedAssetColumns}
+        rowKey="id"
+      />
+    </div>
   );
 };
 
