@@ -206,7 +206,7 @@ const NewLandPage: NextPageWithLayout = (props) => {
                 top: 30,
                 right: 30,
               }}
-              onClick={() => router.push("/portal")}
+              onClick={() => router.back()}
             />
             <br />
             <br />
