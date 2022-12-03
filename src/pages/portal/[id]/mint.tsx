@@ -171,6 +171,7 @@ const MintNftPage: NextPageWithLayout = (props: any) => {
             setIsShownModalTx(true);
           }
         }
+        setLoading(false);
       } else {
         setLoading(false);
         error();
@@ -211,7 +212,7 @@ const MintNftPage: NextPageWithLayout = (props: any) => {
                 top: 30,
                 right: 30,
               }}
-              onClick={() => router.push("/portal")}
+              onClick={() => router.back()}
             />
             <br />
             <br />

@@ -9,7 +9,7 @@ require("@solana/wallet-adapter-react-ui/styles.css");
 import AutoConnectWalletProvider from "../contexts/AutoConnectWalletContext";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
-import { Spin } from "antd";
+import { message, Spin } from "antd";
 import { useConnection } from "@solana/wallet-adapter-react";
 import { useMemo } from "react";
 import Cookies from "js-cookie";
@@ -83,7 +83,7 @@ export default function App({ Component, pageProps }: AppPropsWithLayout) {
       }
     }
 
-    window.open("https://phantom.app/", "_blank");
+    message.warning("You need to install Phantom Wallet");
   };
 
   const provider = getProvider();
