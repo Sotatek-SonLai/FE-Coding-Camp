@@ -82,8 +82,6 @@ export default function App({ Component, pageProps }: AppPropsWithLayout) {
         return provider;
       }
     }
-
-    message.warning("You need to install Phantom Wallet");
   };
 
   const provider = getProvider();
