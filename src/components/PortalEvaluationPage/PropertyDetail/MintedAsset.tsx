@@ -1,6 +1,6 @@
 import React from "react";
 import { Affix, Button, Col, Divider, Row, Tag, Typography } from "antd";
-import AssetInfo from "../PortalEvaluationPage/AssetInfo";
+import AssetInfo from "../AssetInfo";
 import { MailOutlined, PhoneOutlined } from "@ant-design/icons";
 import Link from "next/link";
 

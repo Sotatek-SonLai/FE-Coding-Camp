@@ -1,11 +1,19 @@
 import React from "react";
-import { Affix, Button, Col, Divider, Row, Tag, Typography } from "antd";
-import AssetInfo from "../PortalEvaluationPage/AssetInfo";
+import {
+  Affix,
+  Button,
+  Col,
+  Descriptions,
+  Divider,
+  Row,
+  Tag,
+  Typography,
+} from "antd";
 import { MailOutlined, PhoneOutlined } from "@ant-design/icons";
-import Link from "next/link";
+import AssetInfo from "../AssetInfo";
 
 const { Title, Text } = Typography;
-const PassedAsset: React.FC<{ assetInfo: any }> = ({ assetInfo }) => {
+const TokenizedAsset: React.FC<{ assetInfo: any }> = ({ assetInfo }) => {
   return (
     <Row gutter={[20, 0]}>
       <Col span={16}>
@@ -44,19 +52,59 @@ const PassedAsset: React.FC<{ assetInfo: any }> = ({ assetInfo }) => {
             <Text style={{ color: " var(--text-color)" }}>
               Approved on November 30, 2022 at 06:55pm
             </Text>
-            <Link href={`/portal/${assetInfo._id}/mint`}>
-              <Button
-                style={{
-                  backgroundColor: "#87d068",
-                  color: "white",
-                  margin: "30px 0px 15px",
-                }}
-                block
-                size="middle"
+            <Descriptions
+              layout="vertical"
+              colon={false}
+              column={2}
+              style={{ marginTop: 30 }}
+            >
+              <Descriptions.Item
+                label={<span className="description-label">Token Name</span>}
               >
-                MINTED NFT
-              </Button>
-            </Link>
+                <Text strong className="description-value">
+                  {assetInfo.tokenName}
+                </Text>
+              </Descriptions.Item>
+
+              <Descriptions.Item
+                label={<span className="description-label">Token Symbol</span>}
+              >
+                <Text strong className="description-value">
+                  {assetInfo.tokenSymbol}
+                </Text>
+              </Descriptions.Item>
+              <Descriptions.Item
+                label={
+                  <span className="description-label">Token Total Supply</span>
+                }
+              >
+                <Text strong className="description-value">
+                  {assetInfo.tokenSupply}
+                </Text>
+              </Descriptions.Item>
+              <Descriptions.Item
+                label={
+                  <span className="description-label">Token Listing Price</span>
+                }
+              >
+                <Text strong className="description-value">
+                  $0.05
+                </Text>
+              </Descriptions.Item>
+            </Descriptions>
+
+            <Button
+              style={{
+                backgroundColor: "#87d068",
+                color: "white",
+                margin: "30px 0px 15px",
+              }}
+              block
+              size="middle"
+            >
+              LIST NFT
+            </Button>
+
             <Button block size="middle" type="primary" ghost danger>
               Cancel
             </Button>
@@ -90,4 +138,4 @@ const PassedAsset: React.FC<{ assetInfo: any }> = ({ assetInfo }) => {
   );
 };
 
-export default PassedAsset;
+export default TokenizedAsset;

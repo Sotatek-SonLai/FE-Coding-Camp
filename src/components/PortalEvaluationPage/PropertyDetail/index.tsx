@@ -1,5 +1,5 @@
 import React from "react";
-import { AssetStatusType } from "../PortalEvaluationPage/AssestTable/AssetTable.component";
+import { AssetStatusType } from "../AssestTable/AssetTable.component";
 import MintedAsset from "./MintedAsset";
 import PassedAsset from "./PassedAsset";
 import PendingAsset from "./PendingAsset";

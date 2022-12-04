@@ -29,12 +29,6 @@ export const requestAssetColumns: ColumnsType<any> = [
     ellipsis: true,
   },
   {
-    title: "Description",
-    dataIndex: "description",
-    key: "description",
-    ellipsis: true,
-  },
-  {
     title: "Status",
     dataIndex: "status",
     key: "status",
@@ -52,6 +46,12 @@ export const passedAssetColumns: ColumnsType<any> = [
         <PropertyInfo imageUrl={`${dt?.avatar?.host}${dt?.avatar?.url}`} />
       );
     },
+  },
+  {
+    title: "Address",
+    dataIndex: "address",
+    key: "address",
+    ellipsis: true,
   },
   {
     title: "Total Supply",

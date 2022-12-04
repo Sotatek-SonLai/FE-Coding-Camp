@@ -28,18 +28,18 @@ export const requestAssetColumns: ColumnsType<AssetType> = [
     key: "address",
     ellipsis: true,
   },
-  // {
-  //   title: "Total Supply",
-  //   dataIndex: "totalSupply",
-  //   key: "totalSupply",
-  //   render: (number) => number.toLocaleString("en"),
-  // },
-  // {
-  //   title: "Token Price",
-  //   dataIndex: "tokenPrice",
-  //   key: "tokenPrice",
-  //   render: (price) => `$${price}`,
-  // },
+  {
+    title: "Total Supply",
+    dataIndex: "totalSupply",
+    key: "totalSupply",
+    render: (number) => (number ? number.toLocaleString("en") : "N/A"),
+  },
+  {
+    title: "Token Price",
+    dataIndex: "tokenPrice",
+    key: "tokenPrice",
+    render: (price) => (price ? `$${price}` : "N/A"),
+  },
   {
     title: "Reward Date",
     dataIndex: "rewardDate",
