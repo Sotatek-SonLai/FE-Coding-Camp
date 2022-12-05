@@ -3,6 +3,7 @@ import { ColumnsType } from "antd/lib/table";
 import React, { ReactElement } from "react";
 import { AssetType } from "../../types";
 import PropertyInfo from "../../components/common/PropertyInfo";
+import { Status } from "../../components/common/AssetStatus";
 import { useRouter } from "next/router";
 const { Title } = Typography;
 import { URL_PROPERTIES } from "../../constants";
@@ -10,6 +11,7 @@ import MainLayout from "../../components/Main-Layout";
 import { useState } from "react";
 import { useEffect } from "react";
 import EvaluationService from "../../service/evaluation.service";
+import moment from "moment"
 
 export const requestAssetColumns: ColumnsType<AssetType> = [
   {
@@ -30,8 +32,8 @@ export const requestAssetColumns: ColumnsType<AssetType> = [
   },
   {
     title: "Total Supply",
-    dataIndex: "totalSupply",
-    key: "totalSupply",
+    dataIndex: "tokenSupply",
+    key: "tokenSupply",
     render: (number) => (number ? number.toLocaleString("en") : "N/A"),
   },
   {
@@ -41,9 +43,16 @@ export const requestAssetColumns: ColumnsType<AssetType> = [
     render: (price) => (price ? `$${price}` : "N/A"),
   },
   {
-    title: "Reward Date",
-    dataIndex: "rewardDate",
-    key: "rewardDate",
+    title: "Status",
+    dataIndex: "status",
+    key: "status",
+    render: (text) => <Status status={text} />,
+  },
+  {
+    title: "Listing Date",
+    dataIndex: "updated_at",
+    key: "updated_at",
+    render: (value) => moment(value).format("MM/DD/YYYY")
   },
 ];
 

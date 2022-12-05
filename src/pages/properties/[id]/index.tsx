@@ -9,6 +9,7 @@ import {
   Descriptions,
   message,
   Empty,
+  Table,
 } from "antd";
 import React, { ReactElement, useEffect, useState } from "react";
 import MainLayout from "../../../components/Main-Layout";
@@ -18,8 +19,14 @@ import EvaluationService from "../../../service/evaluation.service";
 import { getUrl } from "../../../utils/utility";
 import CarouselCustom from "../../../components/common/CarouselCustom";
 import CheckpointTable from "../../../components/PropertyPage/CheckpointTable";
+import type { ColumnsType } from "antd/es/table";
+import moment from "moment"
 
 const { Title, Text } = Typography;
+interface DataType {
+  name: string;
+  value: string;
+}
 
 let flagInterval: NodeJS.Timeout;
 
@@ -28,6 +35,18 @@ const PortalPage: NextPageWithLayout = () => {
   const [assetInfo, setAssetInfo] = useState<any>({});
   const router = useRouter();
   const id = router?.query?.id;
+
+  const columns: ColumnsType<DataType> = [
+    {
+      title: "Name",
+      dataIndex: "key",
+    },
+    {
+      title: "Value",
+      dataIndex: "value",
+    },
+  ];
+
   useEffect(() => {
     (async () => {
       if (id) {
@@ -51,67 +70,63 @@ const PortalPage: NextPageWithLayout = () => {
     console.log("Failed:", errorInfo);
   };
 
+  const DescriptionsItem = (label: string, value: string) => {
+    return (
+      <Descriptions.Item
+        label={<span className="description-label">{label}</span>}
+      >
+        <Text strong className="description-value">
+          {value}
+        </Text>
+      </Descriptions.Item>
+    );
+  };
+
   return (
     <div className="box">
       <Row gutter={[30, 0]}>
-        <Col span={11}>
+        <Col span={10}>
           <div
             style={{
               backgroundImage: `url(${getUrl(assetInfo.avatar)})`,
               backgroundSize: "cover",
               backgroundRepeat: "no-repeat",
               backgroundPosition: "center",
-              height: "500px",
+              height: "95%",
+              borderRadius: 10,
             }}
           ></div>
-
-          <br />
-          {assetInfo.projectImages ? (
-            <CarouselCustom imagesData={assetInfo.projectImages} />
-          ) : (
-            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
-          )}
         </Col>
-        <Col span={13}>
-          <Divider orientation="left">
-            <Title level={5}>Facts and features</Title>
+        <Col span={14}>
+          <Divider orientation="left" style={{ marginTop: 0 }}>
+            Attributes
           </Divider>
+
           {assetInfo?.attributes && assetInfo?.attributes.length ? (
-            <Descriptions column={3} colon={false}>
-              {assetInfo?.attributes.map((item: any, index: number) => (
-                <Descriptions.Item
-                  label={<span className="description-label">{item.key}</span>}
-                  key={index}
-                >
-                  <Text
-                    style={{ marginRight: 20 }}
-                    className="description-value"
-                  >
-                    {item.value}
-                  </Text>
-                </Descriptions.Item>
-              ))}
-            </Descriptions>
+            <Table
+              columns={columns}
+              dataSource={assetInfo?.attributes}
+              bordered
+              pagination={false}
+            />
           ) : (
             <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
           )}
           <Divider orientation="left">
             <Title level={5}>Description</Title>{" "}
           </Divider>
-          <p>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-            eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim
-            ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-            aliquip ex ea commodo consequat. Duis aute irure dolor in
-            reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-            pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-            culpa qui officia deserunt mollit anim id est laborum.
-          </p>
           <Descriptions column={1} colon={false} bordered={true}>
             <Descriptions.Item
               label={<span className="description-label">Address</span>}
             >
               <span className="description-value">{assetInfo?.address}</span>
+            </Descriptions.Item>
+            <Descriptions.Item
+              label={<span className="description-label">Description</span>}
+            >
+              <span className="description-value">
+                {assetInfo?.description}
+              </span>
             </Descriptions.Item>
             <Descriptions.Item
               label={<span className="description-label">External Url</span>}
@@ -139,16 +154,38 @@ const PortalPage: NextPageWithLayout = () => {
             </Descriptions.Item>
           </Descriptions>
           <br />
-          <Divider orientation="left">
-            <Title level={5}>Leagal Papers</Title>
-          </Divider>
         </Col>
       </Row>
-      <Divider
-        orientation="left"
-        orientationMargin={50}
-        style={{ marginTop: 80 }}
-      >
+      <Row gutter={[30, 0]}>
+        <Col span={10}>
+          <Divider orientation="left">
+            <Title level={5}>Legal Papers</Title>
+          </Divider>
+          {!!assetInfo?.certificates && assetInfo?.certificates?.length > 0 ? (
+            assetInfo?.certificates.map((item: any) => (
+              <div className="file__container">
+                <p>{item?.name}</p>
+                <a href={getUrl(item)}>
+                  <img src="https://ovenuedev.sotatek.works/images/icon/asset/download.svg" />
+                </a>
+              </div>
+            ))
+          ) : (
+            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+          )}
+        </Col>
+        <Col span={14}>
+          <Divider orientation="left">
+            <Title level={5}>Project Images</Title>
+          </Divider>
+          {assetInfo.projectImages ? (
+            <CarouselCustom imagesData={assetInfo.projectImages} />
+          ) : (
+            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+          )}
+        </Col>
+      </Row>
+      <Divider orientation="left" orientationMargin={50}>
         <Title level={2}>Token Info</Title>
       </Divider>
       <Row gutter={[30, 0]}>
@@ -182,7 +219,7 @@ const PortalPage: NextPageWithLayout = () => {
                 }
               >
                 <Text strong className="description-value">
-                  {assetInfo.tokenSupply?.toLocaleString("en")}USDT
+                  {assetInfo.tokenSupply?.toLocaleString("en")}
                 </Text>
               </Descriptions.Item>
               <Descriptions.Item
@@ -192,6 +229,15 @@ const PortalPage: NextPageWithLayout = () => {
               >
                 <Text strong className="description-value">
                   $0.05
+                </Text>
+              </Descriptions.Item>
+              <Descriptions.Item
+                label={
+                  <span className="description-label">Listing Date</span>
+                }
+              >
+                <Text strong className="description-value">
+                {moment(assetInfo.updated_at).format("MM/DD/YYYY")}
                 </Text>
               </Descriptions.Item>
             </Descriptions>
@@ -207,7 +253,10 @@ const PortalPage: NextPageWithLayout = () => {
               marginTop: 20,
             }}
           >
-            <Divider orientation="left">Buy ABC (1 USDT = 20 ABC) </Divider>
+            <Divider orientation="left">
+              Buy {assetInfo?.tokenSymbol} (1 USDT = 20 {assetInfo?.tokenSymbol}
+              ){" "}
+            </Divider>
             <Form
               form={form}
               labelCol={{ span: 24 }}

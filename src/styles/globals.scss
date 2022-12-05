@@ -130,3 +130,23 @@ section.ant-layout {
 .description-large span.description-value {
   font-size: 18px;
 }
+.file__container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #f6f6f6;
+  margin-bottom: 20px;
+  padding: 10px 20px;
+  border-radius: 10px;
+  p {
+    margin-bottom:  0;
+  }
+  a {
+    padding: 4px 10px;
+    border: 1px solid #504b4b38;
+    border-radius: 4px;
+  }
+}
+.ant-image-img {
+  object-fit: cover;
+}

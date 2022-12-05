@@ -277,7 +277,6 @@ export const toBase64 = (file: any) =>
   });
 
 export const getUrl = (file: any) => {
-  console.log(`urlhfu ${file?.host}${file?.url}`);
   return `${file?.host}${file?.url}`;
 };
 

@@ -47,7 +47,6 @@ interface CarouselCustom {
   imagesData: any;
 }
 const CarouselCustom = ({ imagesData = [] }: CarouselCustom) => {
-  console.log("imagesData: ", imagesData);
   return (
     <div className={style.carouselContainer}>
       <div className="slide">
