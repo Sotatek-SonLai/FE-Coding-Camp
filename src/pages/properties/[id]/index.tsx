@@ -162,8 +162,8 @@ const PortalPage: NextPageWithLayout = () => {
             <Title level={5}>Legal Papers</Title>
           </Divider>
           {!!assetInfo?.certificates && assetInfo?.certificates?.length > 0 ? (
-            assetInfo?.certificates.map((item: any) => (
-              <div className="file__container">
+            assetInfo?.certificates.map((item: any, index: number) => (
+              <div className="file__container" key={index}>
                 <p>{item?.name}</p>
                 <a href={getUrl(item)}>
                   <img src="https://ovenuedev.sotatek.works/images/icon/asset/download.svg" />
