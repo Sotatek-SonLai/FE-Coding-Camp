@@ -382,7 +382,6 @@ const NewLandPage: NextPageWithLayout = (props) => {
                   fileList={projectImgList}
                   onChange={onChangeProjectImages}
                   onPreview={onPreview}
-                  multiple
                 >
                   {projectImgList.length < 5 && "+ Upload"}
                 </Upload>
