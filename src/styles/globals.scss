@@ -8,6 +8,7 @@ body {
 }
 :root {
   --text-color: #7f7f7f;
+  --delete-color: #ff0000db;
 }
 
 a {
@@ -149,4 +150,41 @@ section.ant-layout {
 }
 .ant-image-img {
   object-fit: cover;
+}
+.btn__container {
+  .btn--delete {
+    background-color: var(--delete-color);
+    color: #ffffff;
+    margin-right: 10px;
+    border: none;
+    &:hover {
+      background-color: var(--delete-color);
+      color: #ffffff;
+      opacity: 0.8;
+    }
+  }
+  .btn--yes {
+    border: 1px solid var(--delete-color) !important;
+    background: transparent !important;
+    color: var(--delete-color) !important;
+    &:hover, &:focus, &:active {
+      border-color: var(--delete-color) !important;
+      background: transparent !important;
+      color: var(--delete-color) !important;
+    }
+    margin-right: 20px;
+  }
+}
+.btn-yes-no {
+  display: flex;
+  .ant-btn {
+    width: 50%;
+  }
+}
+.ant-btn {
+  border-radius: 4px;
+  height: 40px;
+  span {
+    font-weight: 600;
+  }
 }

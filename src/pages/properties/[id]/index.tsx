@@ -20,7 +20,7 @@ import { getUrl } from "../../../utils/utility";
 import CarouselCustom from "../../../components/common/CarouselCustom";
 import CheckpointTable from "../../../components/PropertyPage/CheckpointTable";
 import type { ColumnsType } from "antd/es/table";
-import moment from "moment"
+import moment from "moment";
 
 const { Title, Text } = Typography;
 interface DataType {
@@ -92,27 +92,13 @@ const PortalPage: NextPageWithLayout = () => {
               backgroundSize: "cover",
               backgroundRepeat: "no-repeat",
               backgroundPosition: "center",
-              height: "95%",
+              height: "100%",
               borderRadius: 10,
             }}
           ></div>
         </Col>
         <Col span={14}>
           <Divider orientation="left" style={{ marginTop: 0 }}>
-            Attributes
-          </Divider>
-
-          {assetInfo?.attributes && assetInfo?.attributes.length ? (
-            <Table
-              columns={columns}
-              dataSource={assetInfo?.attributes}
-              bordered
-              pagination={false}
-            />
-          ) : (
-            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
-          )}
-          <Divider orientation="left">
             <Title level={5}>Description</Title>{" "}
           </Divider>
           <Descriptions column={1} colon={false} bordered={true}>
@@ -153,9 +139,23 @@ const PortalPage: NextPageWithLayout = () => {
               </a>
             </Descriptions.Item>
           </Descriptions>
-          <br />
+          <Divider orientation="left">
+            Attributes
+          </Divider>
+
+          {assetInfo?.attributes && assetInfo?.attributes.length ? (
+            <Table
+              columns={columns}
+              dataSource={assetInfo?.attributes}
+              bordered
+              pagination={false}
+            />
+          ) : (
+            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+          )}
         </Col>
       </Row>
+      <br />
       <Row gutter={[30, 0]}>
         <Col span={10}>
           <Divider orientation="left">
@@ -222,7 +222,7 @@ const PortalPage: NextPageWithLayout = () => {
                   {assetInfo.tokenSupply?.toLocaleString("en")}
                 </Text>
               </Descriptions.Item>
-              <Descriptions.Item
+              {/* <Descriptions.Item
                 label={
                   <span className="description-label">Token Listing Price</span>
                 }
@@ -230,14 +230,12 @@ const PortalPage: NextPageWithLayout = () => {
                 <Text strong className="description-value">
                   $0.05
                 </Text>
-              </Descriptions.Item>
+              </Descriptions.Item> */}
               <Descriptions.Item
-                label={
-                  <span className="description-label">Listing Date</span>
-                }
+                label={<span className="description-label">Listing Date</span>}
               >
                 <Text strong className="description-value">
-                {moment(assetInfo.updated_at).format("MM/DD/YYYY")}
+                  {moment(assetInfo.updatedAt).format("DD/MM/YYYY")}
                 </Text>
               </Descriptions.Item>
             </Descriptions>

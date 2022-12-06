@@ -50,9 +50,9 @@ export const requestAssetColumns: ColumnsType<AssetType> = [
   },
   {
     title: "Listing Date",
-    dataIndex: "updated_at",
-    key: "updated_at",
-    render: (value) => moment(value).format("MM/DD/YYYY")
+    dataIndex: "updatedAt",
+    key: "updatedAt",
+    render: (value) => moment(value).format("DD/MM/YYYY")
   },
 ];
 

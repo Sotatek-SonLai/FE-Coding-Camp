@@ -71,6 +71,14 @@ const EvaluationService = {
         } catch (error) {
             return [null, error];
         }
+    },
+    deleteAsset: async (id: any) => {
+        try {
+            const response = await Request.delete(`evaluations/${id}`);
+            return [response.data, null];
+        } catch (error) {
+            return [null, error];
+        }
     }
 
 };

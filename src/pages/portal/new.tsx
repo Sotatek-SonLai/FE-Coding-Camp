@@ -242,6 +242,7 @@ const NewLandPage: NextPageWithLayout = (props) => {
                       src={imageUrl}
                       alt="avatar"
                       style={{ width: "100%" }}
+                      preview={false}
                     />
                   ) : (
                     uploadButton
@@ -249,6 +250,33 @@ const NewLandPage: NextPageWithLayout = (props) => {
                 </Upload>
               </Form.Item>
 
+              <Form.Item
+                label="NFT Name"
+                name="nftName"
+                rules={[
+                  { required: true, message: "This field cannot be empty." },
+                ]}
+              >
+                <Input placeholder="Input NFT name" />
+              </Form.Item>
+              <Form.Item
+                label="Phone"
+                name="phone"
+                rules={[
+                  { required: true, message: "This field cannot be empty." },
+                ]}
+              >
+                <Input placeholder="Input Phone" />
+              </Form.Item>
+              <Form.Item
+                label="Email"
+                name="email"
+                rules={[
+                  { required: true, message: "This field cannot be empty." },
+                ]}
+              >
+                <Input placeholder="Input Email" />
+              </Form.Item>
               <Form.Item
                 label="Address"
                 name="address"
@@ -354,6 +382,7 @@ const NewLandPage: NextPageWithLayout = (props) => {
                   fileList={projectImgList}
                   onChange={onChangeProjectImages}
                   onPreview={onPreview}
+                  multiple
                 >
                   {projectImgList.length < 5 && "+ Upload"}
                 </Upload>

@@ -69,7 +69,7 @@ const MainLayout: React.FC<any> = ({ children }) => {
           className="header"
         >
           <div className="logo">
-            <Image src="/logo.png" alt="" />
+            <Image src="/logo.png" alt="" preview={false} />
           </div>
           <div className="connect-wrap">
             <DynamicCustomWallet />

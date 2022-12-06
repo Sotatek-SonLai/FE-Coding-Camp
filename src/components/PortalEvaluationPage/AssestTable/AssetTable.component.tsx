@@ -77,29 +77,36 @@ export const passedAssetColumns: ColumnsType<any> = [
     dataIndex: "_id",
     key: "_id",
     render: (_, { _id, status }) => {
-      if (status === AssetStatusType.PASSED) {
-        return (
-          <Link
-            href={`/portal/${_id}/mint`}
-            onClick={(e: Event) => {
-              e.stopPropagation();
-            }}
-          >
-            <Button type="default">Mint NFT</Button>
-          </Link>
-        );
-      } else if (status === AssetStatusType.MINTED) {
-        return (
-          <Link
-            href={`/portal/${_id}/frac`}
-            onClick={(e: Event) => {
-              e.stopPropagation();
-            }}
-          >
-            <Button type="default">Tokenize NFT</Button>
-          </Link>
-        );
+      let linkTo = "";
+      let buttonContent = "";
+      // let ButtonDelete = <Button className="btn--delete">Delete</Button>;
+      switch (status) {
+        case AssetStatusType.PASSED: {
+          linkTo = `/portal/${_id}/mint`;
+          buttonContent = "Mint NFT";
+          break;
+        }
+        case AssetStatusType.MINTED: {
+          linkTo = `/portal/${_id}/frac`;
+          buttonContent = "Tokenize NFT";
+          break;
+        }
+        default: {
+          return "";
+        }
       }
+      return (
+        <>
+          <Link
+            href={linkTo}
+            onClick={(e: Event) => {
+              e.stopPropagation();
+            }}
+          >
+            <Button type="default">{buttonContent}</Button>
+          </Link>
+        </>
+      );
     },
   },
 ];
