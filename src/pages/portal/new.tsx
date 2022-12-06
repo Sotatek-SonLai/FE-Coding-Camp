@@ -10,6 +10,7 @@ import {
   Row,
   Col,
   Image as CutomImg,
+  Modal,
 } from "antd";
 
 const { Title } = Typography;
@@ -30,6 +31,9 @@ import { NextPageWithLayout } from "../_app";
 import MainLayout from "../../components/Main-Layout";
 import PortalPage from "./index";
 import ObjectID from "bson-objectid";
+import PreviewModal, {
+  getBase64Preview,
+} from "../../components/common/modals/PreviewModal";
 
 const getBase64 = (img: RcFile, callback: (url: string) => void) => {
   const reader = new FileReader();
@@ -50,6 +54,9 @@ const beforeUpload = (file: RcFile) => {
 };
 
 const NewLandPage: NextPageWithLayout = (props) => {
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewImage, setPreviewImage] = useState("");
+  const [previewTitle, setPreviewTitle] = useState("");
   const [loading, setLoading] = useState(false);
   const [loadingFile, setLoadingFile] = useState(false);
   const [imageUrl, setImageUrl] = useState<string>();
@@ -63,6 +70,18 @@ const NewLandPage: NextPageWithLayout = (props) => {
       value: "",
     },
   ]);
+
+  const handlePreview = async (file: UploadFile) => {
+    if (!file.url && !file.preview) {
+      file.preview = await getBase64Preview(file.originFileObj as RcFile);
+    }
+
+    setPreviewImage(file.url || (file.preview as string));
+    setPreviewOpen(true);
+    setPreviewTitle(
+      file.name || file.url!.substring(file.url!.lastIndexOf("/") + 1)
+    );
+  };
 
   const addAttr = () => {
     setAttr([...attr, { id: ObjectID(24).toHexString(), key: "", value: "" }]);
@@ -381,7 +400,7 @@ const NewLandPage: NextPageWithLayout = (props) => {
                   listType="picture-card"
                   fileList={projectImgList}
                   onChange={onChangeProjectImages}
-                  onPreview={onPreview}
+                  onPreview={handlePreview}
                 >
                   {projectImgList.length < 5 && "+ Upload"}
                 </Upload>
@@ -419,6 +438,12 @@ const NewLandPage: NextPageWithLayout = (props) => {
           </div>
         </Col>
       </Row>
+      <PreviewModal
+        previewOpen={previewOpen}
+        setPreviewOpen={setPreviewOpen}
+        previewImage={previewImage}
+        previewTitle={previewTitle}
+      />
     </>
   );
 };
