@@ -11,7 +11,7 @@ import TransactionModal from "../../common/TransactionModal";
 
 const { Title, Text } = Typography;
 
-const CreateCheckpoint = ({ propertyInfo }: any) => {
+const CreateCheckpoint = ({ propertyInfo, onDone }: any) => {
   const [form] = Form.useForm();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -133,6 +133,7 @@ const CreateCheckpoint = ({ propertyInfo }: any) => {
           dividend_distributor: values.amount,
           evaluation_id: propertyInfo._id,
         });
+        onDone()
         console.log("res: ", res);
       }
       setLoading(false);

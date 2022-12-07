@@ -96,7 +96,6 @@ const EvaluationService = {
         return [null, error];
       }
     },
-
 };
 
 export default EvaluationService;

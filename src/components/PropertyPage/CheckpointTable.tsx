@@ -1,23 +1,8 @@
 import { Table } from "antd";
 import { useRouter } from "next/router";
 import React from "react";
-
-const dataSource = [
-  {
-    _id: "1",
-    rank: "1",
-    hash: "0xBdkD2hF6dI4Eufd3jS2dsQT",
-    quantity: 500000,
-    date: "3/12/2022",
-  },
-  {
-    _id: "2",
-    rank: "2",
-    hash: "0xBdkD2hF6dI4Eufd3jS2dsQT",
-    quantity: 500000,
-    date: "13/12/2022",
-  },
-];
+import moment from "moment";
+import { DATE_FORMAT } from "../../constants"
 
 const columns = [
   {
@@ -33,14 +18,15 @@ const columns = [
   },
   {
     title: "Quanity",
-    dataIndex: "quanity",
-    key: "quanity",
+    dataIndex: "dividend_distributor",
+    key: "dividend_distributor",
     render: (quanity: number) => `${quanity?.toLocaleString("en")} USDT`,
   },
   {
     title: "Date",
-    dataIndex: "date",
-    key: "date",
+    dataIndex: "updatedAt",
+    key: "updatedAt",
+    render: (value: number) => moment(value).format(DATE_FORMAT),
   },
   {
     title: "Signature",
@@ -54,12 +40,16 @@ const columns = [
   },
 ];
 
-const CheckpointTable = () => {
+interface IProps {
+  data: any
+}
+
+const CheckpointTable: React.FC<IProps> = ({data}) => {
   const router = useRouter();
 
   return (
     <Table
-      dataSource={dataSource}
+      dataSource={data}
       columns={columns}
       pagination={{ pageSize: 6 }}
       key="rank"

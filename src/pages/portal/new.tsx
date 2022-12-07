@@ -119,6 +119,7 @@ const NewLandPage: NextPageWithLayout = (props) => {
     arr.forEach((item, index) => {
       newImageList.push({
         ...item,
+        tempURL: item.url,
         url: getUrl(item),
       });
     });
@@ -130,6 +131,7 @@ const NewLandPage: NextPageWithLayout = (props) => {
     arr.forEach((item, index) => {
       newImageList.push({
         ...item,
+        tempURL: item.url,
         url: getUrl(item),
       });
     });
@@ -179,28 +181,21 @@ const NewLandPage: NextPageWithLayout = (props) => {
   };
 
   const onFinish = async (values: any) => {
-    let formatProjectImages = [];
-    let projectImages = await Promise.all(
-      projectImgList.map(async (file: any, index: number) => {
-        if (file.originFileObj) {
-          return {
-            name: file.name,
-            data: await toBase64(file.originFileObj),
-          };
-        }
-        return {
-          name: file.name,
-          // data: await toBase64(file),
-          url: file.url,
-        };
-      })
-    );
-    for (const item of projectImages) {
-      if (item) {
-        formatProjectImages.push(item);
-      }
-    }
     try {
+      let projectImages = await Promise.all(
+        projectImgList.map(async (file: any, index: number) => {
+          if (file.originFileObj) {
+            return {
+              name: file.name,
+              data: await toBase64(file.originFileObj),
+            };
+          }
+          return {
+            ...file,
+            url: file.tempURL
+          };
+        })
+      );
       setLoading(true);
       let attributes: any = [];
       Object.entries(values).forEach(([key, val]) => {
@@ -221,22 +216,32 @@ const NewLandPage: NextPageWithLayout = (props) => {
         externalUrl: values.externalUrl,
         youtubeUrl: values.youtubeUrl,
         description: values.description,
-        // avatar: {
-        //   name: "logo.png",
-        //   data: await toBase64(values.avatar.file.originFileObj),
-        // },
         attributes,
+        // certificates: await Promise.all(
+        //   certificates.map(async (file: any, index: number) => {
+        //     return {
+        //       name: file.name,
+        //       data: await toBase64(file),
+        //     };
+        //   })
+        // ),
         certificates: await Promise.all(
           certificates.map(async (file: any, index: number) => {
+            if (file) {
+              return {
+                name: file.name,
+                data: await toBase64(file),
+              };
+            }
             return {
-              name: file.name,
-              data: await toBase64(file),
+              ...file,
+              url: file.tempURL
             };
           })
         ),
-        projectImages: formatProjectImages,
+        projectImages,
       };
-      if(values.avatar.file.originFileObj) {
+      if(values?.avatar?.file?.originFileObj) {
         formData.avatar = {
           name: "logo.png",
           data: await toBase64(values.avatar.file.originFileObj),
@@ -244,19 +249,22 @@ const NewLandPage: NextPageWithLayout = (props) => {
       }
 
       let res: any;
+      let messageContent = ""
       if (!!assetId) {
         const [response]: any = await EvaluationService.updateLand(
           formData,
           assetId
         );
         res = response;
+        messageContent = "Update evaluation successfully";
       } else {
         const [response]: any = await EvaluationService.createLand(formData);
         res = response;
+        messageContent = "Create evaluation successfully";
       }
       if (!res?.error) {
         router.push("/portal").then();
-        message.success("Create evaluation successfully");
+        message.success(messageContent);
       } else {
         message.error(res?.error?.message);
       }

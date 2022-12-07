@@ -9,6 +9,7 @@ body {
 :root {
   --text-color: #7f7f7f;
   --delete-color: #ff0000db;
+  --main-color: #3d97ba;
 }
 
 a {
@@ -187,4 +188,10 @@ section.ant-layout {
   span {
     font-weight: 600;
   }
+}
+.ant-divider-horizontal.ant-divider-with-text {
+  border-top-color: var(--main-color);
+}
+h4.ant-typography, div.ant-typography-h4, div.ant-typography-h4 > textarea, .ant-typography h4 {
+  color: var(--main-color);
 }
