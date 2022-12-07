@@ -30,7 +30,7 @@ const MintNftPage: NextPageWithLayout = (props: any) => {
   const { walletAddress } = useSelector(selectWallet);
 
   const [tx, setTx] = useState<any>("");
-  const [mintKey, setMintKey] = useState("");
+  const [mintKey, setMintKey] = useState<string>("");
   const [isShownModalTx, setIsShownModalTx] = useState<boolean>(false);
   const id = router?.query?.id;
   const [messageApi, contextHolder] = message.useMessage();
@@ -69,7 +69,7 @@ const MintNftPage: NextPageWithLayout = (props: any) => {
         const program = new mainProgram(provider);
         const [txToBase64, err, metadataAddress, mintKey]: any =
           await program.mintNft(assetInfo?.assetUrl, assetInfo?.bigGuardian);
-        setMintKey(mintKey);
+        setMintKey(mintKey.publicKey.toBase58());
         if (!err) {
           const [resUMetaDt]: any = await EvaluationService.updateAssetMetadata(
             assetInfo?._id,

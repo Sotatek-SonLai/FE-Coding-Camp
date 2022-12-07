@@ -101,7 +101,6 @@ const MintNftPage: NextPageWithLayout = (props: any) => {
             console.log("result value: ", result?.value);
             // confirmationStatus : "confirmed"
             if (result?.value?.confirmationStatus === "confirmed") {
-              message.success("Tokenize nft successfully");
               clearInterval(flagInterval);
               setTx(tx);
               setIsShownModalTx(true);
@@ -135,7 +134,7 @@ const MintNftPage: NextPageWithLayout = (props: any) => {
         close={() => setIsShownModalTx(false)}
         title="Successfully tokenized!"
         tx={tx}
-        isShown={true}
+        isShown={isShownModalTx}
       >
         <Link href="/properties">
           <Button block type="primary">
