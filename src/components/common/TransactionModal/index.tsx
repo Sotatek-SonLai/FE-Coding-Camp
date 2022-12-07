@@ -1,17 +1,24 @@
 import React from "react";
 import { Button, Modal, Typography } from "antd";
-import { CheckCircleTwoTone, CheckOutlined } from "@ant-design/icons";
+import { CheckOutlined } from "@ant-design/icons";
 
 const { Paragraph, Text, Title, Link } = Typography;
 
-const TransactionModal: React.FC<any> = ({ isShown, tx, close, children }) => {
+const TransactionModal: React.FC<any> = ({
+  isShown,
+  tx,
+  title,
+  close,
+  children,
+  closable = false,
+}) => {
   return (
     <Modal
       width={450}
       onCancel={close}
       open={isShown}
       footer={null}
-      closable={false}
+      closable={closable}
     >
       <div
         style={{
@@ -35,9 +42,7 @@ const TransactionModal: React.FC<any> = ({ isShown, tx, close, children }) => {
           icon={<CheckOutlined style={{ fontSize: 20, color: "#00d97e" }} />}
         />
 
-        <Text style={{ fontSize: 16, fontWeight: 500 }}>
-          Successfully tokenized!
-        </Text>
+        <Text style={{ fontSize: 16, fontWeight: 500 }}>{title}</Text>
       </div>
       <Link
         href={`https://solana.fm/tx/${tx}?cluster=devnet-solana`}
@@ -46,7 +51,7 @@ const TransactionModal: React.FC<any> = ({ isShown, tx, close, children }) => {
       >
         <Text strong>
           <Paragraph copyable style={{ color: "#1890ff", textAlign: "center" }}>
-            3DNtj3kzZJqf1scNKCjdwPx9ucUCAoYiJsnnyEPgmrHt2WpUzQgvpbJypta2Ldf3D8ipVaTQ5Fapi1nPc4S7A2Yu
+            {tx}
           </Paragraph>
         </Text>
       </Link>

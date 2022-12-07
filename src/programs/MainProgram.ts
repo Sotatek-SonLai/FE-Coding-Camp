@@ -6,10 +6,12 @@ import {
   GOVERNOR_ADDRESS,
   PROGRAM_ADDRESS,
   SOL_TREASURY_ADDRESS,
+  SETTING_ADDRESS,
 } from "../constants";
 import {
   createAssociatedTokenAccountInstruction,
   createInitializeMintInstruction,
+  createMintToInstruction,
   getAssociatedTokenAddress,
   MINT_SIZE,
   TOKEN_PROGRAM_ID,
@@ -78,12 +80,18 @@ export default class mainProgram extends BaseInterface {
     return assetBasketPubkey;
   }
 
-  async getAssetLocker(programId: any, governor: any, basket_id: any) {
+  async getAssetLocker(
+    programId: any,
+    governor: any,
+    total_distribution_checkpoints: any,
+    basket_id: any
+  ) {
     const [assetLockerPubkey, _] =
       await anchor.web3.PublicKey.findProgramAddress(
         [
           Buffer.from("locker"),
           governor.toBuffer(),
+          total_distribution_checkpoints.toArrayLike(Buffer),
           basket_id.toArrayLike(Buffer),
         ],
         programId
@@ -101,17 +109,28 @@ export default class mainProgram extends BaseInterface {
     return treasuryPubkey;
   }
 
-  async tokenizeNft(mintKeyDB: any, assetBasket: any,  bigGuardian: string = "8CmfvdfpbJ1atkm8ruqBG5JurgxKqAseYduDWdEiMNpX") {
-
+  async tokenizeNft(
+    mintKeyDB: any,
+    assetBasket: any,
+    bigGuardian: string = "8CmfvdfpbJ1atkm8ruqBG5JurgxKqAseYduDWdEiMNpX"
+  ) {
     const { publicKey } = this._provider;
 
     const mintKey = new anchor.web3.PublicKey(mintKeyDB);
-    const governorAccount = await this._program.provider.connection.getAccountInfo(this._governor);
+    const governorAccount =
+      await this._program.provider.connection.getAccountInfo(this._governor);
 
-    const nftTokenAccount = await getAssociatedTokenAddress(mintKey, publicKey, false);
+    const nftTokenAccount = await getAssociatedTokenAddress(
+      mintKey,
+      publicKey,
+      false
+    );
 
-    if (!governorAccount) return
-    const governorDetails = this._program.coder.accounts.decode("PlatformGovernor", governorAccount.data);
+    if (!governorAccount) return;
+    const governorDetails = this._program.coder.accounts.decode(
+      "PlatformGovernor",
+      governorAccount.data
+    );
 
     const fractionalTokenMint = anchor.web3.Keypair.generate();
     const fractionalTokenAccount = await getAssociatedTokenAddress(
@@ -170,18 +189,18 @@ export default class mainProgram extends BaseInterface {
 
     console.log({
       assetBasket: new anchor.web3.PublicKey(assetBasket),
-        bigGuardian,
-        governor: this._governor,
-        mint: fractionalTokenMint.publicKey,
-        owner: publicKey,
-        rent: anchor.web3.SYSVAR_RENT_PUBKEY,
-        systemProgram: anchor.web3.SystemProgram.programId,
-        tokenAccount: fractionalTokenAccount,
-        tokenProgram: TOKEN_PROGRAM_ID,
-        mintNft: mintKey,
-        treasuryNftTokenAccount: treasuryNFTTokenAccount,
-        ownerNftTokenAccount: nftTokenAccount,
-    })
+      bigGuardian,
+      governor: this._governor,
+      mint: fractionalTokenMint.publicKey,
+      owner: publicKey,
+      rent: anchor.web3.SYSVAR_RENT_PUBKEY,
+      systemProgram: anchor.web3.SystemProgram.programId,
+      tokenAccount: fractionalTokenAccount,
+      tokenProgram: TOKEN_PROGRAM_ID,
+      mintNft: mintKey,
+      treasuryNftTokenAccount: treasuryNFTTokenAccount,
+      ownerNftTokenAccount: nftTokenAccount,
+    });
 
     const fractionalize_nft_ix = await this._program.methods
       .fractionalizeAsset(new anchor.BN(10000 * 10 ** 8))
@@ -224,7 +243,10 @@ export default class mainProgram extends BaseInterface {
     return [txToBase64, null];
   }
 
-  async mintNft(assetUrl: string = "https://basc.s3.amazonaws.com/meta/3506.json", bigGuardian: string = "8CmfvdfpbJ1atkm8ruqBG5JurgxKqAseYduDWdEiMNpX") {
+  async mintNft(
+    assetUrl: string = "https://basc.s3.amazonaws.com/meta/3506.json",
+    bigGuardian: string = "8CmfvdfpbJ1atkm8ruqBG5JurgxKqAseYduDWdEiMNpX"
+  ) {
     const { publicKey } = this._provider;
     try {
       const mintKey = web3.Keypair.generate();
@@ -233,7 +255,11 @@ export default class mainProgram extends BaseInterface {
           MINT_SIZE
         );
       // const nftTokenAccount = anchor.web3.Keypair.generate();
-      const nftTokenAccount = await getAssociatedTokenAddress(mintKey.publicKey, publicKey, false);
+      const nftTokenAccount = await getAssociatedTokenAddress(
+        mintKey.publicKey,
+        publicKey,
+        false
+      );
 
       const mint_tx = new anchor.web3.Transaction().add(
         anchor.web3.SystemProgram.createAccount({
@@ -250,14 +276,24 @@ export default class mainProgram extends BaseInterface {
           publicKey,
           TOKEN_PROGRAM_ID
         ),
-        createAssociatedTokenAccountInstruction(publicKey, nftTokenAccount, publicKey, mintKey.publicKey, TOKEN_PROGRAM_ID),
+        createAssociatedTokenAccountInstruction(
+          publicKey,
+          nftTokenAccount,
+          publicKey,
+          mintKey.publicKey,
+          TOKEN_PROGRAM_ID
+        )
       );
 
       const metadataAddress = await this.getMetadata(mintKey.publicKey);
       const masterEdition = await this.getMasterEdition(mintKey.publicKey);
       const governorAccount =
         await this._program.provider.connection.getAccountInfo(this._governor);
-      console.log("governorAccount", this._governor.toBase58(),  this._sol_treasury.toBase58());
+      console.log(
+        "governorAccount",
+        this._governor.toBase58(),
+        this._sol_treasury.toBase58()
+      );
       const governorDetails =
         governorAccount &&
         this._program.coder.accounts.decode(
@@ -314,6 +350,129 @@ export default class mainProgram extends BaseInterface {
       const txToBase64 = serialized_tx.toString("base64");
       console.log("Tx: ", txToBase64);
       return [txToBase64, null, metadataAddress, mintKey];
+    } catch (err) {
+      console.log({ err });
+      return [null, err, null, null];
+    }
+  }
+
+  async createDividentCheckpoint(
+    assetBasketAddress: string,
+    bigGuardian: string = "8CmfvdfpbJ1atkm8ruqBG5JurgxKqAseYduDWdEiMNpX"
+  ) {
+    const { publicKey } = this._provider;
+    try {
+      const setting = new anchor.web3.PublicKey(SETTING_ADDRESS);
+
+      const lamports =
+        await this._program.provider.connection.getMinimumBalanceForRentExemption(
+          MINT_SIZE
+        );
+
+      const treasuryPDA = await this.getTokenTreasury(this._program.programId);
+      let paymentToken = anchor.web3.Keypair.generate();
+      let dividend_distributor = anchor.web3.Keypair.generate();
+
+      const assetOwnerPaymentAccount = await getAssociatedTokenAddress(
+        paymentToken.publicKey,
+        publicKey
+      );
+      const treasuryPaymentAccount = await getAssociatedTokenAddress(
+        paymentToken.publicKey,
+        treasuryPDA,
+        true
+      );
+      const adminPaymentAccount = await getAssociatedTokenAddress(
+        paymentToken.publicKey,
+        new PublicKey(bigGuardian)
+      );
+
+      const assetBasketAccount = await this._program.account.assetBasket.fetch(
+        new anchor.web3.PublicKey(assetBasketAddress)
+      );
+      const assetLocker = await this.getAssetLocker(
+        this._program.programId,
+        this._governor,
+        assetBasketAccount.totalDistributionCheckpoint,
+        assetBasketAccount.basketId
+      );
+
+      const mint_payment_token_tx = new anchor.web3.Transaction().add(
+        anchor.web3.SystemProgram.createAccount({
+          fromPubkey: publicKey,
+          newAccountPubkey: paymentToken.publicKey,
+          space: MINT_SIZE,
+          programId: TOKEN_PROGRAM_ID,
+          lamports,
+        }),
+        createInitializeMintInstruction(
+          paymentToken.publicKey,
+          8,
+          publicKey,
+          publicKey,
+          TOKEN_PROGRAM_ID
+        ),
+        createAssociatedTokenAccountInstruction(
+          publicKey,
+          treasuryPaymentAccount,
+          treasuryPDA,
+          paymentToken.publicKey
+        ),
+        createAssociatedTokenAccountInstruction(
+          publicKey,
+          assetOwnerPaymentAccount,
+          publicKey,
+          paymentToken.publicKey
+        ),
+        createAssociatedTokenAccountInstruction(
+          publicKey,
+          adminPaymentAccount,
+          new PublicKey(bigGuardian),
+          paymentToken.publicKey
+        ),
+        createMintToInstruction(
+          paymentToken.publicKey,
+          assetOwnerPaymentAccount,
+          publicKey,
+          new anchor.BN(10000 * 10 ** 8).toNumber()
+        )
+      );
+      const create_dividend_ix = await this._program.methods
+        .createDividendCheckpoint(new anchor.BN(1000 * 10 ** 8))
+        .accounts({
+          dividendDistributor: dividend_distributor.publicKey,
+          governor: this._governor,
+          mint: paymentToken.publicKey,
+          owner: publicKey,
+          ownerTokenAccount: assetOwnerPaymentAccount,
+          rent: anchor.web3.SYSVAR_RENT_PUBKEY,
+          treasuryTokenAccount: treasuryPaymentAccount,
+          systemProgram: anchor.web3.SystemProgram.programId,
+          tokenProgram: TOKEN_PROGRAM_ID,
+          assetBasket: assetBasketAddress,
+          fractionalizeTokenLocker: assetLocker,
+          bigGuardian,
+          setting: setting,
+        })
+        .instruction();
+
+      mint_payment_token_tx.add(create_dividend_ix);
+      const recentBlockhash =
+        await this._program.provider.connection.getLatestBlockhash("confirmed");
+
+      mint_payment_token_tx.recentBlockhash = recentBlockhash.blockhash;
+      mint_payment_token_tx.feePayer = publicKey;
+
+      mint_payment_token_tx.partialSign(paymentToken);
+      mint_payment_token_tx.partialSign(dividend_distributor);
+
+      const serialized_tx = mint_payment_token_tx.serialize({
+        requireAllSignatures: false,
+      });
+
+      const txToBase64 = serialized_tx.toString("base64");
+      console.log("Tx: ", txToBase64);
+      return [txToBase64, null];
     } catch (err) {
       console.log({ err });
       return [null, err, null, null];
