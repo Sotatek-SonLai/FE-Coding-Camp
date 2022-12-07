@@ -18,6 +18,9 @@ import ActivityHistory from "../../components/CheckpointPage/ActivityHistory";
 import MainLayout from "../../components/Main-Layout";
 import { getUrl } from "../../utils/utility";
 import { ArrowLeftOutlined } from "@ant-design/icons";
+import CheckpointService from "../../service/checkpoint.service";
+import { useConnection, useWallet } from "@solana/wallet-adapter-react";
+import { Connection, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 
 let flagInterval: NodeJS.Timeout;
 
@@ -28,22 +31,45 @@ const CheckpointDetail = () => {
   const router = useRouter();
   const { propertyId, checkpointId } = router.query;
   const [form] = Form.useForm();
+  const wallet = useWallet();
+  const { connection } = useConnection();
+  const [balance, setBalance] = useState(0);
+
+  const getUserSOLBalance = async (
+    publicKey: PublicKey,
+    connection: Connection
+  ) => {
+    let balance = await connection.getBalance(publicKey);
+    setBalance(balance);
+  };
+
+  useEffect(() => {
+    if (wallet.publicKey) {
+      getUserSOLBalance(wallet.publicKey, connection);
+    }
+  }, [wallet.publicKey, connection]);
 
   useEffect(() => {
     (async () => {
-      if (propertyId) {
-        const [res]: any = await EvaluationService.getDetail(propertyId);
-        if (!res?.error) {
-          setAssetInfo(res);
-        } else {
-          message.error(res?.error?.message);
-        }
+      if (!propertyId || !checkpointId) return;
+
+      const [res]: any = await EvaluationService.getDetail(propertyId);
+      // 6390092ead97ff2e397e6b2d
+      // 638f305aad97ff2e397c8ff1
+      const [checkpointDetail] = await CheckpointService.getCheckpointDetail(
+        "6390092ead97ff2e397e6b2d"
+      );
+      console.log("checkpointDetail: ", checkpointDetail);
+      if (!res?.error) {
+        setAssetInfo(res);
+      } else {
+        message.error(res?.error?.message);
       }
     })();
     return () => {
       clearInterval(flagInterval);
     };
-  }, [propertyId]);
+  }, []);
 
   const onFinish = (values: any) => {
     console.log("Success:", values);
@@ -165,7 +191,8 @@ const CheckpointDetail = () => {
                 <Input />
               </Form.Item>
               <Text style={{ color: "var(--text-color)" }}>
-                Available Balance: 97,420,234.49 USDC
+                {`Available Balance: fdfds
+                    ${balance / LAMPORTS_PER_SOL} SOL`}
               </Text>
               <br />
               <br />

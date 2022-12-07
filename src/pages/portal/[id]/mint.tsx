@@ -50,6 +50,7 @@ const MintNftPage: NextPageWithLayout = (props: any) => {
       if (id) {
         const [res]: any = await EvaluationService.getDetail(id);
         if (!res?.error) {
+          console.log("res: ", res);
           setAssetInfo(res);
         } else {
           message.error(res?.error?.message);
@@ -68,7 +69,11 @@ const MintNftPage: NextPageWithLayout = (props: any) => {
       if (provider && publicKey) {
         const program = new mainProgram(provider);
         const [txToBase64, err, metadataAddress, mintKey]: any =
-          await program.mintNft(assetInfo?.assetUrl, assetInfo?.bigGuardian);
+          await program.mintNft(
+            assetInfo?.assetUrl,
+            assetInfo?.bigGuardian,
+            assetInfo?.name
+          );
         setMintKey(mintKey.publicKey.toBase58());
         if (!err) {
           const [resUMetaDt]: any = await EvaluationService.updateAssetMetadata(

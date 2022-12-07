@@ -1,5 +1,14 @@
-import { useAnchorWallet, useWallet } from "@solana/wallet-adapter-react";
-import { Transaction } from "@solana/web3.js";
+import {
+  useAnchorWallet,
+  useConnection,
+  useWallet,
+} from "@solana/wallet-adapter-react";
+import {
+  Connection,
+  LAMPORTS_PER_SOL,
+  PublicKey,
+  Transaction,
+} from "@solana/web3.js";
 import { Button, Form, Input, Modal, Typography } from "antd";
 import TextArea from "antd/lib/input/TextArea";
 import Link from "next/link";
@@ -19,6 +28,23 @@ const CreateCheckpoint = ({ propertyInfo, onDone }: any) => {
   const { publicKey, sendTransaction } = useWallet();
   const [tx, setTx] = useState<any>("");
   const [isShownModalTx, setIsShownModalTx] = useState<boolean>(false);
+  // const wallet = useWallet();
+  const { connection } = useConnection();
+  const [balance, setBalance] = useState(0);
+
+  const getUserSOLBalance = async (
+    publicKey: PublicKey,
+    connection: Connection
+  ) => {
+    let balance = await connection.getBalance(publicKey);
+    setBalance(balance);
+  };
+
+  useEffect(() => {
+    if (wallet?.publicKey) {
+      getUserSOLBalance(wallet.publicKey, connection);
+    }
+  }, [wallet?.publicKey, connection]);
 
   const showModal = () => {
     setIsModalOpen(true);
@@ -41,10 +67,12 @@ const CreateCheckpoint = ({ propertyInfo, onDone }: any) => {
 
       setLoading(true);
       const program = new mainProgram(provider);
-      const [txToBase64, err]: any = await program.createDividentCheckpoint(
-        propertyInfo?.assetBasket,
-        propertyInfo?.bigGuardian
-      );
+      const [txToBase64, err, dividend_distributor]: any =
+        await program.createDividendCheckpoint(
+          propertyInfo?.assetBasket,
+          propertyInfo?.bigGuardian,
+          values.tokenAddress
+        );
 
       if (err) {
         setLoading(false);
@@ -130,8 +158,10 @@ const CreateCheckpoint = ({ propertyInfo, onDone }: any) => {
         setIsModalOpen(false);
         setIsShownModalTx(true);
         const [res] = await CheckpointService.updateCheckpoint({
-          dividend_distributor: values.amount,
+          dividend_distributor: dividend_distributor,
           evaluation_id: propertyInfo._id,
+          token_address: values.tokenAddress,
+          description: values.description,
         });
         onDone()
         console.log("res: ", res);
@@ -173,7 +203,7 @@ const CreateCheckpoint = ({ propertyInfo, onDone }: any) => {
           layout="horizontal"
         >
           <Form.Item
-            label="Buy Amount"
+            label="Deposit Amount"
             name="amount"
             rules={[{ required: true, message: "This field cannot be empty." }]}
             style={{ marginBottom: 10 }}
@@ -181,11 +211,19 @@ const CreateCheckpoint = ({ propertyInfo, onDone }: any) => {
             <Input />
           </Form.Item>
           <Text style={{ color: "var(--text-color)" }}>
-            Available Balance: 97,420,234.49 USDC
+            Available Balance: {balance / LAMPORTS_PER_SOL} SOL
           </Text>
 
           <br />
           <br />
+          <Form.Item
+            label="Token Address"
+            name="tokenAddress"
+            rules={[{ required: true, message: "This field cannot be empty." }]}
+            style={{ marginBottom: 10 }}
+          >
+            <Input />
+          </Form.Item>
           <Form.Item
             label="Description"
             name="description"

@@ -1,17 +1,9 @@
 import React from "react";
-import {
-  Affix,
-  Button,
-  Col,
-  Descriptions,
-  Divider,
-  Row,
-  Tag,
-  Typography,
-} from "antd";
-import { MailOutlined, PhoneOutlined } from "@ant-design/icons";
+import { Col, Divider, Row, Tag, Typography } from "antd";
 import AssetInfo from "../AssetInfo";
-import ContactInfo from "./ContactInfo"
+import ContactInfo from "./ContactInfo";
+import moment from "moment";
+import { DATE_TIME_FORMAT } from "../../../constants";
 
 const { Title, Text } = Typography;
 const TokenizedAsset: React.FC<{ assetInfo: any }> = ({ assetInfo }) => {
@@ -38,7 +30,20 @@ const TokenizedAsset: React.FC<{ assetInfo: any }> = ({ assetInfo }) => {
       </Col>
 
       <Col span={8}>
-        <ContactInfo assetInfo={assetInfo} />
+        <ContactInfo assetInfo={assetInfo}>
+          <Divider
+            orientation="left"
+            orientationMargin={0}
+            style={{ marginBottom: 0 }}
+          >
+            <Title style={{ marginBottom: 0 }} level={2}>
+              $215,900
+            </Title>
+          </Divider>
+          <Text style={{ color: " var(--text-color)" }}>
+            Approved on {moment(assetInfo?.updatedAt).format(DATE_TIME_FORMAT)}
+          </Text>
+        </ContactInfo>
       </Col>
     </Row>
   );

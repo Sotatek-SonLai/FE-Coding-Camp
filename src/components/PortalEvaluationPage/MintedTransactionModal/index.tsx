@@ -41,7 +41,7 @@ const MintedTransactionModal: React.FC<any> = ({
       </div>
       <div style={{ textAlign: "center" }}>
         <Text style={{ color: "var(--text-color)", textAlign: "center" }}>
-          Congratulations? Your property has been minted as an NFT on the Solana
+          Congratulations! Your property has been minted as an NFT on the Solana
           blockchain.
         </Text>
       </div>

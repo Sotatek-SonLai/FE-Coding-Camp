@@ -2,7 +2,7 @@ import React from "react";
 import { Affix, Button, Col, Divider, Row, Tag, Typography } from "antd";
 import AssetInfo from "../AssetInfo";
 import { MailOutlined, PhoneOutlined } from "@ant-design/icons";
-import ContactInfo from "./ContactInfo"
+import ContactInfo from "./ContactInfo";
 
 const { Title, Text } = Typography;
 const PendingAsset: React.FC<{ assetInfo: any }> = ({ assetInfo }) => {
@@ -29,7 +29,13 @@ const PendingAsset: React.FC<{ assetInfo: any }> = ({ assetInfo }) => {
       </Col>
 
       <Col span={8}>
-        <ContactInfo assetInfo={assetInfo} />
+        <ContactInfo assetInfo={assetInfo}>
+          <ContactInfo assetInfo={assetInfo}>
+            <Text style={{ fontSize: 20, fontWeight: 500 }}>
+              Your property is waiting for approval!
+            </Text>
+          </ContactInfo>
+        </ContactInfo>
       </Col>
     </Row>
   );
