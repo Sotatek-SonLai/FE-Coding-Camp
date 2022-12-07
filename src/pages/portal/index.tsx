@@ -11,6 +11,7 @@ import MainLayout from "../../components/Main-Layout";
 import { NextPageWithLayout } from "../_app";
 import { AssetType } from "../../types";
 import { useRouter } from "next/router";
+import { STATUS } from "../../types/asset.type"
 const { Title } = Typography;
 
 const PortalPage: NextPageWithLayout = (props: any) => {
@@ -28,7 +29,7 @@ const PortalPage: NextPageWithLayout = (props: any) => {
   };
   useEffect(() => {
     (async () => {
-      const [res]: any = await EvaluationService.getLand();
+      const [res]: any = await EvaluationService.getLand({status: [STATUS.PASSED, STATUS.MINTED]});
       const passed = [];
       const request = [];
       for (const item of res) {

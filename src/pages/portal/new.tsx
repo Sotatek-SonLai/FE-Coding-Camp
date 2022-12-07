@@ -227,7 +227,7 @@ const NewLandPage: NextPageWithLayout = (props) => {
         // ),
         certificates: await Promise.all(
           certificates.map(async (file: any, index: number) => {
-            if (file) {
+            if (file && !file.tempURL) {
               return {
                 name: file.name,
                 data: await toBase64(file),

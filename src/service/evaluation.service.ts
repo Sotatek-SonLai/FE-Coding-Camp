@@ -20,9 +20,9 @@ const EvaluationService = {
             return [null, error];
         }
     },
-    getLand: async () => {
+    getLand: async (params: any) => {
         try {
-            const response = await Request.get(`evaluations`);
+            const response = await Request.get(`evaluations`, params);
             return [response.data, null];
         } catch (error) {
             return [null, error];

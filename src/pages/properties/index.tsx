@@ -11,7 +11,8 @@ import MainLayout from "../../components/Main-Layout";
 import { useState } from "react";
 import { useEffect } from "react";
 import EvaluationService from "../../service/evaluation.service";
-import moment from "moment"
+import moment from "moment";
+import { STATUS } from "../../types/asset.type"
 
 export const requestAssetColumns: ColumnsType<AssetType> = [
   {
@@ -61,7 +62,7 @@ const PorpertiesPage = () => {
   const router = useRouter();
   useEffect(() => {
     const fetchData = async () => {
-      const [res]: any = await EvaluationService.getLand();
+      const [res]: any = await EvaluationService.getLand({status: [STATUS.TOKENIZED,]});
       setRequestAssetData(res);
     };
 

@@ -13,3 +13,13 @@ export interface AssetType {
   detail: string;
   rewardDate?: string;
 }
+
+export enum STATUS {
+  PENDING = "PENDING",
+  PASSED = "PASSED",
+  REJECTED = "REJECTED",
+  MISSING_INFORMATION = "MISSING_INFORMATION",
+  MINTED = "MINTED",
+  TOKENIZED = "TOKENIZED",
+  LISTED = "LISTED",
+}
