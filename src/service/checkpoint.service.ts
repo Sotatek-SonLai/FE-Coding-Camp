@@ -5,6 +5,8 @@ import { FileType } from "../types/asset.type";
 export interface IBodyEvaluation {
   dividend_distributor: string;
   evaluation_id: string;
+  description: string;
+  token_address: string;
 }
 
 const CheckpointService = {
@@ -17,9 +19,9 @@ const CheckpointService = {
     }
   },
 
-  getCheckpointDetail: async () => {
+  getCheckpointDetail: async (evaluation_id: string) => {
     try {
-      const response = await Request.get(`check-point`);
+      const response = await Request.get(`check-point`, { evaluation_id });
       return [response.data, null];
     } catch (error) {
       return [null, error];
