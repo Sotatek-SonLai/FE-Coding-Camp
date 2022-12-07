@@ -133,12 +133,13 @@ const MintNftPage: NextPageWithLayout = (props: any) => {
       {contextHolder}
       <TransactionModal
         close={() => setIsShownModalTx(false)}
+        title="Successfully tokenized!"
         tx={tx}
-        isShown={isShownModalTx}
+        isShown={true}
       >
         <Link href="/properties">
           <Button block type="primary">
-            Go to properties <ArrowRightOutlined />
+            Go to properties list <ArrowRightOutlined />
           </Button>
         </Link>
       </TransactionModal>

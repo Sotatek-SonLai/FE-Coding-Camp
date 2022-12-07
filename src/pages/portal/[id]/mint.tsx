@@ -13,16 +13,16 @@ import { Transaction } from "@solana/web3.js";
 import MainLayout from "../../../components/Main-Layout";
 import { NextPageWithLayout } from "../../_app";
 import { useRouter } from "next/router";
-import TransactionModal from "../../../components/common/TransactionModal";
 import AssetInfo from "../../../components/PortalEvaluationPage/AssetInfo";
 import { useSelector } from "react-redux";
 import { selectWallet } from "../../../store/wallet/wallet.slice";
+import MintedTransactionModal from "../../../components/PortalEvaluationPage/MintedTransactionModal";
 
 const { Text } = Typography;
 let flagInterval: NodeJS.Timeout;
 
 const MintNftPage: NextPageWithLayout = (props: any) => {
-  const { publicKey, connected, sendTransaction } = useWallet();
+  const { publicKey, sendTransaction } = useWallet();
   const wallet = useAnchorWallet();
   const [loading, setLoading] = useState(false);
   const [assetInfo, setAssetInfo] = useState<any>(null);
@@ -30,6 +30,7 @@ const MintNftPage: NextPageWithLayout = (props: any) => {
   const { walletAddress } = useSelector(selectWallet);
 
   const [tx, setTx] = useState<any>("");
+  const [mintKey, setMintKey] = useState("");
   const [isShownModalTx, setIsShownModalTx] = useState<boolean>(false);
   const id = router?.query?.id;
   const [messageApi, contextHolder] = message.useMessage();
@@ -68,6 +69,7 @@ const MintNftPage: NextPageWithLayout = (props: any) => {
         const program = new mainProgram(provider);
         const [txToBase64, err, metadataAddress, mintKey]: any =
           await program.mintNft(assetInfo?.assetUrl, assetInfo?.bigGuardian);
+        setMintKey(mintKey);
         if (!err) {
           const [resUMetaDt]: any = await EvaluationService.updateAssetMetadata(
             assetInfo?._id,
@@ -185,17 +187,21 @@ const MintNftPage: NextPageWithLayout = (props: any) => {
   return (
     <>
       {contextHolder}
-      <TransactionModal
-        close={() => setIsShownModalTx(false)}
+      <MintedTransactionModal
+        close={() => {
+          setIsShownModalTx(false);
+          router.back();
+        }}
         tx={tx}
+        mintKey={mintKey}
         isShown={isShownModalTx}
       >
         <Link href={`/portal/${assetInfo?._id}/frac`}>
-          <Button type="primary">
+          <Button block type="primary">
             <ArrowRightOutlined /> Tokenize nft
           </Button>
         </Link>
-      </TransactionModal>
+      </MintedTransactionModal>
 
       {/* <Button onClick={warning}>Warning</Button> */}
       <Row className="justify-center">

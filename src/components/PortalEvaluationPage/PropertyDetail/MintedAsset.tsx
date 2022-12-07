@@ -11,26 +11,26 @@ const MintedAsset: React.FC<{ assetInfo: any }> = ({ assetInfo }) => {
     <Row gutter={[20, 0]}>
       <Col span={16}>
         <div className="box">
-        <div
+          <div
             style={{
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
             }}
           >
-          <div style={{ display: "flex", gap: 30 }}>
-            <Title level={3}>LAND INFO</Title>
+            <div style={{ display: "flex", gap: 30 }}>
+              <Title level={3}>LAND INFO</Title>
 
-            <div>
-              <Tag
-                style={{ padding: "5px 10px", fontWeight: 500 }}
-                color="#108ee9"
-              >
-                {assetInfo.status}
-              </Tag>
+              <div>
+                <Tag
+                  style={{ padding: "5px 10px", fontWeight: 500 }}
+                  color="#108ee9"
+                >
+                  {assetInfo.status}
+                </Tag>
+              </div>
             </div>
-          </div>
-          <ButtonDeleteDetail id={assetInfo?._id}/>
+            <ButtonDeleteDetail id={assetInfo?._id} />
           </div>
 
           <Divider />
@@ -64,7 +64,7 @@ const MintedAsset: React.FC<{ assetInfo: any }> = ({ assetInfo }) => {
                 block
                 size="middle"
               >
-                TOKENIZED NFT
+                TOKENIZE NFT
               </Button>
             </Link>
             <Button block size="middle" type="primary" ghost danger>
