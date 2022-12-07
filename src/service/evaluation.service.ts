@@ -1,14 +1,14 @@
 import Request from "../utils/request.util";
-import {SERVER_ENDPOINT} from "../constants";
-import {FileType} from "../types/asset.type";
+import { SERVER_ENDPOINT } from "../constants";
+import { FileType } from "../types/asset.type";
 
 export interface IBodyEvaluation {
-    "avatar": FileType,
-    "address": string,
-    "description": string,
-    "certificates": FileType[]
-    "projectImages": FileType[]
-    "attributes": any
+  avatar: FileType;
+  address: string;
+  description: string;
+  certificates: FileType[];
+  projectImages: FileType[];
+  attributes: any;
 }
 
 const EvaluationService = {
@@ -87,6 +87,14 @@ const EvaluationService = {
         } catch (error) {
             return [null, error];
         }
+    },
+    getAllCheckpoints: async (id: any) => {
+      try {
+        const response = await Request.get(`check-point`, { evaluation_id: id });
+        return [response.data, null];
+      } catch (error) {
+        return [null, error];
+      }
     },
 
 };
