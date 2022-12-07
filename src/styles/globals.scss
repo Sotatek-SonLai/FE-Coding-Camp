@@ -195,3 +195,6 @@ section.ant-layout {
 // h4.ant-typography, div.ant-typography-h4, div.ant-typography-h4 > textarea, .ant-typography h4 {
 //   color: var(--main-color);
 // }
+.ant-upload-list-text-container, .ant-upload-list-picture-container {
+  transition: none !important;
+}

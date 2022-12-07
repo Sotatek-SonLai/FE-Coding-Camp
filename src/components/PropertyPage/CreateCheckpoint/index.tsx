@@ -9,7 +9,7 @@ import {
   PublicKey,
   Transaction,
 } from "@solana/web3.js";
-import { Button, Form, Input, Modal, Typography } from "antd";
+import { Button, Form, Input, Modal, Typography, Upload } from "antd";
 import TextArea from "antd/lib/input/TextArea";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
@@ -17,6 +17,9 @@ import mainProgram from "../../../programs/MainProgram";
 import { getProvider } from "../../../programs/utils";
 import CheckpointService from "../../../service/checkpoint.service";
 import TransactionModal from "../../common/TransactionModal";
+import { UploadOutlined } from "@ant-design/icons";
+import type { UploadProps, UploadFile } from "antd/es/upload/interface";
+import { toBase64 } from "../../../utils/utility";
 
 const { Title, Text } = Typography;
 
@@ -45,6 +48,7 @@ const CreateCheckpoint = ({ propertyInfo, onDone }: any) => {
       getUserSOLBalance(wallet.publicKey, connection);
     }
   }, [wallet?.publicKey, connection]);
+  const [reportFile, setReportFile] = useState<UploadFile[]>([]);
 
   const showModal = () => {
     setIsModalOpen(true);
@@ -56,6 +60,8 @@ const CreateCheckpoint = ({ propertyInfo, onDone }: any) => {
 
   const handleCancel = () => {
     setIsModalOpen(false);
+    form.resetFields()
+    setReportFile([])
   };
 
   const onFinish = async (values: any) => {
@@ -153,17 +159,26 @@ const CreateCheckpoint = ({ propertyInfo, onDone }: any) => {
         isBlockhashValid = !(await isBlockhashExpired(inititalBlock));
         await sleep(statusCheckInterval);
       }
-
+      console.log("1");
       if (done) {
-        setIsModalOpen(false);
+        console.log("2");
+        handleCancel();
         setIsShownModalTx(true);
         const [res] = await CheckpointService.updateCheckpoint({
           dividend_distributor: dividend_distributor,
           evaluation_id: propertyInfo._id,
           token_address: values.tokenAddress,
           description: values.description,
+          report: await Promise.all(
+            values?.report.fileList.map(async (file: any, index: number) => {
+              return {
+                name: file.name,
+                data: await toBase64(file.originFileObj),
+              };
+            })
+          ),
         });
-        onDone()
+        onDone();
         console.log("res: ", res);
       }
       setLoading(false);
@@ -180,6 +195,16 @@ const CreateCheckpoint = ({ propertyInfo, onDone }: any) => {
     console.log("tx: ", tx);
   }, [tx]);
 
+  const propPaper: UploadProps = {
+    beforeUpload: (file, fileList) => {
+      setReportFile([file]);
+      return false;
+    },
+    onRemove: (file) => {
+      setReportFile([]);
+    },
+    defaultFileList: [],
+  };
   return (
     <>
       <Button type="primary" onClick={showModal}>
@@ -214,8 +239,6 @@ const CreateCheckpoint = ({ propertyInfo, onDone }: any) => {
             Available Balance: {balance / LAMPORTS_PER_SOL} SOL
           </Text>
 
-          <br />
-          <br />
           <Form.Item
             label="Token Address"
             name="tokenAddress"
@@ -230,7 +253,30 @@ const CreateCheckpoint = ({ propertyInfo, onDone }: any) => {
             rules={[{ required: true, message: "This field cannot be empty." }]}
             style={{ marginBottom: 10 }}
           >
-            <TextArea />
+            <TextArea rows={5} />
+          </Form.Item>
+          <Form.Item
+            label="Report File"
+            name="report"
+            // rules={[{ required: true, message: "This field cannot be empty." }]}
+            rules={[
+              {
+                validator: (_, value) => 
+                   reportFile?.length > 0
+                    ? Promise.resolve()
+                    : Promise.reject(new Error("File upload cannot be empty."))
+              },
+            ]}
+          >
+            <Upload
+              customRequest={({ file, onSuccess }: any) => {
+                onSuccess("ok");
+              }}
+              fileList={reportFile}
+              {...propPaper}
+            >
+              <Button icon={<UploadOutlined />}>Upload</Button>
+            </Upload>
           </Form.Item>
           <br />
           <Button

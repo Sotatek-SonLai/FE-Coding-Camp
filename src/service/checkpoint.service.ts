@@ -7,10 +7,12 @@ export interface IBodyEvaluation {
   evaluation_id: string;
   description: string;
   token_address: string;
+  report: any;
 }
 
 const CheckpointService = {
   updateCheckpoint: async (body: IBodyEvaluation) => {
+    console.log("updateCheckpoint", body)
     try {
       const response = await Request.post(`check-point`, body);
       return [response.data, null];
