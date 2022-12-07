@@ -165,7 +165,7 @@ const PortalPage: NextPageWithLayout = () => {
             assetInfo?.certificates.map((item: any, index: number) => (
               <div className="file__container" key={index}>
                 <p>{item?.name}</p>
-                <a href={getUrl(item)}>
+                <a href={getUrl(item)} rel="noreferrer" target="_blank">
                   <img src="https://ovenuedev.sotatek.works/images/icon/asset/download.svg" />
                 </a>
               </div>

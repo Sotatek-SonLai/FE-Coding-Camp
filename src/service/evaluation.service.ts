@@ -79,7 +79,15 @@ const EvaluationService = {
         } catch (error) {
             return [null, error];
         }
-    }
+    },
+    updateLand: async (body: IBodyEvaluation, id: any) => {
+        try {
+            const response = await Request.put(`evaluations/${id}`, body);
+            return [response.data, null];
+        } catch (error) {
+            return [null, error];
+        }
+    },
 
 };
 

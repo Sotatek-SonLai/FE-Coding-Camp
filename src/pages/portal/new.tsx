@@ -1,4 +1,4 @@
-import React, { ReactElement, useState } from "react";
+import React, { ReactElement, useState, useEffect } from "react";
 import {
   Typography,
   Button,
@@ -34,6 +34,7 @@ import ObjectID from "bson-objectid";
 import PreviewModal, {
   getBase64Preview,
 } from "../../components/common/modals/PreviewModal";
+import { getUrl } from "../../utils/utility";
 
 const getBase64 = (img: RcFile, callback: (url: string) => void) => {
   const reader = new FileReader();
@@ -61,6 +62,7 @@ const NewLandPage: NextPageWithLayout = (props) => {
   const [loadingFile, setLoadingFile] = useState(false);
   const [imageUrl, setImageUrl] = useState<string>();
   const [projectImgList, setProjectImgList] = useState<UploadFile[]>([]);
+  const [certificates, setCertificates] = useState<UploadFile[]>([]);
   const [form] = Form.useForm();
   const router = useRouter();
   const [attr, setAttr] = useState<any>([
@@ -70,6 +72,69 @@ const NewLandPage: NextPageWithLayout = (props) => {
       value: "",
     },
   ]);
+  const assetId = router?.query?.id || "";
+
+  useEffect(() => {
+    if (!!assetId) {
+      fetchAssetDetails();
+    }
+  }, [assetId]);
+
+  const fetchAssetDetails = async () => {
+    try {
+      setLoading(true);
+      const [res]: any = await EvaluationService.getDetail(assetId);
+      if (!res?.error) {
+        console.log({ res });
+        form.setFieldsValue(res);
+        setImageUrl(getUrl(res.avatar));
+        fetchAttribute(res?.attributes);
+        fetchProjectImgList(res?.projectImages);
+        fetchLegalPapersList(res?.certificates);
+      } else {
+        message.error(res?.error?.message);
+      }
+      setLoading(false);
+    } catch (err: any) {
+      setLoading(false);
+      message.error("Something error");
+    }
+  };
+
+  const fetchAttribute = (arr: any[]) => {
+    let newAttr: any[] = [];
+    arr.forEach((item, index) => {
+      const id = ObjectID(24).toHexString();
+      newAttr.push({ ...item, id });
+      form.setFieldsValue({
+        [`key[${id}]`]: item.key,
+        [`value[${id}]`]: item.value,
+      });
+    });
+    setAttr([...newAttr]);
+  };
+
+  const fetchProjectImgList = (arr: any[]) => {
+    const newImageList: any[] = [];
+    arr.forEach((item, index) => {
+      newImageList.push({
+        ...item,
+        url: getUrl(item),
+      });
+    });
+    setProjectImgList([...newImageList]);
+  };
+
+  const fetchLegalPapersList = (arr: any[]) => {
+    const newImageList: any[] = [];
+    arr.forEach((item, index) => {
+      newImageList.push({
+        ...item,
+        url: getUrl(item),
+      });
+    });
+    setCertificates([...newImageList]);
+  };
 
   const handlePreview = async (file: UploadFile) => {
     if (!file.url && !file.preview) {
@@ -98,12 +163,44 @@ const NewLandPage: NextPageWithLayout = (props) => {
         console.log(file, fileList);
       }
     },
+    beforeUpload: (file, fileList) => {
+      const length = fileList.length
+      console.log([...certificates, fileList[length - 1]])
+      setCertificates([...certificates, file]);
+      return false;
+    },
+    onRemove: (file) => {
+      const index = certificates.indexOf(file);
+      const newFileList = certificates.slice();
+      newFileList.splice(index, 1);
+      setCertificates(newFileList);
+    },
     defaultFileList: [],
   };
 
   const onFinish = async (values: any) => {
+    let formatProjectImages = [];
+    let projectImages = await Promise.all(
+      projectImgList.map(async (file: any, index: number) => {
+        if (file.originFileObj) {
+          return {
+            name: file.name,
+            data: await toBase64(file.originFileObj),
+          };
+        }
+        return {
+          name: file.name,
+          // data: await toBase64(file),
+          url: file.url,
+        };
+      })
+    );
+    for (const item of projectImages) {
+      if (item) {
+        formatProjectImages.push(item);
+      }
+    }
     try {
-      console.log("values", values);
       setLoading(true);
       let attributes: any = [];
       Object.entries(values).forEach(([key, val]) => {
@@ -117,36 +214,46 @@ const NewLandPage: NextPageWithLayout = (props) => {
       });
 
       const formData: any = {
+        nftName: values.nftName,
+        email: values.email,
+        phone: values.phone,
         address: values.address,
         externalUrl: values.externalUrl,
         youtubeUrl: values.youtubeUrl,
         description: values.description,
-        avatar: {
-          name: "logo.png",
-          data: await toBase64(values.avatar.file.originFileObj),
-        },
+        // avatar: {
+        //   name: "logo.png",
+        //   data: await toBase64(values.avatar.file.originFileObj),
+        // },
         attributes,
         certificates: await Promise.all(
-          values.certificates.fileList.map(
-            async (file: any, index: number) => ({
-              name: `Certificate ${index + 1}`,
-              data: await toBase64(file.originFileObj),
-            })
-          )
+          certificates.map(async (file: any, index: number) => {
+            return {
+              name: file.name,
+              data: await toBase64(file),
+            };
+          })
         ),
-        projectImages: await Promise.all(
-          values.projectImages.fileList.map(
-            async (file: any, index: number) => ({
-              name: `Image ${index + 1}`,
-              data: await toBase64(file.originFileObj),
-            })
-          )
-        ),
+        projectImages: formatProjectImages,
       };
-      console.log({ formData });
+      if(values.avatar.file.originFileObj) {
+        formData.avatar = {
+          name: "logo.png",
+          data: await toBase64(values.avatar.file.originFileObj),
+        }
+      }
 
-      const [res]: any = await EvaluationService.createLand(formData);
-      console.log("res", res);
+      let res: any;
+      if (!!assetId) {
+        const [response]: any = await EvaluationService.updateLand(
+          formData,
+          assetId
+        );
+        res = response;
+      } else {
+        const [response]: any = await EvaluationService.createLand(formData);
+        res = response;
+      }
       if (!res?.error) {
         router.push("/portal").then();
         message.success("Create evaluation successfully");
@@ -184,6 +291,7 @@ const NewLandPage: NextPageWithLayout = (props) => {
   const onChangeProjectImages: UploadProps["onChange"] = ({
     fileList: newFileList,
   }) => {
+    console.log({ newFileList });
     setProjectImgList(newFileList);
   };
 
@@ -215,7 +323,7 @@ const NewLandPage: NextPageWithLayout = (props) => {
         <Col xxl={12} md={20} xs={24}>
           <div className="box">
             <Title level={2} style={{ textAlign: "center" }}>
-              New LAND
+              {!!assetId ? "Update LAND" : "New LAND"}
             </Title>
             <CloseOutlined
               style={{
@@ -260,7 +368,7 @@ const NewLandPage: NextPageWithLayout = (props) => {
                     <CutomImg
                       src={imageUrl}
                       alt="avatar"
-                      style={{ width: "100%" }}
+                      style={{ width: 104, height: 104 }}
                       preview={false}
                     />
                   ) : (
@@ -421,6 +529,7 @@ const NewLandPage: NextPageWithLayout = (props) => {
                   customRequest={({ file, onSuccess }: any) => {
                     onSuccess("ok");
                   }}
+                  fileList={certificates}
                   {...propPaper}
                 >
                   <Button icon={<UploadOutlined />}>Upload</Button>

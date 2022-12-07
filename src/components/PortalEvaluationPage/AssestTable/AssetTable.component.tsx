@@ -48,6 +48,11 @@ export const passedAssetColumns: ColumnsType<any> = [
     },
   },
   {
+    title: "NFT Name",
+    dataIndex: "nftName",
+    key: "nftName",
+  },
+  {
     title: "Address",
     dataIndex: "address",
     key: "address",
@@ -55,8 +60,8 @@ export const passedAssetColumns: ColumnsType<any> = [
   },
   {
     title: "Total Supply",
-    dataIndex: "totalSupply",
-    key: "totalSupply",
+    dataIndex: "tokenSupply",
+    key: "tokenSupply",
     render: (number) => (number ? number.toLocaleString("en") : "N/A"),
   },
   {

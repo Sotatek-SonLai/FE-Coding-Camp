@@ -29,6 +29,11 @@ const AssetInfo: React.FC<{ assetInfo: any }> = ({ assetInfo }) => {
       </Divider>
       <Descriptions column={1} colon={false} bordered={true}>
         <Descriptions.Item
+          label={<span className="description-label">NFT Name</span>}
+        >
+          <span className="description-value">{assetInfo?.nftName}</span>
+        </Descriptions.Item>
+        <Descriptions.Item
           label={<span className="description-label">Address</span>}
         >
           <span className="description-value">{assetInfo?.address}</span>
@@ -99,6 +104,18 @@ const AssetInfo: React.FC<{ assetInfo: any }> = ({ assetInfo }) => {
       >
         Legal Paper
       </Divider>
+      {!!assetInfo?.certificates && assetInfo?.certificates?.length > 0 ? (
+        assetInfo?.certificates.map((item: any, index: number) => (
+          <div className="file__container" key={index}>
+            <p>{item?.name}</p>
+            <a href={getUrl(item)} rel="noreferrer" target="_blank">
+              <img src="https://ovenuedev.sotatek.works/images/icon/asset/download.svg" />
+            </a>
+          </div>
+        ))
+      ) : (
+        <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+      )}
     </>
   );
 };
