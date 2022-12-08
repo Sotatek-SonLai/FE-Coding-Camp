@@ -7,12 +7,12 @@ export interface IBodyEvaluation {
   evaluation_id: string;
   description: string;
   token_address: string;
-  report: any;
+  reportFile: any;
 }
 
 const CheckpointService = {
   updateCheckpoint: async (body: IBodyEvaluation) => {
-    console.log("updateCheckpoint", body)
+    console.log("updateCheckpoint", body);
     try {
       const response = await Request.post(`check-point`, body);
       return [response.data, null];
@@ -21,9 +21,9 @@ const CheckpointService = {
     }
   },
 
-  getCheckpointDetail: async (evaluation_id: string) => {
+  getCheckpointDetail: async (locker: string) => {
     try {
-      const response = await Request.get(`check-point`, { evaluation_id });
+      const response = await Request.get(`check-point/${locker}/escrow`);
       return [response.data, null];
     } catch (error) {
       return [null, error];

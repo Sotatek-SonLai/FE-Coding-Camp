@@ -109,6 +109,15 @@ export default class mainProgram extends BaseInterface {
     return treasuryPubkey;
   }
 
+  async getCheckpointEscrow(programId: any, locker: any, escrow_owner: any) {
+    const [escrowPubkey, _] = await anchor.web3.PublicKey.findProgramAddress(
+      [Buffer.from("escrow"), locker.toBuffer(), escrow_owner.toBuffer()],
+      programId
+    );
+
+    return escrowPubkey;
+  }
+
   async tokenizeNft(
     mintKeyDB: any,
     assetBasket: any,
@@ -245,7 +254,8 @@ export default class mainProgram extends BaseInterface {
 
   async mintNft(
     assetUrl: string = "https://basc.s3.amazonaws.com/meta/3506.json",
-    bigGuardian: string = "8CmfvdfpbJ1atkm8ruqBG5JurgxKqAseYduDWdEiMNpX"
+    bigGuardian: string = "8CmfvdfpbJ1atkm8ruqBG5JurgxKqAseYduDWdEiMNpX",
+    NFTName: string = "Bored Apes"
   ) {
     const { publicKey } = this._provider;
     try {
@@ -311,7 +321,7 @@ export default class mainProgram extends BaseInterface {
 
       // first data will be signed by big guardian
       const ix = await this._program.methods
-        .issueAsset(assetUrl, "Bored Apes")
+        .issueAsset(assetUrl, NFTName)
         .accounts({
           bigGuardian,
           governor: this._governor,
@@ -356,40 +366,63 @@ export default class mainProgram extends BaseInterface {
     }
   }
 
-  async createDividentCheckpoint(
+  async createDividendCheckpoint(
+    depositAmount: number,
     assetBasketAddress: string,
-    bigGuardian: string = "8CmfvdfpbJ1atkm8ruqBG5JurgxKqAseYduDWdEiMNpX"
+    bigGuardian: string = "8CmfvdfpbJ1atkm8ruqBG5JurgxKqAseYduDWdEiMNpX",
+    tokenAddress: string
   ) {
     const { publicKey } = this._provider;
     try {
       const setting = new anchor.web3.PublicKey(SETTING_ADDRESS);
 
-      const lamports =
-        await this._program.provider.connection.getMinimumBalanceForRentExemption(
-          MINT_SIZE
-        );
-
+      // const lamports =
+      //   await this._program.provider.connection.getMinimumBalanceForRentExemption(
+      //     MINT_SIZE
+      //   );
       const treasuryPDA = await this.getTokenTreasury(this._program.programId);
-      let paymentToken = anchor.web3.Keypair.generate();
+
+      let paymentToken = new anchor.web3.PublicKey(tokenAddress);
+
       let dividend_distributor = anchor.web3.Keypair.generate();
 
       const assetOwnerPaymentAccount = await getAssociatedTokenAddress(
-        paymentToken.publicKey,
+        paymentToken,
         publicKey
       );
+
       const treasuryPaymentAccount = await getAssociatedTokenAddress(
-        paymentToken.publicKey,
+        paymentToken,
         treasuryPDA,
         true
       );
-      const adminPaymentAccount = await getAssociatedTokenAddress(
-        paymentToken.publicKey,
-        new PublicKey(bigGuardian)
+
+      // await this._provider.connection.getTokenAccountBalance
+      const assetOwnerPaymentAccountInfo =
+        await this._provider.connection.getParsedAccountInfo(
+          assetOwnerPaymentAccount
+        );
+      const treasuryPaymentAccountInfo =
+        await this._provider.connection.getParsedAccountInfo(
+          treasuryPaymentAccount
+        );
+
+      const paymentTokenInfo =
+        await this._provider.connection.getParsedAccountInfo(paymentToken);
+
+      const data: any = paymentTokenInfo.value?.data;
+      const decimal = data?.parsed.info.decimals;
+      console.log(
+        "init data: ",
+        assetOwnerPaymentAccountInfo,
+        treasuryPaymentAccountInfo,
+        paymentTokenInfo
       );
 
       const assetBasketAccount = await this._program.account.assetBasket.fetch(
         new anchor.web3.PublicKey(assetBasketAddress)
       );
+      console.log(assetBasketAccount);
       const assetLocker = await this.getAssetLocker(
         this._program.programId,
         this._governor,
@@ -397,52 +430,45 @@ export default class mainProgram extends BaseInterface {
         assetBasketAccount.basketId
       );
 
-      const mint_payment_token_tx = new anchor.web3.Transaction().add(
-        anchor.web3.SystemProgram.createAccount({
-          fromPubkey: publicKey,
-          newAccountPubkey: paymentToken.publicKey,
-          space: MINT_SIZE,
-          programId: TOKEN_PROGRAM_ID,
-          lamports,
-        }),
-        createInitializeMintInstruction(
-          paymentToken.publicKey,
-          8,
-          publicKey,
-          publicKey,
-          TOKEN_PROGRAM_ID
-        ),
-        createAssociatedTokenAccountInstruction(
-          publicKey,
-          treasuryPaymentAccount,
-          treasuryPDA,
-          paymentToken.publicKey
-        ),
-        createAssociatedTokenAccountInstruction(
-          publicKey,
-          assetOwnerPaymentAccount,
-          publicKey,
-          paymentToken.publicKey
-        ),
-        createAssociatedTokenAccountInstruction(
-          publicKey,
-          adminPaymentAccount,
-          new PublicKey(bigGuardian),
-          paymentToken.publicKey
-        ),
-        createMintToInstruction(
-          paymentToken.publicKey,
-          assetOwnerPaymentAccount,
-          publicKey,
-          new anchor.BN(10000 * 10 ** 8).toNumber()
-        )
-      );
+      // let mint_payment_token_tx = new anchor.web3.Transaction();
+
+      const instructions = [];
+      if (!assetOwnerPaymentAccountInfo.value) {
+        instructions.push(
+          createAssociatedTokenAccountInstruction(
+            publicKey,
+            assetOwnerPaymentAccount,
+            publicKey,
+            paymentToken
+          )
+        );
+      }
+
+      if (!treasuryPaymentAccountInfo.value) {
+        instructions.push(
+          createAssociatedTokenAccountInstruction(
+            publicKey,
+            treasuryPaymentAccount,
+            treasuryPDA,
+            paymentToken
+          )
+        );
+      }
+
+      let mint_payment_token_tx;
+      if (!instructions.length)
+        mint_payment_token_tx = new anchor.web3.Transaction();
+      else
+        mint_payment_token_tx = new anchor.web3.Transaction().add(
+          ...instructions
+        );
+
       const create_dividend_ix = await this._program.methods
-        .createDividendCheckpoint(new anchor.BN(1000 * 10 ** 8))
+        .createDividendCheckpoint(new anchor.BN(depositAmount * 10 ** decimal))
         .accounts({
           dividendDistributor: dividend_distributor.publicKey,
           governor: this._governor,
-          mint: paymentToken.publicKey,
+          mint: paymentToken,
           owner: publicKey,
           ownerTokenAccount: assetOwnerPaymentAccount,
           rent: anchor.web3.SYSVAR_RENT_PUBKEY,
@@ -463,7 +489,7 @@ export default class mainProgram extends BaseInterface {
       mint_payment_token_tx.recentBlockhash = recentBlockhash.blockhash;
       mint_payment_token_tx.feePayer = publicKey;
 
-      mint_payment_token_tx.partialSign(paymentToken);
+      // mint_payment_token_tx.partialSign(paymentToken);
       mint_payment_token_tx.partialSign(dividend_distributor);
 
       const serialized_tx = mint_payment_token_tx.serialize({
@@ -472,10 +498,42 @@ export default class mainProgram extends BaseInterface {
 
       const txToBase64 = serialized_tx.toString("base64");
       console.log("Tx: ", txToBase64);
-      return [txToBase64, null];
+      return [txToBase64, null, dividend_distributor];
     } catch (err) {
       console.log({ err });
       return [null, err, null, null];
     }
+  }
+
+  async createEscrow(assetBasketAddress: string, bigGuardian: string) {
+    const assetBasketAccount = await this._program.account.assetBasket.fetch(
+      new anchor.web3.PublicKey(assetBasketAddress)
+    );
+
+    const assetLocker = await this.getAssetLocker(
+      this._program.programId,
+      this._governor,
+      assetBasketAccount.totalDistributionCheckpoint,
+      assetBasketAccount.basketId
+    );
+
+    let escrow = await this.getCheckpointEscrow(
+      this._program.programId,
+      assetLocker,
+      bigGuardian
+    );
+    const tx = await this._program.methods
+      .newEscrow()
+      .accounts({
+        escrow,
+        escrowOwner: bigGuardian,
+        governor: this._governor,
+        locker: assetLocker,
+        payer: bigGuardian,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      })
+      .rpc({
+        commitment: "confirmed",
+      });
   }
 }
