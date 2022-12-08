@@ -3,15 +3,10 @@ import {
   useConnection,
   useWallet,
 } from "@solana/wallet-adapter-react";
-import {
-  Connection,
-  LAMPORTS_PER_SOL,
-  PublicKey,
-  Transaction,
-} from "@solana/web3.js";
+import { Transaction } from "@solana/web3.js";
+import * as anchor from "@project-serum/anchor";
 import { Button, Form, Input, Modal, Typography, Upload } from "antd";
 import TextArea from "antd/lib/input/TextArea";
-import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import mainProgram from "../../../programs/MainProgram";
 import { getProvider } from "../../../programs/utils";
@@ -19,7 +14,7 @@ import CheckpointService from "../../../service/checkpoint.service";
 import TransactionModal from "../../common/TransactionModal";
 import { UploadOutlined } from "@ant-design/icons";
 import type { UploadProps, UploadFile } from "antd/es/upload/interface";
-import { toBase64 } from "../../../utils/utility";
+import { getAssociatedTokenAddress } from "@solana/spl-token";
 
 const { Title, Text } = Typography;
 
@@ -31,23 +26,29 @@ const CreateCheckpoint = ({ propertyInfo, onDone }: any) => {
   const { publicKey, sendTransaction } = useWallet();
   const [tx, setTx] = useState<any>("");
   const [isShownModalTx, setIsShownModalTx] = useState<boolean>(false);
-  // const wallet = useWallet();
   const { connection } = useConnection();
-  const [balance, setBalance] = useState(0);
+  const [balance, setBalance] = useState("");
+  const [tokenAddress, setTokenAddress] = useState("");
 
-  const getUserSOLBalance = async (
-    publicKey: PublicKey,
-    connection: Connection
-  ) => {
-    let balance = await connection.getBalance(publicKey);
-    setBalance(balance);
+  const handleTokenAddress = async (e: any) => {
+    const value = e.target.value;
+    setTokenAddress(value);
+
+    if (!value || !publicKey) return;
+
+    const tokenPublicKey = new anchor.web3.PublicKey(value);
+
+    const tokenOwnerAccount = await getAssociatedTokenAddress(
+      tokenPublicKey,
+      publicKey
+    );
+
+    let tokenAccountInfo = await connection.getTokenAccountBalance(
+      tokenOwnerAccount
+    );
+    setBalance(tokenAccountInfo.value.uiAmountString || "");
   };
 
-  useEffect(() => {
-    if (wallet?.publicKey) {
-      getUserSOLBalance(wallet.publicKey, connection);
-    }
-  }, [wallet?.publicKey, connection]);
   const [reportFile, setReportFile] = useState<UploadFile[]>([]);
 
   const showModal = () => {
@@ -225,6 +226,14 @@ const CreateCheckpoint = ({ propertyInfo, onDone }: any) => {
           layout="horizontal"
         >
           <Form.Item
+            label="Token Address"
+            name="tokenAddress"
+            rules={[{ required: true, message: "This field cannot be empty." }]}
+            style={{ marginBottom: 10 }}
+          >
+            <Input value={tokenAddress} onChange={handleTokenAddress} />
+          </Form.Item>
+          <Form.Item
             label="Deposit Amount"
             name="amount"
             rules={[{ required: true, message: "This field cannot be empty." }]}
@@ -233,17 +242,9 @@ const CreateCheckpoint = ({ propertyInfo, onDone }: any) => {
             <Input />
           </Form.Item>
           <Text style={{ color: "var(--text-color)" }}>
-            Available Balance: {balance / LAMPORTS_PER_SOL} SOL
+            Available Balance: {balance}
           </Text>
 
-          <Form.Item
-            label="Token Address"
-            name="tokenAddress"
-            rules={[{ required: true, message: "This field cannot be empty." }]}
-            style={{ marginBottom: 10 }}
-          >
-            <Input />
-          </Form.Item>
           <Form.Item
             label="Description"
             name="description"
