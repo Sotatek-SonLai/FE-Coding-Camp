@@ -60,8 +60,8 @@ const CreateCheckpoint = ({ propertyInfo, onDone }: any) => {
 
   const handleCancel = () => {
     setIsModalOpen(false);
-    form.resetFields()
-    setReportFile([])
+    form.resetFields();
+    setReportFile([]);
   };
 
   const onFinish = async (values: any) => {
@@ -75,6 +75,7 @@ const CreateCheckpoint = ({ propertyInfo, onDone }: any) => {
       const program = new mainProgram(provider);
       const [txToBase64, err, dividend_distributor]: any =
         await program.createDividendCheckpoint(
+          values.amount,
           propertyInfo?.assetBasket,
           propertyInfo?.bigGuardian,
           values.tokenAddress
@@ -119,12 +120,16 @@ const CreateCheckpoint = ({ propertyInfo, onDone }: any) => {
       const inititalBlock = (
         await program._provider.connection.getSignatureStatus(tx)
       ).context.slot;
+
       let done = false;
+      let transactionTimeout = false;
+
       setTimeout(() => {
         if (done) {
           return;
         }
         done = true;
+        transactionTimeout = true;
         console.log("Timed out for txid", tx);
         console.log(
           `${
@@ -159,28 +164,20 @@ const CreateCheckpoint = ({ propertyInfo, onDone }: any) => {
         isBlockhashValid = !(await isBlockhashExpired(inititalBlock));
         await sleep(statusCheckInterval);
       }
-      console.log("1");
-      if (done) {
-        console.log("2");
-        handleCancel();
+
+      if (done && !transactionTimeout) {
+        setIsModalOpen(false);
         setIsShownModalTx(true);
         const [res] = await CheckpointService.updateCheckpoint({
-          dividend_distributor: dividend_distributor,
+          dividend_distributor: dividend_distributor.publicKey,
           evaluation_id: propertyInfo._id,
           token_address: values.tokenAddress,
           description: values.description,
-          report: await Promise.all(
-            values?.report.fileList.map(async (file: any, index: number) => {
-              return {
-                name: file.name,
-                data: await toBase64(file.originFileObj),
-              };
-            })
-          ),
+          reportFile: {},
         });
         onDone();
-        console.log("res: ", res);
       }
+
       setLoading(false);
     } catch (err: any) {
       setLoading(false);
@@ -261,10 +258,10 @@ const CreateCheckpoint = ({ propertyInfo, onDone }: any) => {
             // rules={[{ required: true, message: "This field cannot be empty." }]}
             rules={[
               {
-                validator: (_, value) => 
-                   reportFile?.length > 0
+                validator: (_, value) =>
+                  reportFile?.length > 0
                     ? Promise.resolve()
-                    : Promise.reject(new Error("File upload cannot be empty."))
+                    : Promise.reject(new Error("File upload cannot be empty.")),
               },
             ]}
           >
