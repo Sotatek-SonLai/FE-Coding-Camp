@@ -28,25 +28,27 @@ const CreateCheckpoint = ({ propertyInfo, onDone }: any) => {
   const [isShownModalTx, setIsShownModalTx] = useState<boolean>(false);
   const { connection } = useConnection();
   const [balance, setBalance] = useState("");
-  const [tokenAddress, setTokenAddress] = useState("");
 
-  const handleTokenAddress = async (e: any) => {
-    const value = e.target.value;
-    setTokenAddress(value);
+  const validateTokenAddress = async (tokenAddress: string) => {
+    if (!publicKey) return;
+    try {
+      const tokenPublicKey = new anchor.web3.PublicKey(tokenAddress);
 
-    if (!value || !publicKey) return;
+      const tokenOwnerAccount = await getAssociatedTokenAddress(
+        tokenPublicKey,
+        publicKey
+      );
 
-    const tokenPublicKey = new anchor.web3.PublicKey(value);
+      let tokenAccountInfo = await connection.getTokenAccountBalance(
+        tokenOwnerAccount
+      );
 
-    const tokenOwnerAccount = await getAssociatedTokenAddress(
-      tokenPublicKey,
-      publicKey
-    );
-
-    let tokenAccountInfo = await connection.getTokenAccountBalance(
-      tokenOwnerAccount
-    );
-    setBalance(tokenAccountInfo.value.uiAmountString || "");
+      setBalance(tokenAccountInfo.value.uiAmountString || "");
+      return true;
+    } catch (error) {
+      setBalance("");
+      return false;
+    }
   };
 
   const [reportFile, setReportFile] = useState<UploadFile[]>([]);
@@ -228,10 +230,19 @@ const CreateCheckpoint = ({ propertyInfo, onDone }: any) => {
           <Form.Item
             label="Token Address"
             name="tokenAddress"
-            rules={[{ required: true, message: "This field cannot be empty." }]}
+            rules={[
+              { required: true, message: "This field cannot be empty." },
+              {
+                validator: async (_, value) => {
+                  return (await validateTokenAddress(value))
+                    ? Promise.resolve()
+                    : Promise.reject("Token address does not exist");
+                },
+              },
+            ]}
             style={{ marginBottom: 10 }}
           >
-            <Input value={tokenAddress} onChange={handleTokenAddress} />
+            <Input />
           </Form.Item>
           <Form.Item
             label="Deposit Amount"
@@ -241,9 +252,11 @@ const CreateCheckpoint = ({ propertyInfo, onDone }: any) => {
           >
             <Input />
           </Form.Item>
-          <Text style={{ color: "var(--text-color)" }}>
-            Available Balance: {balance}
-          </Text>
+          {balance && (
+            <Text style={{ color: "var(--text-color)" }}>
+              Available Balance: {balance}
+            </Text>
+          )}
 
           <Form.Item
             label="Description"
