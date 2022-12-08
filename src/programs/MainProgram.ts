@@ -376,10 +376,6 @@ export default class mainProgram extends BaseInterface {
     try {
       const setting = new anchor.web3.PublicKey(SETTING_ADDRESS);
 
-      // const lamports =
-      //   await this._program.provider.connection.getMinimumBalanceForRentExemption(
-      //     MINT_SIZE
-      //   );
       const treasuryPDA = await this.getTokenTreasury(this._program.programId);
 
       let paymentToken = new anchor.web3.PublicKey(tokenAddress);
