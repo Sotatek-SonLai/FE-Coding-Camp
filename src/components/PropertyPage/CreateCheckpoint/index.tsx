@@ -15,6 +15,7 @@ import TransactionModal from "../../common/TransactionModal";
 import { UploadOutlined } from "@ant-design/icons";
 import type { UploadProps, UploadFile } from "antd/es/upload/interface";
 import { getAssociatedTokenAddress } from "@solana/spl-token";
+import { toBase64 } from "../../../utils/utility";
 
 const { Title, Text } = Typography;
 
@@ -169,14 +170,22 @@ const CreateCheckpoint = ({ propertyInfo, onDone }: any) => {
       }
 
       if (done && !transactionTimeout) {
-        setIsModalOpen(false);
+        handleCancel();
         setIsShownModalTx(true);
         const [res] = await CheckpointService.updateCheckpoint({
           dividend_distributor: dividend_distributor.publicKey,
           evaluation_id: propertyInfo._id,
           token_address: values.tokenAddress,
           description: values.description,
-          reportFile: {},
+          reportFile: await Promise.all(
+            reportFile.map(async (file: any, index: number) => {
+              console.log({file})
+              return {
+                name: file.name,
+                data: await toBase64(file),
+              };
+            })
+          ),
         });
         onDone();
       }
