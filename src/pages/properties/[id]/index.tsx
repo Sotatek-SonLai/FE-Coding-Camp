@@ -20,6 +20,8 @@ import type { ColumnsType } from "antd/es/table";
 import moment from "moment";
 import CreateCheckpoint from "../../../components/PropertyPage/CreateCheckpoint";
 import { DATE_FORMAT } from "../../../constants";
+import { useConnection } from "@solana/wallet-adapter-react";
+import * as anchor from "@project-serum/anchor";
 
 const { Title, Text } = Typography;
 interface DataType {
@@ -30,6 +32,7 @@ interface DataType {
 const PortalPage: NextPageWithLayout = () => {
   const [assetInfo, setAssetInfo] = useState<any>({});
   const [checkpoints, setCheckpoints] = useState<any>([]);
+  const { connection } = useConnection();
   const router = useRouter();
   const id = router?.query?.id;
 
@@ -66,7 +69,33 @@ const PortalPage: NextPageWithLayout = () => {
     if (id) {
       const [res]: any = await EvaluationService.getAllCheckpoints(id);
       if (!res?.error) {
-        setCheckpoints(res?.data);
+        if (!res) return;
+
+        const promise = res.data.map(async (item: any) => {
+          const { token_address } = item;
+          const tokenAddressPublicKey = new anchor.web3.PublicKey(
+            token_address
+          );
+          const tokenAccountData = await connection.getParsedAccountInfo(
+            tokenAddressPublicKey
+          );
+
+          const _tokenData = tokenAccountData.value?.data as any;
+          console.log("tokenAccountData: ", _tokenData.parsed.info.decimals);
+
+          console.log({
+            ...item,
+            decimals: _tokenData.parsed.info.decimals,
+          });
+          return {
+            ...item,
+            decimals: _tokenData.parsed.info.decimals,
+          };
+        });
+
+        const data = await Promise.all(promise);
+        console.log("data: ");
+        setCheckpoints(data);
       } else {
         message.error(res?.error?.message);
       }

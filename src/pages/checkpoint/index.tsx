@@ -34,34 +34,22 @@ const CheckpointDetail = () => {
   const wallet = useWallet();
   const { connection } = useConnection();
   const [balance, setBalance] = useState(0);
-
-  const getUserSOLBalance = async (
-    publicKey: PublicKey,
-    connection: Connection
-  ) => {
-    let balance = await connection.getBalance(publicKey);
-    setBalance(balance);
-  };
-
-  useEffect(() => {
-    if (wallet.publicKey) {
-      getUserSOLBalance(wallet.publicKey, connection);
-    }
-  }, [wallet.publicKey, connection]);
+  const [checkpointDetail, setCheckpointDetail] = useState<any>({});
 
   useEffect(() => {
     (async () => {
+      console.log("propertyId: ", propertyId, checkpointId);
       if (!propertyId || !checkpointId) return;
 
       const [res]: any = await EvaluationService.getDetail(propertyId);
-      // 6390092ead97ff2e397e6b2d
-      // 638f305aad97ff2e397c8ff1
+      console.log("res: ", res);
       const [checkpointDetail] = await CheckpointService.getCheckpointDetail(
-        "6390092ead97ff2e397e6b2d"
+        checkpointId
       );
       console.log("checkpointDetail: ", checkpointDetail);
       if (!res?.error) {
         setAssetInfo(res);
+        setCheckpointDetail(checkpointDetail.data);
       } else {
         message.error(res?.error?.message);
       }
@@ -69,7 +57,7 @@ const CheckpointDetail = () => {
     return () => {
       clearInterval(flagInterval);
     };
-  }, []);
+  }, [propertyId, checkpointId]);
 
   const onFinish = (values: any) => {
     console.log("Success:", values);
@@ -135,7 +123,7 @@ const CheckpointDetail = () => {
                 <Text
                   style={{ color: "#1890ff", fontSize: 25, fontWeight: 500 }}
                 >
-                  100,000 T4
+                  {checkpointDetail?.checkpoint?.totalDistributionAmount}
                 </Text>
               </Col>
               <Col span={12}>
@@ -158,7 +146,7 @@ const CheckpointDetail = () => {
                   </Text>
                 }
               >
-                <Text style={{}}>#1D47efTkLR282Wq29</Text>
+                <Text style={{}}>#{checkpointDetail?.checkpoint?._id}</Text>
               </Descriptions.Item>
               <Descriptions.Item
                 label={
@@ -191,8 +179,7 @@ const CheckpointDetail = () => {
                 <Input />
               </Form.Item>
               <Text style={{ color: "var(--text-color)" }}>
-                {`Available Balance: fdfds
-                    ${balance / LAMPORTS_PER_SOL} SOL`}
+                {`Available Balance: `}
               </Text>
               <br />
               <br />

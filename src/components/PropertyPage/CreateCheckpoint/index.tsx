@@ -179,7 +179,7 @@ const CreateCheckpoint = ({ propertyInfo, onDone }: any) => {
           description: values.description,
           reportFile: await Promise.all(
             reportFile.map(async (file: any, index: number) => {
-              console.log({file})
+              console.log({ file });
               return {
                 name: file.name,
                 data: await toBase64(file),
