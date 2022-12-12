@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import React from "react";
 import moment from "moment";
 import { DATE_FORMAT } from "../../constants";
+import { getUrl } from "../../utils/utility";
 
 const columns = [
   {
@@ -10,7 +11,7 @@ const columns = [
     dataIndex: "checkpointId",
     key: "checkpointId",
     width: "5%",
-    render: (checkpointId: number) => `#${checkpointId}`,
+    render: (checkpointId: number) => (checkpointId ? `#${checkpointId}` : ""),
   },
   {
     title: "Checkpoint Hash",
@@ -23,7 +24,6 @@ const columns = [
     dataIndex: "totalDistributionAmount",
     key: "totalDistributionAmount",
     render: (quanity: number, _: any) => {
-      console.log("fbkd: ", _);
       return `${quanity / 10 ** _.decimals}`;
     },
   },
@@ -43,6 +43,22 @@ const columns = [
     title: "Report",
     dataIndex: "report",
     key: "report",
+    render: (file: any) => {
+      return (
+        <>
+          <a
+            href={getUrl(file)}
+            rel="noreferrer"
+            target="_blank"
+            onClick={(e) => {
+              e.stopPropagation();
+            }}
+          >
+            {file?.name}
+          </a>
+        </>
+      );
+    },
   },
 ];
 

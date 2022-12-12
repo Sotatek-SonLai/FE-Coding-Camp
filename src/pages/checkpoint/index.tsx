@@ -19,8 +19,13 @@ import MainLayout from "../../components/Main-Layout";
 import { getUrl } from "../../utils/utility";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import CheckpointService from "../../service/checkpoint.service";
-import { useConnection, useWallet } from "@solana/wallet-adapter-react";
+import {
+  useAnchorWallet,
+  useConnection,
+  useWallet,
+} from "@solana/wallet-adapter-react";
 import { Connection, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
+import { getProvider } from "../../programs/utils";
 
 let flagInterval: NodeJS.Timeout;
 
@@ -31,10 +36,11 @@ const CheckpointDetail = () => {
   const router = useRouter();
   const { propertyId, checkpointId } = router.query;
   const [form] = Form.useForm();
-  const wallet = useWallet();
+  const { publicKey, sendTransaction } = useWallet();
   const { connection } = useConnection();
   const [balance, setBalance] = useState(0);
-  const [checkpointDetail, setCheckpointDetail] = useState<any>({});
+  const [checkpointDetail, setCheckpointDetail] = useState<any>();
+  const wallet = useAnchorWallet();
 
   useEffect(() => {
     (async () => {
@@ -49,7 +55,7 @@ const CheckpointDetail = () => {
       console.log("checkpointDetail: ", checkpointDetail);
       if (!res?.error) {
         setAssetInfo(res);
-        setCheckpointDetail(checkpointDetail.data);
+        setCheckpointDetail(checkpointDetail?.data);
       } else {
         message.error(res?.error?.message);
       }
@@ -61,6 +67,13 @@ const CheckpointDetail = () => {
 
   const onFinish = (values: any) => {
     console.log("Success:", values);
+
+    const provider = getProvider(wallet);
+
+    if (provider && publicKey) {
+    } else {
+      message.error("Please connect your wallet");
+    }
   };
   const onFinishFailed = (errorInfo: any) => {
     console.log("Failed:", errorInfo);
@@ -169,7 +182,7 @@ const CheckpointDetail = () => {
               layout="horizontal"
             >
               <Form.Item
-                label="Deposite Escrow"
+                label="Lock Escrow"
                 name="amount"
                 rules={[
                   { required: true, message: "This field cannot be empty." },
@@ -189,7 +202,7 @@ const CheckpointDetail = () => {
                 size="large"
                 style={{ width: "100%" }}
               >
-                Deposit
+                Lock
               </Button>
             </Form>
           </div>

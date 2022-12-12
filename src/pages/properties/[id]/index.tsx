@@ -81,12 +81,6 @@ const PortalPage: NextPageWithLayout = () => {
           );
 
           const _tokenData = tokenAccountData.value?.data as any;
-          console.log("tokenAccountData: ", _tokenData.parsed.info.decimals);
-
-          console.log({
-            ...item,
-            decimals: _tokenData.parsed.info.decimals,
-          });
           return {
             ...item,
             decimals: _tokenData.parsed.info.decimals,
@@ -263,15 +257,6 @@ const PortalPage: NextPageWithLayout = () => {
                     {assetInfo.tokenSupply?.toLocaleString("en")}
                   </Text>
                 </Descriptions.Item>
-                {/* <Descriptions.Item
-                    label={
-                      <span className="description-label">Token Listing Price</span>
-                    }
-                  >
-                    <Text strong className="description-value">
-                      $0.05
-                    </Text>
-                  </Descriptions.Item> */}
                 <Descriptions.Item
                   label={
                     <span className="description-label">Listing Date</span>
@@ -290,7 +275,9 @@ const PortalPage: NextPageWithLayout = () => {
         <Title level={4}>Checkpoint List</Title>
       </Divider>
       <CreateCheckpoint
-        onDone={() => fetchGetCheckpoints()}
+        onDone={() => {
+          setTimeout(() => fetchGetCheckpoints(), 4000);
+        }}
         propertyInfo={assetInfo}
       />
       <br /> <br />
