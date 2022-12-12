@@ -98,24 +98,6 @@ const MintNftPage: NextPageWithLayout = (props: any) => {
 
           setTx(tx);
 
-          // flagInterval = setInterval(async () => {
-          //     const result: any = await program._provider.connection.getSignatureStatus(tx, {
-          //         searchTransactionHistory: true,
-          //     });
-          //     console.log('result value: ', result.value)
-          //     // confirmationStatus : "confirmed"
-          //     if (result?.value?.confirmationStatus === 'confirmed') {
-          //         message.success('Mint nft successfully')
-          //         clearInterval(flagInterval)
-          //
-          //         setLoading(false)
-          //         // router.push(`/portal/${assetInfo?._id}/tokenize`).then()
-          //     }
-          // }, 1000)
-          // setLoading(false)
-
-          //
-
           const statusCheckInterval = 300;
           const timeout = 90000;
           let isBlockhashValid = true;

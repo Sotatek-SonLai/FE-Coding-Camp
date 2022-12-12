@@ -21,9 +21,9 @@ const CheckpointService = {
     }
   },
 
-  getCheckpointDetail: async (locker: string) => {
+  getCheckpointDetail: async (checkpointId: any) => {
     try {
-      const response = await Request.get(`check-point/${locker}/escrow`);
+      const response = await Request.get(`check-point/${checkpointId}`);
       return [response.data, null];
     } catch (error) {
       return [null, error];

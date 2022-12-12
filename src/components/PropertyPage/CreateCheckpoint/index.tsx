@@ -5,7 +5,7 @@ import {
 } from "@solana/wallet-adapter-react";
 import { Transaction } from "@solana/web3.js";
 import * as anchor from "@project-serum/anchor";
-import { Button, Form, Input, Modal, Typography, Upload } from "antd";
+import { Button, Form, Input, message, Modal, Typography, Upload } from "antd";
 import TextArea from "antd/lib/input/TextArea";
 import React, { useEffect, useState } from "react";
 import mainProgram from "../../../programs/MainProgram";
@@ -31,7 +31,10 @@ const CreateCheckpoint = ({ propertyInfo, onDone }: any) => {
   const [balance, setBalance] = useState("");
 
   const validateTokenAddress = async (tokenAddress: string) => {
-    if (!publicKey) return;
+    if (!publicKey) {
+      message.error("Please connect your wallet");
+      return;
+    }
     try {
       const tokenPublicKey = new anchor.web3.PublicKey(tokenAddress);
 
@@ -69,7 +72,6 @@ const CreateCheckpoint = ({ propertyInfo, onDone }: any) => {
   };
 
   const onFinish = async (values: any) => {
-    console.log("Success:", values);
     try {
       const provider = getProvider(wallet);
 
@@ -87,13 +89,17 @@ const CreateCheckpoint = ({ propertyInfo, onDone }: any) => {
 
       if (err) {
         setLoading(false);
+        message.error("Failed to create devidend checkpoint!");
         return;
       }
 
-      const [res]: any = await CheckpointService.sendSerializedTransaction(
-        propertyInfo._id,
-        txToBase64
-      );
+      const [res, error]: any =
+        await CheckpointService.sendSerializedTransaction(
+          propertyInfo._id,
+          txToBase64
+        );
+      if (error) return;
+
       const tx = await sendTransaction(
         Transaction.from(Buffer.from(res.data, "base64")),
         program._provider.connection,
@@ -133,6 +139,7 @@ const CreateCheckpoint = ({ propertyInfo, onDone }: any) => {
           return;
         }
         done = true;
+        CheckpointService.updateCheckpoint;
         transactionTimeout = true;
         console.log("Timed out for txid", tx);
         console.log(
@@ -177,15 +184,20 @@ const CreateCheckpoint = ({ propertyInfo, onDone }: any) => {
           evaluation_id: propertyInfo._id,
           token_address: values.tokenAddress,
           description: values.description,
-          reportFile: await Promise.all(
-            reportFile.map(async (file: any, index: number) => {
-              console.log({file})
-              return {
-                name: file.name,
-                data: await toBase64(file),
-              };
-            })
-          ),
+          // reportFile: await Promise.all(
+          //   reportFile.map(async (file: any, index: number) => {
+          //     console.log({ file });
+          //     return {
+          //       name: file.name,
+          //       data: await toBase64(file),
+          //     };
+          // })
+          // ),
+
+          reportFile: {
+            name: reportFile[0].name,
+            data: await toBase64(reportFile[0]),
+          },
         });
         onDone();
       }
@@ -194,6 +206,7 @@ const CreateCheckpoint = ({ propertyInfo, onDone }: any) => {
     } catch (err: any) {
       setLoading(false);
       console.log({ err });
+      message.error("Failed to create devidend checkpoint!");
     }
   };
   const onFinishFailed = (errorInfo: any) => {
@@ -278,7 +291,6 @@ const CreateCheckpoint = ({ propertyInfo, onDone }: any) => {
           <Form.Item
             label="Report File"
             name="report"
-            // rules={[{ required: true, message: "This field cannot be empty." }]}
             rules={[
               {
                 validator: (_, value) =>

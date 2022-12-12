@@ -121,7 +121,8 @@ export default class mainProgram extends BaseInterface {
   async tokenizeNft(
     mintKeyDB: any,
     assetBasket: any,
-    bigGuardian: string = "8CmfvdfpbJ1atkm8ruqBG5JurgxKqAseYduDWdEiMNpX"
+    bigGuardian: string = "8CmfvdfpbJ1atkm8ruqBG5JurgxKqAseYduDWdEiMNpX",
+    totalSupply: string
   ) {
     const { publicKey } = this._provider;
 
@@ -136,10 +137,6 @@ export default class mainProgram extends BaseInterface {
     );
 
     if (!governorAccount) return;
-    const governorDetails = this._program.coder.accounts.decode(
-      "PlatformGovernor",
-      governorAccount.data
-    );
 
     const fractionalTokenMint = anchor.web3.Keypair.generate();
     const fractionalTokenAccount = await getAssociatedTokenAddress(
@@ -147,14 +144,6 @@ export default class mainProgram extends BaseInterface {
       publicKey
     );
 
-    const assetBasketAccount = await this._program.account.assetBasket.fetch(
-      new anchor.web3.PublicKey(assetBasket)
-    );
-    // const assetLocker = await this.getAssetLocker(
-    //   this._program.programId,
-    //   this._governor,
-    //   assetBasketAccount.basketId
-    // );
     const treasuryPDA = await this.getTokenTreasury(this._program.programId);
     const treasuryNFTTokenAccount = await getAssociatedTokenAddress(
       mintKey,
@@ -212,7 +201,7 @@ export default class mainProgram extends BaseInterface {
     });
 
     const fractionalize_nft_ix = await this._program.methods
-      .fractionalizeAsset(new anchor.BN(10000 * 10 ** 8))
+      .fractionalizeAsset(new anchor.BN(Number(totalSupply) * 10 ** 8))
       .accounts({
         assetBasket: new anchor.web3.PublicKey(assetBasket),
         bigGuardian,
@@ -299,11 +288,6 @@ export default class mainProgram extends BaseInterface {
       const masterEdition = await this.getMasterEdition(mintKey.publicKey);
       const governorAccount =
         await this._program.provider.connection.getAccountInfo(this._governor);
-      console.log(
-        "governorAccount",
-        this._governor.toBase58(),
-        this._sol_treasury.toBase58()
-      );
       const governorDetails =
         governorAccount &&
         this._program.coder.accounts.decode(
@@ -501,35 +485,110 @@ export default class mainProgram extends BaseInterface {
     }
   }
 
-  async createEscrow(assetBasketAddress: string, bigGuardian: string) {
-    const assetBasketAccount = await this._program.account.assetBasket.fetch(
-      new anchor.web3.PublicKey(assetBasketAddress)
-    );
-
-    const assetLocker = await this.getAssetLocker(
-      this._program.programId,
-      this._governor,
-      assetBasketAccount.totalDistributionCheckpoint,
-      assetBasketAccount.basketId
-    );
-
+  async createEscrow(
+    escrowOwner: PublicKey,
+    assetLocker: PublicKey,
+    governor: PublicKey,
+    payer: PublicKey
+  ) {
     let escrow = await this.getCheckpointEscrow(
       this._program.programId,
       assetLocker,
-      bigGuardian
+      escrowOwner
     );
     const tx = await this._program.methods
       .newEscrow()
       .accounts({
         escrow,
-        escrowOwner: bigGuardian,
-        governor: this._governor,
+        escrowOwner,
+        governor,
         locker: assetLocker,
-        payer: bigGuardian,
+        payer,
         systemProgram: anchor.web3.SystemProgram.programId,
       })
       .rpc({
         commitment: "confirmed",
       });
+
+    return escrow;
+  }
+
+  async lock(
+    assetLocker: PublicKey,
+    fractionalTokenMint: PublicKey,
+    escrow: PublicKey,
+    escrowOwner: PublicKey
+  ) {
+    let assetOwnerTokenAccount = await getAssociatedTokenAddress(
+      fractionalTokenMint,
+      escrowOwner
+    );
+
+    let escrowHodl = await getAssociatedTokenAddress(
+      fractionalTokenMint,
+      escrow,
+      true
+    );
+
+    const escrow_account_hodl = new anchor.web3.Transaction().add(
+      createAssociatedTokenAccountInstruction(
+        escrowOwner,
+        escrowHodl,
+        escrow,
+        fractionalTokenMint
+      )
+    );
+
+    const lock_ix = await this._program.methods
+      .lock(new anchor.BN(10 * 10 ** 8))
+      .accounts({
+        escrow,
+        escrowOwner,
+        locker: assetLocker,
+        escrowTokenHodl: escrowHodl,
+        sourceTokens: assetOwnerTokenAccount,
+        tokenProgram: TOKEN_PROGRAM_ID,
+      })
+      .instruction();
+
+    escrow_account_hodl.add(lock_ix);
+
+    return escrow_account_hodl;
+  }
+
+  async lockEscrow(assetLocker: string, fractionalTokenMint: string) {
+    try {
+      const assetLockerPublicKey = new anchor.web3.PublicKey(assetLocker);
+      let escrow: any = await this.getCheckpointEscrow(
+        this._program.programId,
+        assetLocker,
+        this._provider.publicKey
+      );
+      const escrowAccount =
+        await this._provider.connection.getParsedAccountInfo(escrow);
+
+      if (!escrowAccount.value) {
+        const newEscrow = await this.createEscrow(
+          this._provider.publicKey,
+          assetLockerPublicKey,
+          this._governor,
+          this._provider.publicKey
+        );
+
+        if (!newEscrow) return [null, "create escrow failed"];
+        escrow = newEscrow;
+      }
+
+      const escrow_account_hodl = this.lock(
+        assetLockerPublicKey,
+        new anchor.web3.PublicKey(fractionalTokenMint),
+        escrow,
+        this._provider.publicKey
+      );
+
+      return [escrow_account_hodl, null];
+    } catch (err) {
+      return [null, err, null, null];
+    }
   }
 }

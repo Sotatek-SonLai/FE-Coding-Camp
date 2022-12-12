@@ -19,8 +19,13 @@ import MainLayout from "../../components/Main-Layout";
 import { getUrl } from "../../utils/utility";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import CheckpointService from "../../service/checkpoint.service";
-import { useConnection, useWallet } from "@solana/wallet-adapter-react";
+import {
+  useAnchorWallet,
+  useConnection,
+  useWallet,
+} from "@solana/wallet-adapter-react";
 import { Connection, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
+import { getProvider } from "../../programs/utils";
 
 let flagInterval: NodeJS.Timeout;
 
@@ -31,37 +36,26 @@ const CheckpointDetail = () => {
   const router = useRouter();
   const { propertyId, checkpointId } = router.query;
   const [form] = Form.useForm();
-  const wallet = useWallet();
+  const { publicKey, sendTransaction } = useWallet();
   const { connection } = useConnection();
   const [balance, setBalance] = useState(0);
-
-  const getUserSOLBalance = async (
-    publicKey: PublicKey,
-    connection: Connection
-  ) => {
-    let balance = await connection.getBalance(publicKey);
-    setBalance(balance);
-  };
-
-  useEffect(() => {
-    if (wallet.publicKey) {
-      getUserSOLBalance(wallet.publicKey, connection);
-    }
-  }, [wallet.publicKey, connection]);
+  const [checkpointDetail, setCheckpointDetail] = useState<any>();
+  const wallet = useAnchorWallet();
 
   useEffect(() => {
     (async () => {
+      console.log("propertyId: ", propertyId, checkpointId);
       if (!propertyId || !checkpointId) return;
 
       const [res]: any = await EvaluationService.getDetail(propertyId);
-      // 6390092ead97ff2e397e6b2d
-      // 638f305aad97ff2e397c8ff1
+      console.log("res: ", res);
       const [checkpointDetail] = await CheckpointService.getCheckpointDetail(
-        "6390092ead97ff2e397e6b2d"
+        checkpointId
       );
       console.log("checkpointDetail: ", checkpointDetail);
       if (!res?.error) {
         setAssetInfo(res);
+        setCheckpointDetail(checkpointDetail?.data);
       } else {
         message.error(res?.error?.message);
       }
@@ -69,10 +63,17 @@ const CheckpointDetail = () => {
     return () => {
       clearInterval(flagInterval);
     };
-  }, []);
+  }, [propertyId, checkpointId]);
 
   const onFinish = (values: any) => {
     console.log("Success:", values);
+
+    const provider = getProvider(wallet);
+
+    if (provider && publicKey) {
+    } else {
+      message.error("Please connect your wallet");
+    }
   };
   const onFinishFailed = (errorInfo: any) => {
     console.log("Failed:", errorInfo);
@@ -135,7 +136,7 @@ const CheckpointDetail = () => {
                 <Text
                   style={{ color: "#1890ff", fontSize: 25, fontWeight: 500 }}
                 >
-                  100,000 T4
+                  {checkpointDetail?.checkpoint?.totalDistributionAmount}
                 </Text>
               </Col>
               <Col span={12}>
@@ -158,7 +159,7 @@ const CheckpointDetail = () => {
                   </Text>
                 }
               >
-                <Text style={{}}>#1D47efTkLR282Wq29</Text>
+                <Text style={{}}>#{checkpointDetail?.checkpoint?._id}</Text>
               </Descriptions.Item>
               <Descriptions.Item
                 label={
@@ -181,7 +182,7 @@ const CheckpointDetail = () => {
               layout="horizontal"
             >
               <Form.Item
-                label="Deposite Escrow"
+                label="Lock Escrow"
                 name="amount"
                 rules={[
                   { required: true, message: "This field cannot be empty." },
@@ -191,8 +192,7 @@ const CheckpointDetail = () => {
                 <Input />
               </Form.Item>
               <Text style={{ color: "var(--text-color)" }}>
-                {`Available Balance: fdfds
-                    ${balance / LAMPORTS_PER_SOL} SOL`}
+                {`Available Balance: `}
               </Text>
               <br />
               <br />
@@ -202,7 +202,7 @@ const CheckpointDetail = () => {
                 size="large"
                 style={{ width: "100%" }}
               >
-                Deposit
+                Lock
               </Button>
             </Form>
           </div>

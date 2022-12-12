@@ -2,49 +2,71 @@ import { Table } from "antd";
 import { useRouter } from "next/router";
 import React from "react";
 import moment from "moment";
-import { DATE_FORMAT } from "../../constants"
+import { DATE_FORMAT } from "../../constants";
+import { getUrl } from "../../utils/utility";
 
 const columns = [
   {
-    title: "Rank",
-    dataIndex: "rank",
-    key: "rank",
-    render: (rank: number) => `#${rank}`,
+    title: "Id",
+    dataIndex: "checkpointId",
+    key: "checkpointId",
+    width: "5%",
+    render: (checkpointId: number) => (checkpointId ? `#${checkpointId}` : ""),
   },
   {
     title: "Checkpoint Hash",
-    dataIndex: "hash",
-    key: "hash",
+    dataIndex: "checkpoint_hash",
+    ellipsis: true,
+    key: "checkpoint_hash",
   },
   {
     title: "Quanity",
-    dataIndex: "dividend_distributor",
-    key: "dividend_distributor",
-    render: (quanity: number) => `${quanity?.toLocaleString("en")} USDT`,
+    dataIndex: "totalDistributionAmount",
+    key: "totalDistributionAmount",
+    render: (quanity: number, _: any) => {
+      return `${quanity / 10 ** _.decimals}`;
+    },
   },
   {
     title: "Date",
-    dataIndex: "updatedAt",
-    key: "updatedAt",
+    dataIndex: "createdAt",
+    key: "createdAt",
     render: (value: number) => moment(value).format(DATE_FORMAT),
   },
   {
-    title: "Signature",
-    dataIndex: "signature",
-    key: "signature",
+    title: "Token Address",
+    dataIndex: "token_address",
+    ellipsis: true,
+    key: "token_address",
   },
   {
     title: "Report",
     dataIndex: "report",
     key: "report",
+    render: (file: any) => {
+      return (
+        <>
+          <a
+            href={getUrl(file)}
+            rel="noreferrer"
+            target="_blank"
+            onClick={(e) => {
+              e.stopPropagation();
+            }}
+          >
+            {file?.name}
+          </a>
+        </>
+      );
+    },
   },
 ];
 
 interface IProps {
-  data: any
+  data: any;
 }
 
-const CheckpointTable: React.FC<IProps> = ({data}) => {
+const CheckpointTable: React.FC<IProps> = ({ data }) => {
   const router = useRouter();
 
   return (

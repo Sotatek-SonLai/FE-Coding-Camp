@@ -75,7 +75,9 @@ const MintNftPage: NextPageWithLayout = (props: any) => {
         const program = new mainProgram(provider);
         const [txToBase64, err]: any = await program.tokenizeNft(
           assetInfo?.mintKey,
-          assetInfo?.assetBasket
+          assetInfo?.assetBasket,
+          assetInfo?.bigGuardian,
+          assetInfo?.tokenSupply
         );
 
         if (!err) {
@@ -218,7 +220,6 @@ const MintNftPage: NextPageWithLayout = (props: any) => {
                   }}
                 />
               </Form.Item>
-
               <Button block loading={loading} type="primary" htmlType="submit">
                 Tokenize
               </Button>
