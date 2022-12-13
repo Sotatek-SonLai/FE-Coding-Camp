@@ -16,6 +16,9 @@ import { UploadOutlined } from "@ant-design/icons";
 import type { UploadProps, UploadFile } from "antd/es/upload/interface";
 import { getAssociatedTokenAddress } from "@solana/spl-token";
 import { toBase64 } from "../../../utils/utility";
+import checkSignatureStatus, {
+  Message,
+} from "../../../utils/checkSignatureStatus.util";
 
 const { Title, Text } = Typography;
 
@@ -113,93 +116,31 @@ const CreateCheckpoint = ({ propertyInfo, onDone }: any) => {
 
       setTx(tx);
 
-      const statusCheckInterval = 300;
-      const timeout = 90000;
-      let isBlockhashValid = true;
-      const sleep = (ms: any) => {
-        return new Promise((resolve) => setTimeout(resolve, ms));
-      };
-
-      const isBlockhashExpired = async (initialBlockHeight: any) => {
-        let currentBlockHeight =
-          await program._provider.connection.getBlockHeight();
-        console.log(currentBlockHeight);
-        return currentBlockHeight > initialBlockHeight;
-      };
-
-      const inititalBlock = (
-        await program._provider.connection.getSignatureStatus(tx)
-      ).context.slot;
-
-      let done = false;
-      let transactionTimeout = false;
-
-      setTimeout(() => {
-        if (done) {
-          return;
-        }
-        done = true;
-        CheckpointService.updateCheckpoint;
-        transactionTimeout = true;
-        console.log("Timed out for txid", tx);
-        console.log(
-          `${
-            isBlockhashValid
-              ? "Blockhash not yet expired."
-              : "Blockhash has expired."
-          }`
-        );
-      }, timeout);
-
-      while (!done && isBlockhashValid) {
-        const confirmation =
-          await program._provider.connection.getSignatureStatus(tx);
-
-        if (
-          confirmation.value &&
-          (confirmation.value.confirmationStatus === "confirmed" ||
-            confirmation.value.confirmationStatus === "finalized")
-        ) {
-          console.log(
-            `Confirmation Status: ${confirmation.value.confirmationStatus}, ${tx}`
-          );
-          done = true;
-          //Run any additional code you'd like with your txId (e.g. notify user of succesful transaction)
-        } else {
-          console.log(
-            `Confirmation Status: ${
-              confirmation.value?.confirmationStatus || "not yet found."
-            }`
-          );
-        }
-        isBlockhashValid = !(await isBlockhashExpired(inititalBlock));
-        await sleep(statusCheckInterval);
-      }
-
-      if (done && !transactionTimeout) {
+      const result: Message = await checkSignatureStatus(tx, provider);
+      if (result === Message.SUCCESS) {
         handleCancel();
         setIsShownModalTx(true);
+
         const [res] = await CheckpointService.updateCheckpoint({
           dividend_distributor: dividend_distributor.publicKey,
           evaluation_id: propertyInfo._id,
           token_address: values.tokenAddress,
           description: values.description,
-          // reportFile: await Promise.all(
-          //   reportFile.map(async (file: any, index: number) => {
-          //     console.log({ file });
-          //     return {
-          //       name: file.name,
-          //       data: await toBase64(file),
-          //     };
-          // })
-          // ),
-
           reportFile: {
             name: reportFile[0].name,
             data: await toBase64(reportFile[0]),
           },
         });
+
         onDone();
+      } else {
+        message.error(
+          result === Message.PROVIDER_ERROR
+            ? "Please connect your wallet"
+            : result === Message.EXPIRED_ERROR
+            ? "Your transaction is expired"
+            : "Time out for transaction"
+        );
       }
 
       setLoading(false);

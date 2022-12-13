@@ -36,6 +36,9 @@ import TransactionModal from "../../components/common/TransactionModal";
 import Link from "next/link";
 import * as anchor from "@project-serum/anchor";
 import { getAssociatedTokenAddress } from "@solana/spl-token";
+import checkSignatureStatus, {
+  Message,
+} from "../../utils/checkSignatureStatus.util";
 
 let flagInterval: NodeJS.Timeout;
 
@@ -68,7 +71,7 @@ const CheckpointDetail = () => {
       console.log("checkpointDetail: ", checkpointDetail);
       if (checkpointDetail && publicKey) {
         const tokenPublicKey = new anchor.web3.PublicKey(
-          checkpointDetail.data.fractionalizeTokenMint
+          checkpointDetail?.data.fractionalizeTokenMint
         );
 
         const tokenOwnerAccount = await getAssociatedTokenAddress(
@@ -126,66 +129,17 @@ const CheckpointDetail = () => {
 
           setTx(tx);
 
-          const statusCheckInterval = 300;
-          const timeout = 90000;
-          let isBlockhashValid = true;
-          const sleep = (ms: any) => {
-            return new Promise((resolve) => setTimeout(resolve, ms));
-          };
-
-          const isBlockhashExpired = async (initialBlockHeight: any) => {
-            let currentBlockHeight =
-              await program._provider.connection.getBlockHeight();
-            console.log(currentBlockHeight);
-            return currentBlockHeight > initialBlockHeight;
-          };
-
-          const inititalBlock = (
-            await program._provider.connection.getSignatureStatus(tx)
-          ).context.slot;
-          let done = false;
-          setTimeout(() => {
-            if (done) {
-              return;
-            }
-            done = true;
-            console.log("Timed out for txid", tx);
-            console.log(
-              `${
-                isBlockhashValid
-                  ? "Blockhash not yet expired."
-                  : "Blockhash has expired."
-              }`
-            );
-          }, timeout);
-
-          while (!done && isBlockhashValid) {
-            const confirmation =
-              await program._provider.connection.getSignatureStatus(tx);
-
-            if (
-              confirmation.value &&
-              (confirmation.value.confirmationStatus === "confirmed" ||
-                confirmation.value.confirmationStatus === "finalized")
-            ) {
-              console.log(
-                `Confirmation Status: ${confirmation.value.confirmationStatus}, ${tx}`
-              );
-              done = true;
-              //Run any additional code you'd like with your txId (e.g. notify user of succesful transaction)
-            } else {
-              console.log(
-                `Confirmation Status: ${
-                  confirmation.value?.confirmationStatus || "not yet found."
-                }`
-              );
-            }
-            isBlockhashValid = !(await isBlockhashExpired(inititalBlock));
-            await sleep(statusCheckInterval);
-          }
-
-          if (done) {
+          const result: Message = await checkSignatureStatus(tx, provider);
+          if (result === Message.SUCCESS) {
             setIsShownModalTx(true);
+          } else {
+            message.error(
+              result === Message.PROVIDER_ERROR
+                ? "Please connect your wallet"
+                : result === Message.EXPIRED_ERROR
+                ? "Your transaction is expired"
+                : "Time out for transaction"
+            );
           }
         }
         setLoading(false);
