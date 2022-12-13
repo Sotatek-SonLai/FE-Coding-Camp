@@ -57,6 +57,7 @@ const CheckpointDetail = () => {
   const [tx, setTx] = useState<any>("");
   const [isShownModalTx, setIsShownModalTx] = useState<boolean>(false);
   const [loading, setLoading] = useState(false);
+  const [decimals, setDecimals] = useState(0)
 
   useEffect(() => {
     (async () => {
@@ -86,6 +87,7 @@ const CheckpointDetail = () => {
         console.log({ tokenAccountInfo });
 
         setBalance(tokenAccountInfo.value.uiAmountString || "");
+        setDecimals(tokenAccountInfo.value.decimals)
       }
 
       if (!res?.error) {
@@ -111,7 +113,8 @@ const CheckpointDetail = () => {
         const program = new mainProgram(provider);
         const [txToBase64, err]: any = await program.lockEscrow(
           checkpointDetail.checkpoint.locker,
-          checkpointDetail.fractionalizeTokenMint
+          checkpointDetail.fractionalizeTokenMint,
+          values.amount*(10**decimals)
         );
         console.log({ checkpointDetail });
         console.log("err: ", err);

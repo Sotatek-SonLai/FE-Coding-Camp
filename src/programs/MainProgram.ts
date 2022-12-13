@@ -506,18 +506,18 @@ export default class mainProgram extends BaseInterface {
         payer,
         systemProgram: anchor.web3.SystemProgram.programId,
       })
-      .rpc({
-        commitment: "confirmed",
-      });
+      .instruction();
 
-    return escrow;
+    return {escrow, tx};
   }
 
   async lock(
     assetLocker: PublicKey,
     fractionalTokenMint: PublicKey,
     escrow: PublicKey,
-    escrowOwner: PublicKey
+    escrowOwner: PublicKey,
+    amount: number,
+    tx?: web3.TransactionInstruction
   ) {
     let assetOwnerTokenAccount = await getAssociatedTokenAddress(
       fractionalTokenMint,
@@ -529,18 +529,22 @@ export default class mainProgram extends BaseInterface {
       escrow,
       true
     );
+    const escrow_account_hodl = new anchor.web3.Transaction();
 
-    const escrow_account_hodl = new anchor.web3.Transaction().add(
-      createAssociatedTokenAccountInstruction(
-        escrowOwner,
-        escrowHodl,
-        escrow,
-        fractionalTokenMint
-      )
-    );
+    if(tx){
+      escrow_account_hodl.add(
+        createAssociatedTokenAccountInstruction(
+          escrowOwner,
+          escrowHodl,
+          escrow,
+          fractionalTokenMint
+        )
+      );
+      escrow_account_hodl.add(tx)
+    }  
 
     const lock_ix = await this._program.methods
-      .lock(new anchor.BN(10 * 10 ** 8))
+      .lock(new anchor.BN(amount))
       .accounts({
         escrow,
         escrowOwner,
@@ -555,7 +559,7 @@ export default class mainProgram extends BaseInterface {
 
     // co che confirm transaction tren solana voi ethereum
     const recentBlockhash =
-      await this._program.provider.connection.getLatestBlockhash("confirmed");
+      await this._provider.connection.getLatestBlockhash("confirmed");
 
     console.log("=========== Getting recent blockhash ===========");
     console.log("Recent blockhash: ", recentBlockhash);
@@ -570,7 +574,7 @@ export default class mainProgram extends BaseInterface {
       .toString("base64");
   }
 
-  async lockEscrow(assetLocker: string, fractionalTokenMint: string) {
+  async lockEscrow(assetLocker: string, fractionalTokenMint: string, amount: number) {
     try {
       console.log({ assetLocker, fractionalTokenMint });
       const assetLockerPublicKey = new anchor.web3.PublicKey(assetLocker);
@@ -583,24 +587,35 @@ export default class mainProgram extends BaseInterface {
         await this._provider.connection.getParsedAccountInfo(escrow);
 
       if (!escrowAccount.value) {
-        const newEscrow = await this.createEscrow(
+        const {escrow, tx} = await this.createEscrow(
           this._provider.publicKey,
           assetLockerPublicKey,
           this._governor,
           this._provider.publicKey
         );
 
-        if (!newEscrow) return [null, "create escrow failed"];
-        escrow = newEscrow;
+        if (!escrow) return [null, "create escrow failed"];
+        const escrow_account_hodl = await this.lock(
+          assetLockerPublicKey,
+          new anchor.web3.PublicKey(fractionalTokenMint),
+          escrow,
+          this._provider.publicKey,
+          amount,
+          tx
+        );
+        return [escrow_account_hodl, null];
+      }
+      else{
+        const escrow_account_hodl = await this.lock(
+          assetLockerPublicKey,
+          new anchor.web3.PublicKey(fractionalTokenMint),
+          escrow,
+          this._provider.publicKey,
+          amount
+        );
+        return [escrow_account_hodl, null];
       }
 
-      const escrow_account_hodl = await this.lock(
-        assetLockerPublicKey,
-        new anchor.web3.PublicKey(fractionalTokenMint),
-        escrow,
-        this._provider.publicKey
-      );
-      return [escrow_account_hodl, null];
     } catch (err) {
       return [null, err, null, null];
     }
