@@ -30,6 +30,15 @@ const CheckpointService = {
     }
   },
 
+  getTransactionHistory: async (locker: any) => {
+    try {
+      const response = await Request.get(`check-point/${locker}/escrow`);
+      return [response.data, null];
+    } catch (error) {
+      return [null, error];
+    }
+  },
+
   sendSerializedTransaction: async (
     evaluation_id: any,
     base64_serialized_tx: any

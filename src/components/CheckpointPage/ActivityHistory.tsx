@@ -1,5 +1,7 @@
 import { Table } from "antd";
+import moment from "moment";
 import React from "react";
+import { DATE_TIME_FORMAT } from "../../constants";
 
 const dataSource = [
   {
@@ -20,7 +22,7 @@ const dataSource = [
 
 const columns = [
   {
-    title: "Checkpoint Hash",
+    title: "Transaction Hash",
     dataIndex: "hash",
     key: "hash",
   },
@@ -45,8 +47,9 @@ const columns = [
   },
   {
     title: "Date",
-    dataIndex: "date",
-    key: "date",
+    dataIndex: "createdAt",
+    key: "createdAt",
+    render: (date: any) => `${moment(date).format(DATE_TIME_FORMAT)}`,
   },
 ];
 

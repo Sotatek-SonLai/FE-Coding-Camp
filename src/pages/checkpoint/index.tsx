@@ -39,6 +39,8 @@ import { getAssociatedTokenAddress } from "@solana/spl-token";
 import checkSignatureStatus, {
   Message,
 } from "../../utils/checkSignatureStatus.util";
+import moment from "moment";
+import { DATE_TIME_FORMAT } from "../../constants";
 
 let flagInterval: NodeJS.Timeout;
 
@@ -57,7 +59,8 @@ const CheckpointDetail = () => {
   const [tx, setTx] = useState<any>("");
   const [isShownModalTx, setIsShownModalTx] = useState<boolean>(false);
   const [loading, setLoading] = useState(false);
-  const [decimals, setDecimals] = useState(0)
+  const [decimals, setDecimals] = useState(0);
+  const [transactionHistory, setTransactionHistory] = useState([]);
 
   useEffect(() => {
     (async () => {
@@ -69,8 +72,16 @@ const CheckpointDetail = () => {
       const [checkpointDetail] = await CheckpointService.getCheckpointDetail(
         checkpointId
       );
+
       console.log("checkpointDetail: ", checkpointDetail);
       if (checkpointDetail && publicKey) {
+        const [transactionHistory] =
+          await CheckpointService.getTransactionHistory(
+            checkpointDetail.data?.checkpoint.locker
+          );
+        console.log("transactionHistory: ", transactionHistory);
+        setTransactionHistory(transactionHistory.data);
+
         const tokenPublicKey = new anchor.web3.PublicKey(
           checkpointDetail?.data.fractionalizeTokenMint
         );
@@ -87,7 +98,7 @@ const CheckpointDetail = () => {
         console.log({ tokenAccountInfo });
 
         setBalance(tokenAccountInfo.value.uiAmountString || "");
-        setDecimals(tokenAccountInfo.value.decimals)
+        setDecimals(tokenAccountInfo.value.decimals);
       }
 
       if (!res?.error) {
@@ -114,7 +125,7 @@ const CheckpointDetail = () => {
         const [txToBase64, err]: any = await program.lockEscrow(
           checkpointDetail.checkpoint.locker,
           checkpointDetail.fractionalizeTokenMint,
-          values.amount*(10**decimals)
+          values.amount * 10 ** decimals
         );
         console.log({ checkpointDetail });
         console.log("err: ", err);
@@ -157,6 +168,64 @@ const CheckpointDetail = () => {
 
   const onFinishFailed = (errorInfo: any) => {
     console.log("Failed:", errorInfo);
+  };
+
+  const depositTimeExpired = () => {
+    if (!checkpointDetail) return false;
+    const checkpointTime = moment(
+      checkpointDetail.checkpoint.startDistributionAt * 1000
+    );
+    const now = moment();
+    return checkpointTime.isBefore(now);
+  };
+
+  const onClaim = async () => {
+    try {
+      const provider = getProvider(wallet);
+
+      if (provider && publicKey) {
+        setLoading(true);
+        const program = new mainProgram(provider);
+        // const [txToBase64, err]: any = await program.lockEscrow(
+        //   checkpointDetail.checkpoint.locker,
+        //   checkpointDetail.fractionalizeTokenMint,
+        //   values.amount * 10 ** decimals
+        // );
+        // if (!err) {
+        //   console.log({ txToBase64 });
+
+        //   const tx = await sendTransaction(
+        //     Transaction.from(Buffer.from(txToBase64, "base64")),
+        //     program._provider.connection,
+        //     {
+        //       skipPreflight: true,
+        //       maxRetries: 5,
+        //     }
+        //   );
+
+        //   setTx(tx);
+
+        //   const result: Message = await checkSignatureStatus(tx, provider);
+        //   if (result === Message.SUCCESS) {
+        //     setIsShownModalTx(true);
+        //   } else {
+        //     message.error(
+        //       result === Message.PROVIDER_ERROR
+        //         ? "Please connect your wallet"
+        //         : result === Message.EXPIRED_ERROR
+        //         ? "Your transaction is expired"
+        //         : "Time out for transaction"
+        //     );
+        //   }
+        // }
+        setLoading(false);
+      } else {
+        message.error("Please connect your wallet");
+      }
+    } catch (error) {
+      console.log(error);
+      setLoading(false);
+    }
   };
 
   return (
@@ -263,44 +332,82 @@ const CheckpointDetail = () => {
                   </Text>
                 }
               >
-                <Text style={{}}>November 30, 2022 at 06:55pm</Text>
+                <Text style={{}}>
+                  {moment(
+                    checkpointDetail?.checkpoint.startDistributionAt * 1000
+                  ).format(DATE_TIME_FORMAT)}
+                </Text>
               </Descriptions.Item>
             </Descriptions>
             <br />
-            <Form
-              form={form}
-              labelCol={{ span: 24 }}
-              wrapperCol={{ span: 24 }}
-              onFinish={onFinish}
-              onFinishFailed={onFinishFailed}
-              autoComplete="off"
-              layout="horizontal"
-            >
-              <Form.Item
-                label="Lock Escrow"
-                name="amount"
-                rules={[
-                  { required: true, message: "This field cannot be empty." },
-                ]}
-                style={{ marginBottom: 10 }}
+            {depositTimeExpired() ? (
+              <Form
+                form={form}
+                labelCol={{ span: 24 }}
+                wrapperCol={{ span: 24 }}
+                onFinish={onClaim}
+                autoComplete="off"
+                layout="horizontal"
               >
-                <Input />
-              </Form.Item>
-              <Text style={{ color: "var(--text-color)" }}>
-                {`Available Balance: ${balance}`}
-              </Text>
-              <br />
-              <br />
-              <Button
-                type="primary"
-                htmlType="submit"
-                size="large"
-                block
-                loading={loading}
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    fontSize: 15,
+                  }}
+                >
+                  <Text style={{ fontWeight: 500 }}> Claim your rewards: </Text>
+                  <Text style={{ fontWeight: 500 }}>
+                    <Text style={{ fontSize: 18 }}>{10000}</Text> token
+                  </Text>
+                </div>
+                <br />
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  size="large"
+                  block
+                  loading={loading}
+                >
+                  Claim
+                </Button>
+              </Form>
+            ) : (
+              <Form
+                form={form}
+                labelCol={{ span: 24 }}
+                wrapperCol={{ span: 24 }}
+                onFinish={onFinish}
+                onFinishFailed={onFinishFailed}
+                autoComplete="off"
+                layout="horizontal"
               >
-                Lock
-              </Button>
-            </Form>
+                <Form.Item
+                  label="Lock Escrow"
+                  name="amount"
+                  rules={[
+                    { required: true, message: "This field cannot be empty." },
+                  ]}
+                  style={{ marginBottom: 10 }}
+                >
+                  <Input />
+                </Form.Item>
+                <Text style={{ color: "var(--text-color)" }}>
+                  {`Available Balance: ${balance}`}
+                </Text>
+                <br />
+                <br />
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  size="large"
+                  block
+                  loading={loading}
+                >
+                  Lock
+                </Button>
+              </Form>
+            )}
           </div>
         </Col>
       </Row>
