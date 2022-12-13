@@ -166,8 +166,8 @@ const NewLandPage: NextPageWithLayout = (props) => {
       }
     },
     beforeUpload: (file, fileList) => {
-      const length = fileList.length
-      console.log([...certificates, fileList[length - 1]])
+      const length = fileList.length;
+      console.log([...certificates, fileList[length - 1]]);
       setCertificates([...certificates, file]);
       return false;
     },
@@ -192,7 +192,7 @@ const NewLandPage: NextPageWithLayout = (props) => {
           }
           return {
             ...file,
-            url: file.tempURL
+            url: file.tempURL,
           };
         })
       );
@@ -235,21 +235,21 @@ const NewLandPage: NextPageWithLayout = (props) => {
             }
             return {
               ...file,
-              url: file.tempURL
+              url: file.tempURL,
             };
           })
         ),
         projectImages,
       };
-      if(values?.avatar?.file?.originFileObj) {
+      if (values?.avatar?.file?.originFileObj) {
         formData.avatar = {
           name: "logo.png",
           data: await toBase64(values.avatar.file.originFileObj),
-        }
+        };
       }
 
       let res: any;
-      let messageContent = ""
+      let messageContent = "";
       if (!!assetId) {
         const [response]: any = await EvaluationService.updateLand(
           formData,
@@ -263,7 +263,7 @@ const NewLandPage: NextPageWithLayout = (props) => {
         messageContent = "Create evaluation successfully";
       }
       if (!res?.error) {
-        router.push("/portal").then();
+        router.back();
         message.success(messageContent);
       } else {
         message.error(res?.error?.message);

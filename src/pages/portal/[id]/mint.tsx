@@ -17,6 +17,9 @@ import AssetInfo from "../../../components/PortalEvaluationPage/AssetInfo";
 import { useSelector } from "react-redux";
 import { selectWallet } from "../../../store/wallet/wallet.slice";
 import MintedTransactionModal from "../../../components/PortalEvaluationPage/MintedTransactionModal";
+import checkSignatureStatus, {
+  Message,
+} from "../../../utils/checkSignatureStatus.util";
 
 const { Text } = Typography;
 let flagInterval: NodeJS.Timeout;
@@ -93,71 +96,19 @@ const MintNftPage: NextPageWithLayout = (props: any) => {
               maxRetries: 5,
             }
           );
-          console.log(tx);
-          console.log("started await");
-
           setTx(tx);
 
-          const statusCheckInterval = 300;
-          const timeout = 90000;
-          let isBlockhashValid = true;
-          const sleep = (ms: any) => {
-            return new Promise((resolve) => setTimeout(resolve, ms));
-          };
-
-          const isBlockhashExpired = async (initialBlockHeight: any) => {
-            let currentBlockHeight =
-              await program._provider.connection.getBlockHeight();
-            console.log(currentBlockHeight);
-            return currentBlockHeight > initialBlockHeight;
-          };
-
-          const inititalBlock = (
-            await program._provider.connection.getSignatureStatus(tx)
-          ).context.slot;
-          let done = false;
-          setTimeout(() => {
-            if (done) {
-              return;
-            }
-            done = true;
-            console.log("Timed out for txid", tx);
-            console.log(
-              `${
-                isBlockhashValid
-                  ? "Blockhash not yet expired."
-                  : "Blockhash has expired."
-              }`
-            );
-          }, timeout);
-
-          while (!done && isBlockhashValid) {
-            const confirmation =
-              await program._provider.connection.getSignatureStatus(tx);
-
-            if (
-              confirmation.value &&
-              (confirmation.value.confirmationStatus === "confirmed" ||
-                confirmation.value.confirmationStatus === "finalized")
-            ) {
-              console.log(
-                `Confirmation Status: ${confirmation.value.confirmationStatus}, ${tx}`
-              );
-              done = true;
-              //Run any additional code you'd like with your txId (e.g. notify user of succesful transaction)
-            } else {
-              console.log(
-                `Confirmation Status: ${
-                  confirmation.value?.confirmationStatus || "not yet found."
-                }`
-              );
-            }
-            isBlockhashValid = !(await isBlockhashExpired(inititalBlock));
-            await sleep(statusCheckInterval);
-          }
-
-          if (done) {
+          const result: Message = await checkSignatureStatus(tx, provider);
+          if (result === Message.SUCCESS) {
             setIsShownModalTx(true);
+          } else {
+            message.error(
+              result === Message.PROVIDER_ERROR
+                ? "Please connect your wallet"
+                : result === Message.EXPIRED_ERROR
+                ? "Your transaction is expired"
+                : "Time out for transaction"
+            );
           }
         }
         setLoading(false);
