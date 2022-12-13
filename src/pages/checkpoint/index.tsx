@@ -17,15 +17,25 @@ import EvaluationService from "../../service/evaluation.service";
 import ActivityHistory from "../../components/CheckpointPage/ActivityHistory";
 import MainLayout from "../../components/Main-Layout";
 import { getUrl } from "../../utils/utility";
-import { ArrowLeftOutlined } from "@ant-design/icons";
+import { ArrowLeftOutlined, ArrowRightOutlined } from "@ant-design/icons";
 import CheckpointService from "../../service/checkpoint.service";
 import {
   useAnchorWallet,
   useConnection,
   useWallet,
 } from "@solana/wallet-adapter-react";
-import { Connection, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
+import {
+  Connection,
+  LAMPORTS_PER_SOL,
+  PublicKey,
+  Transaction,
+} from "@solana/web3.js";
 import { getProvider } from "../../programs/utils";
+import mainProgram from "../../programs/MainProgram";
+import TransactionModal from "../../components/common/TransactionModal";
+import Link from "next/link";
+import * as anchor from "@project-serum/anchor";
+import { getAssociatedTokenAddress } from "@solana/spl-token";
 
 let flagInterval: NodeJS.Timeout;
 
@@ -38,9 +48,12 @@ const CheckpointDetail = () => {
   const [form] = Form.useForm();
   const { publicKey, sendTransaction } = useWallet();
   const { connection } = useConnection();
-  const [balance, setBalance] = useState(0);
+  const [balance, setBalance] = useState("");
   const [checkpointDetail, setCheckpointDetail] = useState<any>();
   const wallet = useAnchorWallet();
+  const [tx, setTx] = useState<any>("");
+  const [isShownModalTx, setIsShownModalTx] = useState<boolean>(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -48,14 +61,33 @@ const CheckpointDetail = () => {
       if (!propertyId || !checkpointId) return;
 
       const [res]: any = await EvaluationService.getDetail(propertyId);
-      console.log("res: ", res);
+
       const [checkpointDetail] = await CheckpointService.getCheckpointDetail(
         checkpointId
       );
       console.log("checkpointDetail: ", checkpointDetail);
+      if (checkpointDetail && publicKey) {
+        const tokenPublicKey = new anchor.web3.PublicKey(
+          checkpointDetail.data.fractionalizeTokenMint
+        );
+
+        const tokenOwnerAccount = await getAssociatedTokenAddress(
+          tokenPublicKey,
+          publicKey
+        );
+
+        let tokenAccountInfo = await connection.getTokenAccountBalance(
+          tokenOwnerAccount
+        );
+
+        console.log({ tokenAccountInfo });
+
+        setBalance(tokenAccountInfo.value.uiAmountString || "");
+      }
+
       if (!res?.error) {
         setAssetInfo(res);
-        setCheckpointDetail(checkpointDetail?.data);
+        setCheckpointDetail(checkpointDetail.data);
       } else {
         message.error(res?.error?.message);
       }
@@ -65,22 +97,125 @@ const CheckpointDetail = () => {
     };
   }, [propertyId, checkpointId]);
 
-  const onFinish = (values: any) => {
+  const onFinish = async (values: any) => {
     console.log("Success:", values);
 
-    const provider = getProvider(wallet);
+    try {
+      const provider = getProvider(wallet);
 
-    if (provider && publicKey) {
-    } else {
-      message.error("Please connect your wallet");
+      if (provider && publicKey) {
+        setLoading(true);
+        const program = new mainProgram(provider);
+        const [txToBase64, err]: any = await program.lockEscrow(
+          checkpointDetail.checkpoint.locker,
+          checkpointDetail.fractionalizeTokenMint
+        );
+        console.log({ checkpointDetail });
+        console.log("err: ", err);
+        if (!err) {
+          console.log({ txToBase64 });
+
+          const tx = await sendTransaction(
+            Transaction.from(Buffer.from(txToBase64, "base64")),
+            program._provider.connection,
+            {
+              skipPreflight: true,
+              maxRetries: 5,
+            }
+          );
+
+          setTx(tx);
+
+          const statusCheckInterval = 300;
+          const timeout = 90000;
+          let isBlockhashValid = true;
+          const sleep = (ms: any) => {
+            return new Promise((resolve) => setTimeout(resolve, ms));
+          };
+
+          const isBlockhashExpired = async (initialBlockHeight: any) => {
+            let currentBlockHeight =
+              await program._provider.connection.getBlockHeight();
+            console.log(currentBlockHeight);
+            return currentBlockHeight > initialBlockHeight;
+          };
+
+          const inititalBlock = (
+            await program._provider.connection.getSignatureStatus(tx)
+          ).context.slot;
+          let done = false;
+          setTimeout(() => {
+            if (done) {
+              return;
+            }
+            done = true;
+            console.log("Timed out for txid", tx);
+            console.log(
+              `${
+                isBlockhashValid
+                  ? "Blockhash not yet expired."
+                  : "Blockhash has expired."
+              }`
+            );
+          }, timeout);
+
+          while (!done && isBlockhashValid) {
+            const confirmation =
+              await program._provider.connection.getSignatureStatus(tx);
+
+            if (
+              confirmation.value &&
+              (confirmation.value.confirmationStatus === "confirmed" ||
+                confirmation.value.confirmationStatus === "finalized")
+            ) {
+              console.log(
+                `Confirmation Status: ${confirmation.value.confirmationStatus}, ${tx}`
+              );
+              done = true;
+              //Run any additional code you'd like with your txId (e.g. notify user of succesful transaction)
+            } else {
+              console.log(
+                `Confirmation Status: ${
+                  confirmation.value?.confirmationStatus || "not yet found."
+                }`
+              );
+            }
+            isBlockhashValid = !(await isBlockhashExpired(inititalBlock));
+            await sleep(statusCheckInterval);
+          }
+
+          if (done) {
+            setIsShownModalTx(true);
+          }
+        }
+        setLoading(false);
+      } else {
+        message.error("Please connect your wallet");
+      }
+    } catch (error) {
+      console.log(error);
+      setLoading(false);
     }
   };
+
   const onFinishFailed = (errorInfo: any) => {
     console.log("Failed:", errorInfo);
   };
 
   return (
     <>
+      <TransactionModal
+        close={() => setIsShownModalTx(false)}
+        title="Successfully tokenized!"
+        tx={tx}
+        isShown={isShownModalTx}
+      >
+        <Link href="/properties">
+          <Button block type="primary">
+            Go to properties list <ArrowRightOutlined />
+          </Button>
+        </Link>
+      </TransactionModal>
       <Button
         type="ghost"
         shape="circle"
@@ -136,7 +271,10 @@ const CheckpointDetail = () => {
                 <Text
                   style={{ color: "#1890ff", fontSize: 25, fontWeight: 500 }}
                 >
-                  {checkpointDetail?.checkpoint?.totalDistributionAmount}
+                  {checkpointDetail?.checkpoint
+                    ? checkpointDetail.checkpoint.totalDistributionAmount /
+                      10 ** checkpointDetail.checkpoint.decimal
+                    : 0}
                 </Text>
               </Col>
               <Col span={12}>
@@ -192,7 +330,7 @@ const CheckpointDetail = () => {
                 <Input />
               </Form.Item>
               <Text style={{ color: "var(--text-color)" }}>
-                {`Available Balance: `}
+                {`Available Balance: ${balance}`}
               </Text>
               <br />
               <br />
@@ -200,7 +338,8 @@ const CheckpointDetail = () => {
                 type="primary"
                 htmlType="submit"
                 size="large"
-                style={{ width: "100%" }}
+                block
+                loading={loading}
               >
                 Lock
               </Button>

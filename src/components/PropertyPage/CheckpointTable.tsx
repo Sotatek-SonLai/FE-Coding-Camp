@@ -41,8 +41,8 @@ const columns = [
   },
   {
     title: "Report",
-    dataIndex: "report",
-    key: "report",
+    dataIndex: "reportFile",
+    key: "reportFile",
     render: (file: any) => {
       return (
         <>

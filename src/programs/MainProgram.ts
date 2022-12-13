@@ -553,15 +553,30 @@ export default class mainProgram extends BaseInterface {
 
     escrow_account_hodl.add(lock_ix);
 
-    return escrow_account_hodl;
+    // co che confirm transaction tren solana voi ethereum
+    const recentBlockhash =
+      await this._program.provider.connection.getLatestBlockhash("confirmed");
+
+    console.log("=========== Getting recent blockhash ===========");
+    console.log("Recent blockhash: ", recentBlockhash);
+
+    escrow_account_hodl.recentBlockhash = recentBlockhash.blockhash;
+    escrow_account_hodl.feePayer = this._provider.publicKey;
+
+    return escrow_account_hodl
+      .serialize({
+        requireAllSignatures: false,
+      })
+      .toString("base64");
   }
 
   async lockEscrow(assetLocker: string, fractionalTokenMint: string) {
     try {
+      console.log({ assetLocker, fractionalTokenMint });
       const assetLockerPublicKey = new anchor.web3.PublicKey(assetLocker);
       let escrow: any = await this.getCheckpointEscrow(
         this._program.programId,
-        assetLocker,
+        assetLockerPublicKey,
         this._provider.publicKey
       );
       const escrowAccount =
@@ -579,13 +594,12 @@ export default class mainProgram extends BaseInterface {
         escrow = newEscrow;
       }
 
-      const escrow_account_hodl = this.lock(
+      const escrow_account_hodl = await this.lock(
         assetLockerPublicKey,
         new anchor.web3.PublicKey(fractionalTokenMint),
         escrow,
         this._provider.publicKey
       );
-
       return [escrow_account_hodl, null];
     } catch (err) {
       return [null, err, null, null];
