@@ -71,14 +71,14 @@ const MintNftPage: NextPageWithLayout = (props: any) => {
           tokenSymbol: values.tokenSymbol,
           tokenSupply: values.tokenSupply.replace(/,/g, ""),
         });
-        console.log({ res });
         const program = new mainProgram(provider);
+
         const [txToBase64, err]: any = await program.tokenizeNft(
           assetInfo?.mintKey,
           assetInfo?.assetBasket,
           assetInfo?.bigGuardian,
-          assetInfo?.tokenSupply
-        );
+          values.tokenSupply.replace(/,/g, "").toString()
+        )
 
         if (!err) {
           const [res]: any = await EvaluationService.frac_sign(txToBase64, id);
