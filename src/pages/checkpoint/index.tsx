@@ -186,38 +186,40 @@ const CheckpointDetail = () => {
       if (provider && publicKey) {
         setLoading(true);
         const program = new mainProgram(provider);
-        // const [txToBase64, err]: any = await program.lockEscrow(
-        //   checkpointDetail.checkpoint.locker,
-        //   checkpointDetail.fractionalizeTokenMint,
-        //   values.amount * 10 ** decimals
-        // );
-        // if (!err) {
-        //   console.log({ txToBase64 });
+        const { dividend_distributor, token_address, locker, escrow } =
+          checkpointDetail.checkpoint;
+        const [txToBase64, err]: any = await program.claimRewards(
+          dividend_distributor,
+          token_address,
+          locker
+        );
+        if (!err) {
+          console.log({ txToBase64 });
 
-        //   const tx = await sendTransaction(
-        //     Transaction.from(Buffer.from(txToBase64, "base64")),
-        //     program._provider.connection,
-        //     {
-        //       skipPreflight: true,
-        //       maxRetries: 5,
-        //     }
-        //   );
+          const tx = await sendTransaction(
+            Transaction.from(Buffer.from(txToBase64, "base64")),
+            program._provider.connection,
+            {
+              skipPreflight: true,
+              maxRetries: 5,
+            }
+          );
 
-        //   setTx(tx);
+          setTx(tx);
 
-        //   const result: Message = await checkSignatureStatus(tx, provider);
-        //   if (result === Message.SUCCESS) {
-        //     setIsShownModalTx(true);
-        //   } else {
-        //     message.error(
-        //       result === Message.PROVIDER_ERROR
-        //         ? "Please connect your wallet"
-        //         : result === Message.EXPIRED_ERROR
-        //         ? "Your transaction is expired"
-        //         : "Time out for transaction"
-        //     );
-        //   }
-        // }
+          const result: Message = await checkSignatureStatus(tx, provider);
+          if (result === Message.SUCCESS) {
+            setIsShownModalTx(true);
+          } else {
+            message.error(
+              result === Message.PROVIDER_ERROR
+                ? "Please connect your wallet"
+                : result === Message.EXPIRED_ERROR
+                ? "Your transaction is expired"
+                : "Time out for transaction"
+            );
+          }
+        }
         setLoading(false);
       } else {
         message.error("Please connect your wallet");
