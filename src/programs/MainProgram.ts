@@ -508,7 +508,7 @@ export default class mainProgram extends BaseInterface {
       })
       .instruction();
 
-    return {escrow, tx};
+    return { escrow, tx };
   }
 
   async lock(
@@ -531,7 +531,7 @@ export default class mainProgram extends BaseInterface {
     );
     const escrow_account_hodl = new anchor.web3.Transaction();
 
-    if(tx){
+    if (tx) {
       escrow_account_hodl.add(
         createAssociatedTokenAccountInstruction(
           escrowOwner,
@@ -540,8 +540,8 @@ export default class mainProgram extends BaseInterface {
           fractionalTokenMint
         )
       );
-      escrow_account_hodl.add(tx)
-    }  
+      escrow_account_hodl.add(tx);
+    }
 
     const lock_ix = await this._program.methods
       .lock(new anchor.BN(amount))
@@ -558,8 +558,9 @@ export default class mainProgram extends BaseInterface {
     escrow_account_hodl.add(lock_ix);
 
     // co che confirm transaction tren solana voi ethereum
-    const recentBlockhash =
-      await this._provider.connection.getLatestBlockhash("confirmed");
+    const recentBlockhash = await this._provider.connection.getLatestBlockhash(
+      "confirmed"
+    );
 
     console.log("=========== Getting recent blockhash ===========");
     console.log("Recent blockhash: ", recentBlockhash);
@@ -574,7 +575,11 @@ export default class mainProgram extends BaseInterface {
       .toString("base64");
   }
 
-  async lockEscrow(assetLocker: string, fractionalTokenMint: string, amount: number) {
+  async lockEscrow(
+    assetLocker: string,
+    fractionalTokenMint: string,
+    amount: number
+  ) {
     try {
       console.log({ assetLocker, fractionalTokenMint });
       const assetLockerPublicKey = new anchor.web3.PublicKey(assetLocker);
@@ -587,7 +592,7 @@ export default class mainProgram extends BaseInterface {
         await this._provider.connection.getParsedAccountInfo(escrow);
 
       if (!escrowAccount.value) {
-        const {escrow, tx} = await this.createEscrow(
+        const { escrow, tx } = await this.createEscrow(
           this._provider.publicKey,
           assetLockerPublicKey,
           this._governor,
@@ -604,8 +609,7 @@ export default class mainProgram extends BaseInterface {
           tx
         );
         return [escrow_account_hodl, null];
-      }
-      else{
+      } else {
         const escrow_account_hodl = await this.lock(
           assetLockerPublicKey,
           new anchor.web3.PublicKey(fractionalTokenMint),
@@ -615,9 +619,208 @@ export default class mainProgram extends BaseInterface {
         );
         return [escrow_account_hodl, null];
       }
-
     } catch (err) {
       return [null, err, null, null];
+    }
+  }
+
+  async getDividendClaimedDetails(
+    programId: anchor.web3.PublicKey,
+    dividend_distributor: anchor.web3.PublicKey,
+    claimer: anchor.web3.PublicKey
+  ): Promise<anchor.web3.PublicKey> {
+    const [metadataPubkey, _] = await anchor.web3.PublicKey.findProgramAddress(
+      [
+        Buffer.from("claim_dividend"),
+        dividend_distributor.toBuffer(),
+        claimer.toBuffer(),
+      ],
+      programId
+    );
+
+    return metadataPubkey;
+  }
+
+  async claimRewards(
+    dividendDistributorAddress: string,
+    tokenAddress: string,
+    assetLocker: string
+  ) {
+    try {
+      const publicKey = this._provider.publicKey;
+      const dividendDistributor = new anchor.web3.PublicKey(
+        dividendDistributorAddress
+      );
+      const paymentToken = new anchor.web3.PublicKey(tokenAddress);
+      const treasuryPDA = await this.getTokenTreasury(this._program.programId);
+
+      const dividendClaimDetails = await this.getDividendClaimedDetails(
+        this._program.programId,
+        dividendDistributor,
+        publicKey
+      );
+      const adminPaymentAccount = await getAssociatedTokenAddress(
+        paymentToken,
+        publicKey
+      );
+
+      const assetLockerPublicKey = new anchor.web3.PublicKey(assetLocker);
+      const escrow = await this.getCheckpointEscrow(
+        this._program.programId,
+        assetLockerPublicKey,
+        this._provider.publicKey
+      );
+
+      const treasuryPaymentAccount = await getAssociatedTokenAddress(
+        paymentToken,
+        treasuryPDA,
+        true
+      );
+
+      const assetOwnerPaymentAccount = await getAssociatedTokenAddress(
+        paymentToken,
+        publicKey
+      );
+
+      const treasuryPaymentAccountInfo =
+        await this._provider.connection.getParsedAccountInfo(
+          treasuryPaymentAccount
+        );
+
+      const assetOwnerPaymentAccountInfo =
+        await this._provider.connection.getParsedAccountInfo(
+          assetOwnerPaymentAccount
+        );
+
+      const mint_payment_token_tx = new anchor.web3.Transaction();
+
+      if (!treasuryPaymentAccountInfo.value) {
+        mint_payment_token_tx.add(
+          createAssociatedTokenAccountInstruction(
+            publicKey,
+            treasuryPaymentAccount,
+            treasuryPDA,
+            paymentToken
+          )
+        );
+      }
+
+      if (!assetOwnerPaymentAccountInfo.value) {
+        mint_payment_token_tx.add(
+          createAssociatedTokenAccountInstruction(
+            publicKey,
+            assetOwnerPaymentAccount,
+            publicKey,
+            paymentToken
+          )
+        );
+      }
+
+      const claim_rewards_ix = await this._program.methods
+        .claimDividendByCheckpoint()
+        .accounts({
+          claimedDividend: dividendClaimDetails,
+          claimer: this._provider.publicKey,
+          claimerTokenAccount: adminPaymentAccount,
+          dividendDistributor: dividendDistributor,
+          treasuryTokenAccountAuthority: treasuryPDA,
+          treasuryTokenAccount: treasuryPaymentAccount,
+          rent: anchor.web3.SYSVAR_RENT_PUBKEY,
+          systemProgram: anchor.web3.SystemProgram.programId,
+          tokenProgram: TOKEN_PROGRAM_ID,
+          escrow,
+          governor: this._governor,
+          locker: new anchor.web3.PublicKey(assetLocker),
+        })
+        .instruction();
+
+      mint_payment_token_tx.add(claim_rewards_ix);
+
+      const recentBlockhash =
+        await this._program.provider.connection.getLatestBlockhash("confirmed");
+
+      mint_payment_token_tx.recentBlockhash = recentBlockhash.blockhash;
+      mint_payment_token_tx.feePayer = publicKey;
+
+      const serialized_tx = mint_payment_token_tx.serialize({
+        requireAllSignatures: false,
+      });
+      6;
+
+      const txToBase64 = serialized_tx.toString("base64");
+      console.log("Tx: ", txToBase64);
+      return [txToBase64, null];
+    } catch (err) {
+      return [null, err, null, null];
+    }
+  }
+
+  async exitEscrow(
+    assetLockerAddress: string,
+    fractionalTokenMintAddress: string
+  ) {
+    try {
+      const assetLocker = new anchor.web3.PublicKey(assetLockerAddress);
+      const publicKey = this._provider.publicKey;
+      const fractionalTokenMint = new anchor.web3.PublicKey(
+        fractionalTokenMintAddress
+      );
+
+      const escrow = await this.getCheckpointEscrow(
+        this._program.programId,
+        assetLocker,
+        this._provider.publicKey
+      );
+
+      const escrowHodl = await getAssociatedTokenAddress(
+        fractionalTokenMint,
+        escrow,
+        true
+      );
+
+      const escrowHodlInfo =
+        await this._provider.connection.getParsedAccountInfo(escrowHodl);
+
+      console.log({ escrowHodlInfo });
+
+      const destinationTokens = await getAssociatedTokenAddress(
+        fractionalTokenMint,
+        publicKey
+      );
+      const destinationTokensInfo =
+        await this._provider.connection.getParsedAccountInfo(escrowHodl);
+
+      console.log({ destinationTokensInfo });
+      console.log("exit escrow");
+      const ix = await this._program.methods
+        .exit()
+        .accounts({
+          locker: assetLocker,
+          escrow,
+          escrowOwner: publicKey,
+          escrowHodl,
+          destinationTokens,
+          payer: publicKey,
+          tokenProgram: TOKEN_PROGRAM_ID,
+        })
+        .instruction();
+
+      const tx = new anchor.web3.Transaction().add(ix);
+      const recentBlockhash =
+        await this._program.provider.connection.getLatestBlockhash("confirmed");
+
+      tx.recentBlockhash = recentBlockhash.blockhash;
+      tx.feePayer = publicKey;
+
+      const serialized_tx = tx.serialize({
+        requireAllSignatures: false,
+      });
+
+      const txToBase64 = serialized_tx.toString("base64");
+      return [txToBase64, null];
+    } catch (err) {
+      console.log({ err });
+      return [null, err];
     }
   }
 }

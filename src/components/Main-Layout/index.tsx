@@ -40,7 +40,7 @@ function getItem(
 }
 
 const items: MenuProps["items"] = [
-  getItem("Portfolio", "/", "/", <HomeOutlined />),
+  // getItem("Portfolio", "/", "/", <HomeOutlined />),
   getItem("Portal Evaluation", "/portal", "/portal", <PicLeftOutlined />),
   getItem("Property List", "/properties", "/properties", <ProjectOutlined />),
 ];

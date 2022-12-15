@@ -1,28 +1,21 @@
 import { Table } from "antd";
+import moment from "moment";
 import React from "react";
-
-const dataSource = [
-  {
-    _id: "1",
-    type: "Deposit",
-    address: "0xBdkD2hF6dI4Eufd3jS2dsQT",
-    quantity: 500000,
-    date: "3/12/2022",
-  },
-  {
-    _id: "2",
-    type: "Withdraw",
-    address: "0xBdkD2hF6dI4Eufd3jS2dsQT",
-    quantity: 500000,
-    date: "13/12/2022",
-  },
-];
+import { DATE_TIME_FORMAT } from "../../constants";
+import AddressLink from "../common/AddressLink";
+import EllipsisMiddle from "../common/EllipsisMiddle";
 
 const columns = [
   {
-    title: "Checkpoint Hash",
-    dataIndex: "hash",
-    key: "hash",
+    title: "Transaction Hash",
+    dataIndex: "tx_hash",
+    key: "tx_hash",
+    ellipsis: true,
+    render: (tx_hash: string) => (
+      <AddressLink tx={true} suffixCount={6}>
+        {tx_hash}
+      </AddressLink>
+    ),
   },
   {
     title: "Type",
@@ -33,27 +26,34 @@ const columns = [
 
   {
     title: "User Addrress",
-    dataIndex: "address",
-    key: "address",
-    render: (address: number) => address,
+    dataIndex: "escrowOwner",
+    key: "escrowOwner",
+    render: (address: number) => (
+      <EllipsisMiddle suffixCount={6}>{address}</EllipsisMiddle>
+    ),
+    ellipsis: true,
   },
   {
     title: "Quanity",
-    dataIndex: "quanity",
-    key: "quanity",
-    render: (quanity: number) => `${quanity?.toLocaleString("en")} USDT`,
+    dataIndex: "amount",
+    key: "amount",
+    render: (amount: number, _: any) => {
+      const number = amount || _.releasedAmount;
+      return number ? `${(number / 10 ** 8).toLocaleString("en")} USDT` : "";
+    },
   },
   {
     title: "Date",
-    dataIndex: "date",
-    key: "date",
+    dataIndex: "blockTime",
+    key: "blockTime",
+    render: (date: any) => `${moment(date * 1000).format(DATE_TIME_FORMAT)}`,
   },
 ];
 
-const ActivityHistory = () => {
+const ActivityHistory = ({ data }: any) => {
   return (
     <Table
-      dataSource={dataSource}
+      dataSource={data}
       columns={columns}
       pagination={{ pageSize: 6 }}
       key="rank"

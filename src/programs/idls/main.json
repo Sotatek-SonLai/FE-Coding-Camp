@@ -481,6 +481,68 @@
           "type": "u64"
         }
       ]
+    },
+    {
+      "name": "exit",
+      "accounts": [
+        {
+          "name": "locker",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The [Locker] being exited from."
+          ]
+        },
+        {
+          "name": "escrow",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The [Escrow] that is being closed."
+          ]
+        },
+        {
+          "name": "escrowOwner",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "Authority of the [Escrow]."
+          ]
+        },
+        {
+          "name": "escrowHodl",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Tokens locked up in the [Escrow]."
+          ]
+        },
+        {
+          "name": "destinationTokens",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Destination for the tokens to unlock."
+          ]
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "The payer to receive the rent refund."
+          ]
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "Token program."
+          ]
+        }
+      ],
+      "args": []
     }
   ],
   "accounts": [

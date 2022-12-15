@@ -141,7 +141,7 @@ section.ant-layout {
   padding: 10px 20px;
   border-radius: 10px;
   p {
-    margin-bottom:  0;
+    margin-bottom: 0;
   }
   a {
     padding: 4px 10px;
@@ -168,7 +168,9 @@ section.ant-layout {
     border: 1px solid var(--delete-color) !important;
     background: transparent !important;
     color: var(--delete-color) !important;
-    &:hover, &:focus, &:active {
+    &:hover,
+    &:focus,
+    &:active {
       border-color: var(--delete-color) !important;
       background: transparent !important;
       color: var(--delete-color) !important;
@@ -182,19 +184,20 @@ section.ant-layout {
     width: 50%;
   }
 }
-.ant-btn {
-  border-radius: 4px;
-  height: 40px;
-  span {
-    font-weight: 600;
-  }
-}
+// .ant-btn {
+// border-radius: 4px;
+// height: 40px;
+// span {
+// font-weight: 600;
+// }
+// }
 .ant-divider-horizontal.ant-divider-with-text {
   border-top-color: var(--main-color);
 }
 // h4.ant-typography, div.ant-typography-h4, div.ant-typography-h4 > textarea, .ant-typography h4 {
 //   color: var(--main-color);
 // }
-.ant-upload-list-text-container, .ant-upload-list-picture-container {
+.ant-upload-list-text-container,
+.ant-upload-list-picture-container {
   transition: none !important;
 }
