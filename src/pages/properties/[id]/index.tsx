@@ -132,7 +132,7 @@ const PortalPage: NextPageWithLayout = () => {
                   className="description-value"
                   href={`https://solana.fm/address/${assetInfo?.mintKey}?cluster=devnet-solana`}
                 >
-                  {assetInfo?.nftName}
+                  <Text>{assetInfo?.nftName}</Text>
                 </Link>
               </Tooltip>
             </Descriptions.Item>

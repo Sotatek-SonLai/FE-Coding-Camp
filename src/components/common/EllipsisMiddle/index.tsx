@@ -8,7 +8,12 @@ const EllipsisMiddle: React.FC<any> = ({ suffixCount, children, ...props }) => {
   const start = children.slice(0, children.length - suffixCount).trim();
   const suffix = children.slice(-suffixCount).trim();
   return (
-    <Text style={{ maxWidth: "100%" }} ellipsis={{ suffix }} {...props}>
+    <Text
+      style={{ maxWidth: "100%" }}
+      ellipsis={{ suffix }}
+      {...props}
+      className="link-text"
+    >
       {start}
     </Text>
   );

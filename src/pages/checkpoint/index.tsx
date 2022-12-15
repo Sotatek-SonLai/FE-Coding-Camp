@@ -25,6 +25,7 @@ import { DATE_TIME_FORMAT } from "../../constants";
 import ClaimForm from "../../components/CheckpointPage/ClaimForm";
 import LockForm from "../../components/CheckpointPage/LockForm";
 import ExitEscrow from "../../components/CheckpointPage/ExitEscrow";
+import Countdown from "../../components/common/Countdown";
 
 let flagInterval: NodeJS.Timeout;
 
@@ -40,6 +41,7 @@ const CheckpointDetail = () => {
   const [totalDeposit, setTotalDeposit] = useState(0);
   const [yourLock, setYourLock] = useState(0);
   const [lockSupply, setLockSupply] = useState(0);
+  const [checkpointExpired, setCheckpointExpired] = useState(false);
 
   const fetchTranctionHistory = async (checkpointDetail: any) => {
     console.log("checkpointDetail: ", checkpointDetail);
@@ -97,6 +99,10 @@ const CheckpointDetail = () => {
 
       if (!checkpointDetail || !publicKey) return;
 
+      const isCheckpointExpired = depositTimeExpired();
+      console.log("isCheckpointExpired: ", isCheckpointExpired);
+      setCheckpointExpired(depositTimeExpired());
+
       setCheckpointDetail(checkpointDetail.data);
 
       fetchTranctionHistory(checkpointDetail.data);
@@ -118,7 +124,7 @@ const CheckpointDetail = () => {
   const onDone = () => {
     fetchTranctionHistory(checkpointDetail);
     console.log("reload");
-    setTimeout(() => fetchTranctionHistory(checkpointDetail), 20000);
+    setTimeout(() => fetchTranctionHistory(checkpointDetail), 15000);
   };
 
   return (
@@ -206,19 +212,30 @@ const CheckpointDetail = () => {
               <Descriptions.Item
                 label={
                   <Text style={{ color: "var(--text-color)" }}>
-                    Checkpoint Deposit end at:
+                    {checkpointExpired ? "Checkpoint end at" : "Time remain"}
                   </Text>
                 }
               >
-                <Text style={{}}>
-                  {moment(
-                    checkpointDetail?.checkpoint.startDistributionAt * 1000
-                  ).format(DATE_TIME_FORMAT)}
-                </Text>
+                {checkpointExpired ? (
+                  <Text>
+                    {moment(
+                      checkpointDetail?.checkpoint.startDistributionAt * 1000
+                    ).format(DATE_TIME_FORMAT)}
+                  </Text>
+                ) : (
+                  checkpointDetail && (
+                    <Countdown
+                      time={
+                        checkpointDetail.checkpoint.startDistributionAt * 1000
+                      }
+                      onCompleted={() => setCheckpointExpired(true)}
+                    />
+                  )
+                )}
               </Descriptions.Item>
             </Descriptions>
             <br />
-            {depositTimeExpired() ? (
+            {checkpointExpired ? (
               <ClaimForm
                 checkpointDetail={checkpointDetail?.checkpoint}
                 yourRewards={(() => {
@@ -228,20 +245,26 @@ const CheckpointDetail = () => {
                 onDone={onDone}
                 disabled={!yourLock}
               />
-            ) : yourLock === 0 ? (
-              <LockForm
-                checkpointDetail={checkpointDetail?.checkpoint}
-                fractionalizeTokenMint={
-                  checkpointDetail?.fractionalizeTokenMint
-                }
-                onDone={onDone}
-              />
             ) : (
-              <ExitEscrow
-                onDone={onDone}
-                checkpointDetail={checkpointDetail.checkpoint}
-                fractionalizeTokenMint={checkpointDetail.fractionalizeTokenMint}
-              />
+              <>
+                <LockForm
+                  checkpointDetail={checkpointDetail?.checkpoint}
+                  fractionalizeTokenMint={
+                    checkpointDetail?.fractionalizeTokenMint
+                  }
+                  onDone={onDone}
+                />
+                <br />
+                {yourLock !== 0 && (
+                  <ExitEscrow
+                    onDone={onDone}
+                    checkpointDetail={checkpointDetail?.checkpoint}
+                    fractionalizeTokenMint={
+                      checkpointDetail?.fractionalizeTokenMint
+                    }
+                  />
+                )}
+              </>
             )}
           </div>
         </Col>
