@@ -9,6 +9,7 @@ import Link from "next/link";
 import EvaluationService from "../service/evaluation.service";
 import MainLayout from "../components/Main-Layout";
 import { NextPageWithLayout } from "./_app";
+import { useRouter } from "next/router";
 const { Title } = Typography;
 
 const passedAssetData = [
@@ -36,17 +37,9 @@ const passedAssetData = [
   },
 ];
 
-const PortalPage: NextPageWithLayout = (props: any) => {
-  return (
-    <div>
-      <Title level={2}>Portfolio</Title>
-      <Table
-        dataSource={passedAssetData}
-        columns={passedAssetColumns}
-        rowKey="id"
-      />
-    </div>
-  );
+const PortalPage = (props: any) => {
+  const router = useRouter();
+  router.push("/properties");
 };
 
 PortalPage.getLayout = (page: ReactElement) => {

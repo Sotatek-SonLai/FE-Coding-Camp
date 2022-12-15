@@ -754,4 +754,73 @@ export default class mainProgram extends BaseInterface {
       return [null, err, null, null];
     }
   }
+
+  async exitEscrow(
+    assetLockerAddress: string,
+    fractionalTokenMintAddress: string
+  ) {
+    try {
+      const assetLocker = new anchor.web3.PublicKey(assetLockerAddress);
+      const publicKey = this._provider.publicKey;
+      const fractionalTokenMint = new anchor.web3.PublicKey(
+        fractionalTokenMintAddress
+      );
+
+      const escrow = await this.getCheckpointEscrow(
+        this._program.programId,
+        assetLocker,
+        this._provider.publicKey
+      );
+
+      const escrowHodl = await getAssociatedTokenAddress(
+        fractionalTokenMint,
+        escrow,
+        true
+      );
+
+      const escrowHodlInfo =
+        await this._provider.connection.getParsedAccountInfo(escrowHodl);
+
+      console.log({ escrowHodlInfo });
+
+      const destinationTokens = await getAssociatedTokenAddress(
+        fractionalTokenMint,
+        publicKey
+      );
+      const destinationTokensInfo =
+        await this._provider.connection.getParsedAccountInfo(escrowHodl);
+
+      console.log({ destinationTokensInfo });
+      console.log("exit escrow");
+      const ix = await this._program.methods
+        .exit()
+        .accounts({
+          locker: assetLocker,
+          escrow,
+          escrowOwner: publicKey,
+          escrowHodl,
+          destinationTokens,
+          payer: publicKey,
+          tokenProgram: TOKEN_PROGRAM_ID,
+        })
+        .instruction();
+
+      const tx = new anchor.web3.Transaction().add(ix);
+      const recentBlockhash =
+        await this._program.provider.connection.getLatestBlockhash("confirmed");
+
+      tx.recentBlockhash = recentBlockhash.blockhash;
+      tx.feePayer = publicKey;
+
+      const serialized_tx = tx.serialize({
+        requireAllSignatures: false,
+      });
+
+      const txToBase64 = serialized_tx.toString("base64");
+      return [txToBase64, null];
+    } catch (err) {
+      console.log({ err });
+      return [null, err];
+    }
+  }
 }

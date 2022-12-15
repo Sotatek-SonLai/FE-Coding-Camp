@@ -7,6 +7,7 @@ import {
   message,
   Empty,
   Table,
+  Tooltip,
 } from "antd";
 import React, { ReactElement, useEffect, useState } from "react";
 import MainLayout from "../../../components/Main-Layout";
@@ -22,8 +23,9 @@ import CreateCheckpoint from "../../../components/PropertyPage/CreateCheckpoint"
 import { DATE_FORMAT } from "../../../constants";
 import { useConnection } from "@solana/wallet-adapter-react";
 import * as anchor from "@project-serum/anchor";
+import AddressLink from "../../../components/common/AddressLink";
 
-const { Title, Text } = Typography;
+const { Title, Text, Link } = Typography;
 interface DataType {
   name: string;
   value: string;
@@ -35,6 +37,7 @@ const PortalPage: NextPageWithLayout = () => {
   const { connection } = useConnection();
   const router = useRouter();
   const id = router?.query?.id;
+  const [loading, setLoading] = useState(true);
 
   const columns: ColumnsType<DataType> = [
     {
@@ -48,10 +51,13 @@ const PortalPage: NextPageWithLayout = () => {
   ];
 
   useEffect(() => {
-    if (id) {
-      fetchGetDetail();
-      fetchGetCheckpoints();
-    }
+    (async () => {
+      if (!id) return;
+      setLoading(true);
+      await fetchGetDetail();
+      await fetchGetCheckpoints();
+      setLoading(false);
+    })();
   }, [id]);
 
   const fetchGetDetail = async () => {
@@ -67,8 +73,8 @@ const PortalPage: NextPageWithLayout = () => {
 
   const fetchGetCheckpoints = async () => {
     if (id) {
-      const [res]: any = await EvaluationService.getAllCheckpoints(id);
-      if (!res?.error) {
+      const [res, error]: any = await EvaluationService.getAllCheckpoints(id);
+      if (!error) {
         if (!res) return;
 
         const promise = res.data.map(async (item: any) => {
@@ -88,7 +94,7 @@ const PortalPage: NextPageWithLayout = () => {
         });
 
         const data = await Promise.all(promise);
-        console.log("data: ");
+        console.log("data: ", data);
         setCheckpoints(data);
       } else {
         message.error(res?.error?.message);
@@ -119,7 +125,16 @@ const PortalPage: NextPageWithLayout = () => {
             <Descriptions.Item
               label={<span className="description-label">NFT Name</span>}
             >
-              <span className="description-value">{assetInfo?.nftName}</span>
+              <Tooltip title="View NFT on SolanaFM">
+                <Link
+                  target="_blank"
+                  rel="noreferrer"
+                  className="description-value"
+                  href={`https://solana.fm/address/${assetInfo?.mintKey}?cluster=devnet-solana`}
+                >
+                  {assetInfo?.nftName}
+                </Link>
+              </Tooltip>
             </Descriptions.Item>
             <Descriptions.Item
               label={<span className="description-label">Address</span>}
@@ -266,6 +281,34 @@ const PortalPage: NextPageWithLayout = () => {
                     {moment(assetInfo.updatedAt).format(DATE_FORMAT)}
                   </Text>
                 </Descriptions.Item>
+                <Descriptions.Item
+                  label={
+                    <span className="description-label">Token Address</span>
+                  }
+                >
+                  {/* <Text
+                    className="description-value"
+                    ellipsis={{ suffix }}
+                    style={{
+                      // wordBreak: "break-word",
+                      // whiteSpace: "nowrap",
+                      // overflow: "hidden",
+                      // textOverflow: "ellipsis",
+                      maxWidth: 220,
+                    }}
+                  >
+                    {assetInfo?.assetFractionalize?.mint}
+                  </Text> */}
+
+                  <AddressLink
+                    strong
+                    suffixCount={6}
+                    className="description-value"
+                    style={{ width: 230 }}
+                  >
+                    {assetInfo?.assetFractionalize?.mint}
+                  </AddressLink>
+                </Descriptions.Item>
               </Descriptions>
             </div>
           </Row>
@@ -276,12 +319,19 @@ const PortalPage: NextPageWithLayout = () => {
       </Divider>
       <CreateCheckpoint
         onDone={() => {
-          setTimeout(() => fetchGetCheckpoints(), 4000);
+          fetchGetCheckpoints();
+
+          console.log("reload");
+          setTimeout(() => fetchGetCheckpoints(), 20000);
         }}
         propertyInfo={assetInfo}
       />
       <br /> <br />
-      <CheckpointTable data={checkpoints} />
+      <CheckpointTable
+        data={checkpoints}
+        loading={loading}
+        propertyId={assetInfo?._id}
+      />
     </div>
   );
 };

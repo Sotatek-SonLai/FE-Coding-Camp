@@ -5,7 +5,6 @@ export function middleware(request: NextRequest) {
   const accessToken = request.cookies.get("accessToken")?.value;
 
   if (isNothing(accessToken)) {
-    console.log("no access token");
     return redirectTo("/login", request);
   }
 

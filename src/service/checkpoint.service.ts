@@ -32,7 +32,7 @@ const CheckpointService = {
 
   getTransactionHistory: async (locker: any) => {
     try {
-      const response = await Request.get(`check-point/${locker}/escrow`);
+      const response = await Request.get(`activity-history/${locker}`);
       return [response.data, null];
     } catch (error) {
       return [null, error];
@@ -48,6 +48,15 @@ const CheckpointService = {
         evaluation_id,
         base64_serialized_tx,
       });
+      return [response.data, null];
+    } catch (error) {
+      return [null, error];
+    }
+  },
+
+  getLocker: async (locker: string, escrowOwner: string) => {
+    try {
+      const response = await Request.get(`locker/${locker}/${escrowOwner}`);
       return [response.data, null];
     } catch (error) {
       return [null, error];
