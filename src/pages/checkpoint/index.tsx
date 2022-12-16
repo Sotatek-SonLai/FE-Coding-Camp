@@ -49,15 +49,19 @@ const CheckpointDetail = () => {
 
     const [transactionHistory, transactionError] =
       await CheckpointService.getTransactionHistory(locker);
+
+    if (!publicKey) return
     const [lockerData, lockerError] = await CheckpointService.getLocker(
       locker,
-      owner
+      publicKey.toBase58()
     );
 
     if (transactionError || lockerError) {
       message.error("Failed to fetch data");
       return;
+
     }
+
 
     const _transactionHistory = transactionHistory.data.map((item: any) => {
       const data = JSON.parse(item.data);
