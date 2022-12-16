@@ -1,56 +1,99 @@
-import { Table, Tabs, Button, Space, Typography } from "antd";
-import { PlusOutlined } from "@ant-design/icons";
-import React, { ReactElement, useState } from "react";
-import {
-  passedAssetColumns,
-  requestAssetColumns,
-} from "../../components/PortalEvaluationPage/AssestTable";
-import Link from "next/link";
-import EvaluationService from "../../service/evaluation.service";
-import MainLayout from "../../components/Main-Layout";
-import { NextPageWithLayout } from "../_app";
+import { Table, Typography } from "antd";
+import { ColumnsType } from "antd/lib/table";
+import React, { ReactElement } from "react";
+import { AssetType } from "../../types";
+import PropertyInfo from "../../components/common/PropertyInfo";
+import { Status } from "../../components/common/AssetStatus";
+import { useRouter } from "next/router";
 const { Title } = Typography;
+import { URL_PROPERTIES } from "../../constants";
+import MainLayout from "../../components/Main-Layout";
+import { useState } from "react";
+import { useEffect } from "react";
+import EvaluationService from "../../service/evaluation.service";
+import moment from "moment";
+import { STATUS } from "../../types/asset.type";
 
-const passedAssetData = [
+export const requestAssetColumns: ColumnsType<AssetType> = [
   {
-    id: "1",
-    propertyInfo: "https://joeschmoe.io/api/v1/random",
-    name: "ABC",
-    totalSupply: 100000,
-    tokenPrice: 0.0001,
-    status: "fractionalize",
-    payRewardDate: "",
-    action: "Listing",
-    detail: "Detail",
+    title: "Property Info",
+    dataIndex: "avatar",
+    key: "avatar",
+    render: (url, dt) => {
+      return (
+        <PropertyInfo imageUrl={`${dt?.avatar?.host}${dt?.avatar?.url}`} />
+      );
+    },
   },
   {
-    id: "2",
-    propertyInfo: "https://joeschmoe.io/api/v1/random",
-    name: "Trinh Thi Thu Trang Trinh Thi Thu Trang Trinh Thi Thu Trang",
-    totalSupply: 1000000000,
-    tokenPrice: 0.001,
-    status: "listed",
-    payRewardDate: "11/11/2022",
-    action: "Deposit",
-    detail: "Detail",
+    title: "Address",
+    dataIndex: "address",
+    key: "address",
+    ellipsis: true,
+  },
+  {
+    title: "Total Supply",
+    dataIndex: "tokenSupply",
+    key: "tokenSupply",
+    render: (number) => (number ? number.toLocaleString("en") : "N/A"),
+  },
+  {
+    title: "Token Price",
+    dataIndex: "tokenPrice",
+    key: "tokenPrice",
+    render: (price) => (price ? `$${price}` : "N/A"),
+  },
+  {
+    title: "Status",
+    dataIndex: "status",
+    key: "status",
+    render: (text) => <Status status={text} />,
+  },
+  {
+    title: "Listing Date",
+    dataIndex: "updatedAt",
+    key: "updatedAt",
+    render: (value) => moment(value).format("DD/MM/YYYY"),
   },
 ];
 
-const PortalPage: NextPageWithLayout = (props: any) => {
+const PorpertiesPage = () => {
+  const [requestAssetData, setRequestAssetData] = useState([]);
+  const router = useRouter();
+  useEffect(() => {
+    const fetchData = async () => {
+      const [res]: any = await EvaluationService.getAllLand({
+        status: [STATUS.TOKENIZED],
+      });
+      setRequestAssetData(res);
+    };
+
+    fetchData();
+  }, []);
+
   return (
     <div>
-      <Title level={2}>Portfolio</Title>
+      <Title level={2}>Porfolio</Title>
       <Table
-        dataSource={passedAssetData}
-        columns={passedAssetColumns}
-        rowKey="id"
+        className="properties__table"
+        dataSource={requestAssetData}
+        columns={requestAssetColumns}
+        rowKey="_id"
+        pagination={{ pageSize: 6 }}
+        onRow={(record: AssetType, rowIndex) => {
+          return {
+            onClick: (event) => {
+              router.push(`${URL_PROPERTIES}/${record?._id}`);
+            },
+          };
+        }}
       />
     </div>
   );
 };
 
-PortalPage.getLayout = (page: ReactElement) => {
+PorpertiesPage.getLayout = (page: ReactElement) => {
   return <MainLayout>{page}</MainLayout>;
 };
 
-export default PortalPage;
+export default PorpertiesPage;

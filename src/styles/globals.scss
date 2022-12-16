@@ -38,10 +38,11 @@ section.ant-layout {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: "0px 0px 20px";
   .logo {
     img {
-      width: 50px;
-      height: 50px;
+      width: 70px;
+      height: 70px;
     }
   }
 }
@@ -60,6 +61,9 @@ section.ant-layout {
   padding: 20px;
 }
 
+.ant-layout-header {
+  height: 84px;
+}
 .ant-form-item-label > label {
   font-weight: 600;
 }

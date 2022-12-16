@@ -40,7 +40,7 @@ function getItem(
 }
 
 const items: MenuProps["items"] = [
-  // getItem("Portfolio", "/", "/", <HomeOutlined />),
+  getItem("Portfolio", "/portfolio", "/portfolio", <HomeOutlined />),
   getItem("Portal Evaluation", "/portal", "/portal", <PicLeftOutlined />),
   getItem("Property List", "/properties", "/properties", <ProjectOutlined />),
 ];
@@ -69,7 +69,7 @@ const MainLayout: React.FC<any> = ({ children }) => {
           className="header"
         >
           <div className="logo">
-            <Image src="/logo.png" alt="" preview={false} />
+            <Image src="/logo.svg" alt="" preview={false} />
           </div>
           <div className="connect-wrap">
             <DynamicCustomWallet />
@@ -84,7 +84,7 @@ const MainLayout: React.FC<any> = ({ children }) => {
               height: "100vh",
               position: "fixed",
               left: 0,
-              top: 65,
+              top: 85,
               bottom: 0,
             }}
           >
