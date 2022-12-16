@@ -43,7 +43,7 @@ const ActivityHistory = ({ data, tokenSymbolLock }: any) => {
           const { type } = _;
           return type === "LOCK"
             ? `${(amount / 10 ** 8).toLocaleString("en")} ${tokenSymbolLock}`
-            : type === "CLAIM"
+            : type === "DIVIDEND_CLAIMED"
             ? `${_.totalClaimed.toLocaleString("en")} USDT`
             : type === "CREATE_ESCROW"
             ? ""
