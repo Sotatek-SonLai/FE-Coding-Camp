@@ -18,8 +18,6 @@ import { getUrl } from "../../utils/utility";
 import { ArrowLeftOutlined, ArrowRightOutlined } from "@ant-design/icons";
 import CheckpointService from "../../service/checkpoint.service";
 import { useWallet } from "@solana/wallet-adapter-react";
-import TransactionModal from "../../components/common/TransactionModal";
-import Link from "next/link";
 import moment from "moment";
 import { DATE_TIME_FORMAT } from "../../constants";
 import ClaimForm from "../../components/CheckpointPage/ClaimForm";
@@ -44,16 +42,16 @@ const CheckpointDetail = () => {
   const [checkpointExpired, setCheckpointExpired] = useState(false);
 
   const fetchTranctionHistory = async (checkpointDetail: any) => {
-    console.log("checkpointDetail: ", checkpointDetail);
     if (!checkpointDetail) return;
-    const { locker, owner, totalDistributionAmount, decimal } =
+    const { locker, totalDistributionAmount, decimal } =
       checkpointDetail.checkpoint;
 
+    if (!publicKey) return;
     const [transactionHistory, transactionError] =
       await CheckpointService.getTransactionHistory(locker);
     const [lockerData, lockerError] = await CheckpointService.getLocker(
       locker,
-      owner
+      publicKey?.toBase58()
     );
 
     if (transactionError || lockerError) {
@@ -99,8 +97,6 @@ const CheckpointDetail = () => {
 
       if (!checkpointDetail || !publicKey) return;
 
-      const isCheckpointExpired = depositTimeExpired();
-      console.log("isCheckpointExpired: ", isCheckpointExpired);
       setCheckpointExpired(depositTimeExpired());
 
       setCheckpointDetail(checkpointDetail.data);
@@ -143,7 +139,10 @@ const CheckpointDetail = () => {
             <Divider orientation="left" orientationMargin={50}>
               <Title level={2}>Active History</Title>
             </Divider>
-            <ActivityHistory data={transactionHistory} />
+            <ActivityHistory
+              data={transactionHistory}
+              tokenSymbolLock={assetInfo?.tokenSymbol}
+            />
           </div>
         </Col>
         <Col span={8}>

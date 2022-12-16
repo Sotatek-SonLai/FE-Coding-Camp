@@ -41,13 +41,21 @@ const LockForm = ({
 
       const tokenPublicKey = new anchor.web3.PublicKey(fractionalizeTokenMint);
 
-      const tokenOwnerAccount = await getAssociatedTokenAddress(
+      const tokenOwner = await getAssociatedTokenAddress(
         tokenPublicKey,
         publicKey
       );
 
+      const tokenOwnerAccount = await connection.getParsedAccountInfo(
+        tokenOwner
+      );
+      if (!tokenOwnerAccount.value) {
+        setBalance("0");
+        setDecimals(0);
+        return;
+      }
       let tokenAccountInfo = await connection.getTokenAccountBalance(
-        tokenOwnerAccount
+        tokenOwner
       );
 
       console.log({ tokenAccountInfo });
